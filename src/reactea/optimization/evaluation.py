@@ -3,7 +3,7 @@ from functools import reduce
 from typing import List, Union
 
 import numpy as np
-from rdkit import Chem, DataStructs
+from rdkit import DataStructs
 from rdkit.Chem import MolFromSmarts, Mol, rdMolDescriptors
 from rdkit.Chem.Crippen import MolLogP
 from rdkit.Chem.QED import qed

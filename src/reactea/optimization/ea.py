@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
+from reactea.chem.compounds import Compound
 from reactea.optimization.problem import Problem
 from reactea.utils.constatns import EAConstants
 
@@ -10,7 +11,7 @@ class AbstractEA(ABC):
 
     def __init__(self,
                  problem: Problem,
-                 initial_population: List[str],
+                 initial_population: List[Compound],
                  max_generations: int = EAConstants.MAX_GENERATIONS,
                  mp: bool = True,
                  visualizer: bool = False):
@@ -32,8 +33,7 @@ class AbstractEA(ABC):
         else:
             final_pop = self._run_mo()
 
-        self.final_population = self._convertPopulation(final_pop)
-        return self.final_population, final_pop
+        return final_pop
 
     @abstractmethod
     def _run_so(self):
@@ -44,4 +44,3 @@ class AbstractEA(ABC):
     def _run_mo(self):
         """"""
         raise NotImplementedError
-

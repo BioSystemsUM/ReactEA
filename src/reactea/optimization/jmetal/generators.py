@@ -2,6 +2,7 @@ from typing import List
 
 from jmetal.util.generator import Generator
 
+from reactea.chem.compounds import Compound
 from reactea.optimization.problem import ChemicalProblem
 from reactea.optimization.solution import Solution
 
@@ -9,7 +10,7 @@ from reactea.optimization.solution import Solution
 class ChemicalGenerator(Generator):
     """"""
 
-    def __init__(self, initial_population: List[str]):
+    def __init__(self, initial_population: List[Compound]):
         """"""
         super(ChemicalGenerator, self).__init__()
         self.initial_population = initial_population

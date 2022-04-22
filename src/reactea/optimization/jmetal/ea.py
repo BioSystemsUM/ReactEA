@@ -7,7 +7,7 @@ from jmetal.operator import BinaryTournamentSelection
 from jmetal.util.termination_criterion import StoppingByEvaluations
 
 from reactea.optimization.ea import AbstractEA
-from .algorithms import ReactorGeneticAlgorithm
+from .algorithms import ReactorGeneticAlgorithm as GeneticAlgorithm
 from .evaluators import ChemicalEvaluator
 from .generators import ChemicalGenerator
 from .observers import PrintObjectivesStatObserver, VisualizerObserver
@@ -15,9 +15,12 @@ from .operators import ReactorMutation, ReactorOnePointCrossover
 from .problem import JmetalProblem
 from reactea.utils.constatns import EAConstants
 from ..problem import ChemicalProblem
+from ..solution import Solution
+from ...chem.compounds import Compound
+from ...chem.reaction_rules import ReactionRule
 
 soea_map = {
-    'GA': ReactorGeneticAlgorithm,
+    'GA': GeneticAlgorithm,
     'SA': SimulatedAnnealing
 }
 # MOEA alternatives
@@ -34,7 +37,9 @@ class EA(AbstractEA):
 
     def __init__(self,
                  problem: ChemicalProblem,
-                 initial_population: List[str] = None,
+                 initial_population: List[Compound] = None,
+                 reaction_rules: List[ReactionRule] = None,
+                 coreactants: List[Compound] = None,
                  max_generations: int = EAConstants.MAX_GENERATIONS,
                  mp: bool = True,
                  visualizer: bool = False,
@@ -45,8 +50,8 @@ class EA(AbstractEA):
         super(EA, self).__init__(problem, initial_population, max_generations, mp, visualizer)
         self.algorithm_name = algorithm
         self.ea_problem = JmetalProblem(problem, batched=batched)
-        self.crossover = ReactorOnePointCrossover(1, configs)
-        self.mutation = ReactorMutation(1, configs)
+        self.crossover = ReactorOnePointCrossover(1, reaction_rules, coreactants, configs)
+        self.mutation = ReactorMutation(1, reaction_rules, coreactants, configs)
         self.configs = configs
         self.initial_population = ChemicalGenerator(initial_population)
         self.population_evaluator = ChemicalEvaluator()
@@ -142,3 +147,4 @@ class EA(AbstractEA):
         algorithm.run()
         result = algorithm.solutions
         return result
+

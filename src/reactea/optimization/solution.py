@@ -2,6 +2,8 @@ import copy
 from abc import ABC, abstractmethod
 from typing import Sequence, Union
 
+from reactea.chem.compounds import Compound
+
 Num = Union[int, float]
 
 class SolutionInterface(ABC):
@@ -21,7 +23,7 @@ class SolutionInterface(ABC):
 class Solution(SolutionInterface):
     """"""
 
-    def __init__(self, variables: str, objectives: Sequence[Num] = [], is_maximization: bool = True):
+    def __init__(self, variables: Compound, objectives: Sequence[Num] = [], is_maximization: bool = True):
         """"""
         self.variables = variables
         self.objectives = objectives
@@ -34,19 +36,19 @@ class Solution(SolutionInterface):
 
     def get_representation(self):
         """"""
-        return self.variables
+        return self.variables.smiles
 
     def __str__(self):
         """"""
-        return f"{self.objectives};{self.variables}"
+        return f"{self.objectives};{self.variables.smiles}"
 
     def __repr__(self):
         """"""
-        return f"{self.objectives};{self.variables}"
+        return f"{self.objectives};{self.variables.smiles}"
 
     def __eq__(self, solution):
         """"""
-        return self.variables == solution.variables
+        return self.variables.smiles == solution.variables.smiles
 
     def __gt__(self, solution):
         """"""

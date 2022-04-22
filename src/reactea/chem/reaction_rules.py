@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 
 from rdkit.Chem.rdChemReactions import ReactionFromSmarts, ChemicalReaction, ReactionToSmarts
 
@@ -6,10 +6,11 @@ from rdkit.Chem.rdChemReactions import ReactionFromSmarts, ChemicalReaction, Rea
 class ReactionRule:
     """"""
 
-    def __init__(self, smarts: str, rule_id: Union[str, int]):
+    def __init__(self, smarts: str, rule_id: Union[str, int], coreactants_ids: List[Union[str, int]] = None):
         """"""
         self.smarts = smarts
         self.rule_id = rule_id
+        self.coreactants_ids = coreactants_ids
         self.reaction = self._to_reaction()
 
     @property
@@ -43,6 +44,16 @@ class ReactionRule:
         """"""
         self.reaction = new_reaction
         self.smarts = self._to_smarts()
+
+    @property
+    def coreactants_ids(self):
+        """"""
+        return self.coreactants_ids
+
+    @coreactants_ids.setter
+    def coreactants_ids(self, value):
+        """"""
+        raise ValueError("Correactants information should not be modified!")
 
     def _to_reaction(self):
         """"""

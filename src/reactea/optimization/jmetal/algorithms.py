@@ -2,8 +2,8 @@ from typing import TypeVar, List
 
 import cytoolz
 from jmetal.algorithm.singleobjective import GeneticAlgorithm
-S = TypeVar("S")
-R = TypeVar("R")
+
+from reactea.optimization.solution import Solution
 
 
 class ReactorGeneticAlgorithm(GeneticAlgorithm):
@@ -13,13 +13,13 @@ class ReactorGeneticAlgorithm(GeneticAlgorithm):
         """"""
         super(ReactorGeneticAlgorithm, self).__init__(**kwarg)
 
-    def replacement(self, population: List[S], offspring_population: List[S]) -> List[S]:
+    def replacement(self, population: List[Solution], offspring_population: List[Solution]):
         """"""
         population.extend(offspring_population)
 
         population.sort(key=lambda s: s.objectives[0])
 
-        unique_population = list(cytoolz.unique(population, key=lambda x: x.variables))
+        unique_population = list(cytoolz.unique(population, key=lambda x: x.variables.smiles))
 
         if len(unique_population) >= self.population_size:
             unique_population = unique_population[:self.population_size]
