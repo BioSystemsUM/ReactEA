@@ -6,7 +6,7 @@ from rdkit.Chem import MolFromSmiles, MolToSmiles, Mol
 class Compound:
     """"""
 
-    def __init__(self, smiles: str, cmp_id: Union[str, int] = None):
+    def __init__(self, smiles: str, cmp_id: Union[str, int]):
         """"""
         self.smiles = smiles
         self.cmp_id = cmp_id

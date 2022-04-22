@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Union
 
-from rdkit import Chem
-
+from reactea.chem.compounds import Compound
 from reactea.optimization.evaluation import ChemicalEvaluationFunction
 
 
@@ -31,7 +30,7 @@ class Problem(ABC):
         """"""
         return self.__class__.__name__
 
-    def evaluate_solution(self, candidates: Union[str, List[str]], batched: bool):
+    def evaluate_solution(self, candidates: Union[Compound, List[Compound]], batched: bool):
         """"""
         return self._evaluate_solution_batch(candidates) if batched else self._evaluate_solution_single(candidates)
 
@@ -54,17 +53,17 @@ class ChemicalProblem(Problem):
         super(ChemicalProblem, self).__init__("ChemicalProblem", fevaluation)
         self.configs = configs
 
-    def _evaluate_solution_batch(self, candidates: List[str]):
+    def _evaluate_solution_batch(self, candidates: List[Compound]):
         """"""
-        list_mols = [Chem.MolFromSmiles(smi) for smi in candidates]
+        list_mols = [smi.mol for smi in candidates]
         evals = []
         for f in self.fevaluation:
             evals.append(f(list_mols, batched=True))
         return list(zip(*evals))
 
-    def _evaluate_solution_single(self, candidates: str):
+    def _evaluate_solution_single(self, candidates: Compound):
         """"""
-        candidates = Chem.MolFromSmiles(candidates)
+        candidates = candidates.mol
         evals = []
         for f in self.fevaluation:
             evals.append(f(candidates, batched=False))

@@ -3,12 +3,17 @@
 import json
 import os
 import pickle
-import random
+import time
 from datetime import datetime
 
 import pandas as pd
 from bunch import Bunch
 from keras.models import load_model
+
+from reactea.chem.compounds import Compound
+from reactea.chem.reaction_rules import ReactionRule
+from reactea.optimization.solution import Solution
+from reactea.utils.constatns import ChemConstants
 
 ROOT_DIR = os.path.join(os.path.dirname(__file__), "../")
 
@@ -17,12 +22,12 @@ class Loaders:
     """"""
 
     @staticmethod
-    def from_root(file_path):
+    def from_root(file_path: str):
         """"""
         return os.path.join(ROOT_DIR, file_path)
 
     @staticmethod
-    def get_config_from_json(json_file):
+    def get_config_from_json(json_file: str):
         """"""
         with open(Loaders.from_root(json_file), 'r') as config_file:
             config_dict = json.load(config_file)
@@ -32,16 +37,32 @@ class Loaders:
         return configs
 
     @staticmethod
-    def initialize_population(configs):
+    def initialize_population(configs: Bunch):
         """"""
-        smiles = pd.read_csv(configs["data"]["init_pop_path"], header=None)
-        smiles = list(smiles[0].values)
-        random.shuffle(smiles)
-        smiles = smiles[:configs["data"]["init_pop_size"]]
-        return smiles
+        cmp_df = pd.read_csv(configs["compounds"]["init_pop_path"], header=0, sep='\t')
+        cmp_df = cmp_df.sample(configs["compounds"]["init_pop_size"])
+        return [ChemConstants.default_standardizer.standardize(
+            Compound(row['smiles'], row["compound_id"])) for _, row in cmp_df.iterrows()]
 
     @staticmethod
-    def loadSweetModels(config):
+    def initialize_rules(configs: Bunch):
+        """"""
+        rules_df = pd.read_csv(configs["rules"]["rules_path"], header=0, sep='\t')
+        if configs["rules"]["use_coreactant_info"]:
+            coreactants = Loaders.initialize_coreactants(configs)
+            return [ReactionRule(row['smarts'],
+                                 row["rule_id"], row["coreactants_ids"]) for _, row in rules_df.iterrows()], coreactants
+        else:
+            return [ReactionRule(row['smarts'], row["rule_id"]) for _, row in rules_df.iterrows()], None
+
+    @staticmethod
+    def initialize_coreactants(configs: Bunch):
+        coreactants_df = pd.read_csv(configs["rules"]["coreactants_path"], header=0, set='\t')
+        return [ChemConstants.default_standardizer.standardize(
+            Compound(row['smiles'], row["compound_id"])) for _, row in coreactants_df.iterrows()]
+
+    @staticmethod
+    def loadSweetModels(config: Bunch):
         """"""
         # SVM
         SVM = pickle.load(open(config["svmSweet"], 'rb'))
@@ -79,7 +100,7 @@ class Writers:
     """"""
 
     @staticmethod
-    def save_final_pop(final_pop, configs, feval_names):
+    def save_final_pop(final_pop, configs: Bunch, feval_names):
         # save all solutions
         destFile = f"reactea/outputs/{configs['exp_name']}/FINAL_{configs['time']}.csv"
         configs["final_population_path"] = destFile
@@ -95,7 +116,7 @@ class Writers:
         configs["final_population_unique_solutions_path"] = destFile[:-4] + '_UNIQUE_SOLUTIONS.csv'
 
     @staticmethod
-    def save_intermediate_transformations(pop, configs):
+    def save_intermediate_transformations(pop, configs: Bunch):
         destFile = "reactea/outputs/" + configs["exp_name"] + "/FINAL_TRANSFORMATIONS_{:s}.csv".format(configs["time"])
         configs["transformations_path"] = destFile
         with open(destFile, 'w') as f:
@@ -111,8 +132,19 @@ class Writers:
                 f.write(f"{sol.variables};{ocs};{rules}\n")
 
     @staticmethod
-    def save_configs(configs):
+    def save_configs(configs: Bunch):
         configs = configs.toJSON()
         configs = json.loads(configs)
         with open(f"reactea/outputs/{configs['exp_name']}/configs.json", 'w') as outfile:
             json.dump(configs, outfile, indent=0)
+
+    @staticmethod
+    def update_operators_logs(configs: dict, solution: Solution, mutant: str, rule_id: str):
+        file = f"reactea/outputs/{configs['exp_name']}/operatorLogs/ReactionMutationLogs_" \
+               f"{time.strftime('%Y_%m_%d')}.txt"
+        objectives = []
+        # TODO: check if abs makes sense for all objectives
+        for obj in solution.objectives:
+            objectives.append(str(abs(round(obj, 3))))
+        with open(file, 'a') as log:
+            log.write(f"{solution.variables.smiles},{mutant},{rule_id},{','.join(objectives)}\n")

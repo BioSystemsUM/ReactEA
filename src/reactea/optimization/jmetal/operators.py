@@ -1,106 +1,91 @@
 import copy
-import heapq
 import random
 import time
 from typing import List
 
 import pandas as pd
 from jmetal.core.operator import Mutation, Crossover
+from rdkit.Chem import MolToSmiles
 
-from rdkit.Chem import MolFromSmiles, MolToSmiles
-from rdkit.Chem.rdChemReactions import ReactionFromSmarts
-
+from reactea.chem.compounds import Compound
+from reactea.chem.reaction_rules import ReactionRule
 from reactea.optimization.solution import Solution
 from reactea.utils.chem_utils import ChemUtils
+from reactea.utils.constatns import ChemConstants
+from reactea.utils.io import Writers
 
 
 class ReactorMutation(Mutation[Solution]):
     """"""
 
-    def __init__(self, probability: float = 0.1, configs: dict = None):
+    def __init__(self,
+                 probability: float = 0.1,
+                 reaction_rules: List[ReactionRule] = None,
+                 coreactants: List[Compound] = None,
+                 configs: dict = None):
         """"""
         super(ReactorMutation, self).__init__(probability=probability)
+        self.reaction_rules = reaction_rules
+        self.coreactants = coreactants
         self.configs = configs
 
     def execute(self, solution: Solution):
         """"""""
         if random.random() <= self.probability:
-            with open(self.configs["rules_path"]) as fin:
-                sample = heapq.nlargest(self.configs["max_rules_by_iter"], fin, key=lambda L: random.random())
-            random.shuffle(sample)
-
-            candidate_smiles = solution.variables
-            candidate_mol = MolFromSmiles(candidate_smiles)
-
-            if 'use_coreactant_info' in self.configs.keys():
-                if self.configs['use_coreactant_info']:
-                    coreactants = pd.read_csv(self.configs['coreactants_path'], sep='\t', header=0)
-                else:
-                    coreactants = None
-            else:
-                coreactants = None
-
+            compound = solution.variables
+            rule = self.reaction_rules[random.randint(0, len(self.reaction_rules) - 1)]
             products = []
             i = 0
             while len(products) < 1 and i < self.configs["max_rules_by_iter"]:
-                rule_info = sample[i].split('\t')
-                rule = rule_info[self.configs["rule_smarts_column_index"]]
-                rule_id = rule_info[self.configs["rule_id_column_index"]]
-                reaction = ReactionFromSmarts(rule)
-
-                if coreactants is not None:
-                    rule_reactants = rule_info[self.configs["coreactant_info_column_index"]]
-                    reactants_smiles = self.set_coreactants(rule_reactants, candidate_smiles, coreactants)
-                    reactants = [MolFromSmiles(m) for m in reactants_smiles]
+                if self.coreactants is not None:
+                    rule_reactants_ids = rule.coreactants_ids
+                    reactants = self.set_coreactants(rule_reactants_ids, compound, self.coreactants)
+                    reactants = [reac.mol for reac in reactants]
                 else:
-                    reactants = candidate_mol
+                    reactants = compound.mol
 
-                products = ChemUtils.react(reactants, reaction)
+                products = ChemUtils.react(reactants, rule.reaction)
 
                 if len(products) > 0:
                     rp = random.randint(0, len(products) - 1)
                     mutant = products[rp]
-                    mutant = MolToSmiles(mutant)
-                    # keep biggest
-                    mutant = max(mutant.split('.'), key=len)
+                    mutant_id = f"{compound.cmp_id}--{rule.rule_id}_"
+                    mutant = Compound(MolToSmiles(mutant), mutant_id)
+                    mutant = ChemConstants.default_standardizer.standardize(mutant)
                     solution.variables = mutant
                     if 'original_compound' not in solution.attributes.keys():
-                        solution.attributes['original_compound'] = [candidate_smiles]
-                        solution.attributes['rule_id'] = [rule_id]
+                        solution.attributes['original_compound'] = [compound.smiles]
+                        solution.attributes['rule_id'] = [rule.rule_id]
                     else:
-                        solution.attributes['original_compound'].append(candidate_smiles)
-                        solution.attributes['rule_id'].append(rule_id)
-                    file = f"reactea/outputs/{self.configs['exp_name']}/operatorLogs/ReactionMutationLogs_" \
-                           f"{time.strftime('%Y_%m_%d')}.txt"
-                    objectives = []
-                    # TODO: check if abs makes sense for all objectives
-                    for obj in solution.objectives:
-                        objectives.append(str(abs(round(obj, 3))))
-                    with open(file, 'a') as log:
-                        log.write(f"{candidate_smiles},{mutant},{rule_id},{','.join(objectives)}\n")
+                        solution.attributes['original_compound'].append(compound.smiles)
+                        solution.attributes['rule_id'].append(rule.rule_id)
+
+                    Writers.update_operators_logs(self.configs, solution, mutant.smiles, rule.rule_id)
                 i += 1
         return solution
 
-    def set_coreactants(self,
-                        reactants: str,
-                        mol_smiles: str,
-                        coreactants: pd.DataFrame):
+    @staticmethod
+    def set_coreactants(reactants: str,
+                        compound: Compound,
+                        coreactants: List[Compound]):
         """"""
         reactants_list = []
         if len(reactants.split(';')) > 1:
             for r in reactants.split(';'):
                 if r == 'Any':
-                    reactants_list.append(mol_smiles)
+                    reactants_list.append(compound)
                 else:
-                    try:
-                        coreactant = coreactants[coreactants[self.configs["coreactant_ids_column_label"]] == r]
-                        coreactant_smiles = coreactant[self.configs["coreactant_smiles_column_label"]].values[0]
-                        reactants_list.append(coreactant_smiles)
-                    except Exception:
-                        reactants_list.append(None)
+                    found = False
+                    for cor in coreactants:
+                        if cor.cmp_id == r:
+                            reactants_list.append(cor)
+                            found = True
+                            break
+                    if not found:
+                        return None
+            return reactants_list
         else:
-            reactants_list = [mol_smiles]
-        return reactants_list
+            return compound
 
     def get_name(self):
         return 'Reactor Mutation'
@@ -112,8 +97,14 @@ class ReactorOnePointCrossover(Crossover[Solution]):
     :param probability: (float) The probability of crossover.
     """
 
-    def __init__(self, probability: float = 1.0, configs: dict = None):
+    def __init__(self,
+                 probability: float = 1.0,
+                 reaction_rules: List[ReactionRule] = None,
+                 coreactants: List[Compound] = None,
+                 configs: dict = None):
         super(ReactorOnePointCrossover, self).__init__(probability=probability)
+        self.reaction_rules = reaction_rules
+        self.coreactants = coreactants
         self.configs = configs
 
     def execute(self, parents: List[Solution]):
@@ -122,13 +113,16 @@ class ReactorOnePointCrossover(Crossover[Solution]):
         offspring = [copy.deepcopy(parents[0]), copy.deepcopy(parents[1])]
 
         if random.random() <= self.probability:
-            stepbro = ReactorMutation(self.probability, self.configs).execute(offspring[0])
-            stepsis = ReactorMutation(self.probability, self.configs).execute(offspring[1])
+            stepbro = ReactorMutation(self.probability,
+                                      self.reaction_rules,
+                                      self.coreactants,
+                                      self.configs).execute(offspring[0])
+            stepsis = ReactorMutation(self.probability,
+                                      self.reaction_rules,
+                                      self.coreactants,
+                                      self.configs).execute(offspring[1])
             offspring[0] = stepbro
-            offspring[0].number_of_variables = len(stepbro.variables)
             offspring[1] = stepsis
-            offspring[1].number_of_variables = len(stepsis.variables)
-
         return offspring
 
     def get_number_of_parents(self) -> int:

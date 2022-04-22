@@ -7,6 +7,8 @@ compounds:
 rules:
     rules_path: "/path/..."
     max_rules_by_iter: 100
+    use_coreactant_info: True
+    coreactants_path: "/path/..."
 
 multi_objective: True
 batched: True

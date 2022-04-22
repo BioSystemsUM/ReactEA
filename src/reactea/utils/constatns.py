@@ -1,3 +1,5 @@
+from reactea.chem.standardization import ChEMBLStandardizer
+
 
 class EAConstants:
 
@@ -7,3 +9,7 @@ class EAConstants:
     MAX_GENERATIONS = 100
     # JMetalPy MOEA
     JMETAL_MOEA = 'SPEA2'
+
+class ChemConstants:
+
+    default_standardizer = ChEMBLStandardizer()
