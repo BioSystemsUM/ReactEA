@@ -36,11 +36,6 @@ class AbstractEA(ABC):
         return self.final_population, final_pop
 
     @abstractmethod
-    def _convertPopulation(self, population: List):
-        """"""
-        raise NotImplementedError
-
-    @abstractmethod
     def _run_so(self):
         """"""
         raise NotImplementedError

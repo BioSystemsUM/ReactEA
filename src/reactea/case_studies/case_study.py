@@ -5,9 +5,6 @@ from abc import ABC, abstractmethod
 class CaseStudy(ABC):
     """"""
 
-    def __init__(self, configs):
-        self.configs = copy.deepcopy(configs)
-
     @abstractmethod
     def objective(self, configs: dict, multiObjective: bool = False):
         """"""
@@ -19,7 +16,7 @@ class CaseStudy(ABC):
         return NotImplementedError
 
     @abstractmethod
-    def result_names(self):
+    def feval_names(self):
         """"""
         return NotImplementedError
 
