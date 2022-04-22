@@ -1,0 +1,6 @@
+data:
+    init_pop_path: "..."
+    init_pop_size: 1
+
+multi_objective: True
+batched: True

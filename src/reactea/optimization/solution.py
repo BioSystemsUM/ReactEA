@@ -1,3 +1,4 @@
+import copy
 from abc import ABC, abstractmethod
 from typing import Sequence, Union
 
@@ -20,59 +21,70 @@ class SolutionInterface(ABC):
 class Solution(SolutionInterface):
     """"""
 
-    def __init__(self, values: str, fitness: Sequence[Num], is_maximize: bool = True):
+    def __init__(self, variables: str, objectives: Sequence[Num] = [], is_maximization: bool = True):
         """"""
-        self.values = values
-        self.fitness = fitness
-        self._is_maximize = is_maximize
+        self.variables = variables
+        self.objectives = objectives
+        self.attributes = {}
+        self._is_maximize = is_maximization
 
     def get_fitness(self):
-        return self.fitness
+        """"""
+        return self.objectives
 
     def get_representation(self):
-        return self.values
+        """"""
+        return self.variables
 
     def __str__(self):
-        return f"{self.fitness};{self.values}"
+        """"""
+        return f"{self.objectives};{self.variables}"
 
     def __repr__(self):
-        return f"{self.fitness};{self.values}"
+        """"""
+        return f"{self.objectives};{self.variables}"
 
     def __eq__(self, solution):
-        return set(self.values) == set(solution.values)
+        """"""
+        return self.variables == solution.variables
 
     def __gt__(self, solution):
+        """"""
         if isinstance(solution, self.__class__):
             return dominance_test(self, solution, maximize=self._is_maximize) == 1
         return False
 
     def __lt__(self, solution):
+        """"""
         if isinstance(solution, self.__class__):
             return dominance_test(self, solution, maximize=self._is_maximize) == -1
         return False
 
     def __ge__(self, solution):
+        """"""
         if isinstance(solution, self.__class__):
             return dominance_test(self, solution, maximize=self._is_maximize) != -1
         return False
 
     def __le__(self, solution):
+        """"""
         if isinstance(solution, self.__class__):
             return dominance_test(self, solution, maximize=self._is_maximize) != 1
         return False
 
     def __copy__(self):
-        import copy
-        values = copy.copy(self.values)
-        fitness = self.fitness.copy()
+        """"""
+        values = copy.copy(self.variables)
+        fitness = self.objectives
         new_solution = Solution(values, fitness)
         return new_solution
 
     def __hash__(self):
-        return hash(str(self.values))
+        """"""
+        return hash(str(self.variables))
 
 
-#TODO: best place to put this functions
+# TODO: best place to put this functions
 def dominance_test(solution1: Solution, solution2: Solution, maximize: bool = True):
     """
     Testes Pareto dominance
