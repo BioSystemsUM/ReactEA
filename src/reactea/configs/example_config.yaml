@@ -1,6 +1,14 @@
-data:
-    init_pop_path: "..."
+exp_name: "example_exp"
+
+compounds:
+    init_pop_path: "/path/..."
     init_pop_size: 1
+
+rules:
+    rules_path: "/path/..."
+    max_rules_by_iter: 100
 
 multi_objective: True
 batched: True
+generations: 50
+algorithm: "NSGAIII"
