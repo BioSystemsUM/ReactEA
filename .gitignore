@@ -127,3 +127,14 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+.idea/
+
+/src/reactea/data/reactionrules/chemicaldamagerules/
+/src/reactea/data/reactionrules/enzymaticrules/
+/src/reactea/data/reactionrules/metacycrules/
+/src/reactea/data/reactionrules/retrorules/
+/src/reactea/data/compounds/ecoli_sink.tsv
+/src/reactea/evaluation_models/sweet_models/
+/src/reactea/evaluation_models/deepsweet_models/
+/src/reactea/outputs/*
