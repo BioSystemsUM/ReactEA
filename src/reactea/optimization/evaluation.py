@@ -4,12 +4,12 @@ from typing import List, Union
 
 import numpy as np
 from rdkit import DataStructs
-from rdkit.Chem import MolFromSmarts, Mol, rdMolDescriptors
+from rdkit.Chem import MolFromSmarts, Mol, rdMolDescriptors, MolToSmiles
 from rdkit.Chem.Crippen import MolLogP
 from rdkit.Chem.QED import qed
 
-from reactea.utils.chem_utils import ChemUtils
-from reactea.utils.io import Loaders
+from reactea.utilities.chem_utils import ChemUtils
+from reactea.utilities.io import Loaders
 
 
 class ChemicalEvaluationFunction(ABC):
@@ -114,11 +114,22 @@ class SweetnessPredictionDeepSweet(ChemicalEvaluationFunction):
 
     def _get_fitness_single(self, candidate: Mol):
         """"""
-        raise NotImplementedError
+        try:
+            res, _ = self.ensemble.predict([candidate])[0]
+        except ValueError:
+            res = self.worst_fitness
+        return res
 
     def _get_fitness_batch(self, list_candidates: List[Mol]):
         """"""
-        raise NotImplementedError
+        scores = []
+        for mol in list_candidates:
+            try:
+                res, _ = self.ensemble.predict([mol])
+            except ValueError:
+                res = [self.worst_fitness]
+            scores.extend(res)
+        return scores
 
     def method_str(self):
         return "Sweetness Prediction (DeepSweet)"
@@ -174,9 +185,12 @@ class Caloric(ChemicalEvaluationFunction):
     def _get_fitness_single(self, candidate: Mol):
         """"""
         if candidate:
-            caloric_smarts = MolFromSmarts("[Or5,Or6,Or7,Or8,Or9,Or10,Or11,Or12]")
-            n_matchs = len(candidate.GetSubstructMatches(caloric_smarts))
-            score = 1 / (n_matchs*2 + 1)
+            try :
+                caloric_smarts = MolFromSmarts("[Or5,Or6,Or7,Or8,Or9,Or10,Or11,Or12]")
+                n_matchs = len(candidate.GetSubstructMatches(caloric_smarts))
+                score = 1 / (n_matchs*3 + 1)
+            except Exception:
+                score = self.worst_fitness
         else:
             score = self.worst_fitness
         return score
@@ -186,10 +200,13 @@ class Caloric(ChemicalEvaluationFunction):
         listScore = []
         for mol in list_mols:
             if mol:
-                caloric_smarts = MolFromSmarts("[Or5,Or6,Or7,Or8,Or9,Or10,Or11,Or12]")
-                n_matchs = len(mol.GetSubstructMatches(caloric_smarts))
-                score = 1 / (n_matchs*2 + 1)
-                listScore.append(score)
+                try:
+                    caloric_smarts = MolFromSmarts("[Or5,Or6,Or7,Or8,Or9,Or10,Or11,Or12]")
+                    n_matchs = len(mol.GetSubstructMatches(caloric_smarts))
+                    score = 1 / (n_matchs*3 + 1)
+                    listScore.append(score)
+                except Exception:
+                    listScore.append(self.worst_fitness)
             else:
                 listScore.append(self.worst_fitness)
         return listScore

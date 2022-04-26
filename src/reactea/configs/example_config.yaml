@@ -1,13 +1,13 @@
 exp_name: "example_exp"
 
 compounds:
-    init_pop_path: "/path/..."
-    init_pop_size: 1
+    init_pop_path: "/data/compounds/ecoli_sink.tsv"
+    init_pop_size: 100
 
 rules:
-    rules_path: "/path/..."
-    max_rules_by_iter: 100
-    use_coreactant_info: True
+    rules_path: "/data/reactionrules/retrorules/retrorules_forward_score.5.tsv"
+    max_rules_by_iter: 1000
+    use_coreactant_info: False
     coreactants_path: "/path/..."
 
 multi_objective: True

@@ -2,6 +2,8 @@ import copy
 from abc import ABC, abstractmethod
 from typing import Sequence, Union
 
+from jmetal.core.solution import Solution
+
 from reactea.chem.compounds import Compound
 
 Num = Union[int, float]
@@ -20,11 +22,14 @@ class SolutionInterface(ABC):
         raise NotImplementedError
 
 
-class Solution(SolutionInterface):
+class ChemicalSolution(Solution, SolutionInterface):
     """"""
 
-    def __init__(self, variables: Compound, objectives: Sequence[Num] = [], is_maximization: bool = True):
+    def __init__(self, variables: Compound, objectives=None, is_maximization: bool = True):
         """"""
+        super(ChemicalSolution, self).__init__(1, len(objectives))
+        if objectives is None:
+            objectives = [0.0]
         self.variables = variables
         self.objectives = objectives
         self.attributes = {}
@@ -78,7 +83,7 @@ class Solution(SolutionInterface):
         """"""
         values = copy.copy(self.variables)
         fitness = self.objectives
-        new_solution = Solution(values, fitness)
+        new_solution = ChemicalSolution(values, fitness)
         return new_solution
 
     def __hash__(self):
@@ -87,7 +92,7 @@ class Solution(SolutionInterface):
 
 
 # TODO: best place to put this functions
-def dominance_test(solution1: Solution, solution2: Solution, maximize: bool = True):
+def dominance_test(solution1: ChemicalSolution, solution2: ChemicalSolution, maximize: bool = True):
     """
     Testes Pareto dominance
 
