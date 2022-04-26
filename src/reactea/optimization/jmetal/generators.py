@@ -4,7 +4,7 @@ from jmetal.util.generator import Generator
 
 from reactea.chem.compounds import Compound
 from reactea.optimization.problem import ChemicalProblem
-from reactea.optimization.solution import Solution
+from reactea.optimization.solution import ChemicalSolution
 
 
 class ChemicalGenerator(Generator):
@@ -20,6 +20,6 @@ class ChemicalGenerator(Generator):
         if self.current == len(self.initial_population):
             self.current = 0
         individual = self.initial_population[self.current]
-        new_solution = Solution(individual)
+        new_solution = ChemicalSolution(individual, [0.0] * problem.number_of_objectives)
         self.current += 1
         return new_solution

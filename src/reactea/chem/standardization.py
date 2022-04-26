@@ -4,7 +4,7 @@ from rdkit.Chem import Mol
 from chembl_structure_pipeline import standardizer
 
 from reactea.chem.compounds import Compound
-from reactea.utils.chem_utils import ChemUtils
+from reactea.utilities.chem_utils import ChemUtils
 
 
 class MolecularStandardizer(ABC):

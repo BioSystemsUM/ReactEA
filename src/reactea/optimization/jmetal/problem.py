@@ -3,10 +3,10 @@ from typing import List
 from reactea.optimization.problem import ChemicalProblem
 from jmetal.core.problem import Problem
 
-from reactea.optimization.solution import Solution
+from reactea.optimization.solution import ChemicalSolution
 
 
-class JmetalProblem(Problem[Solution]):
+class JmetalProblem(Problem[ChemicalSolution]):
     """"""
 
     def __init__(self, problem: ChemicalProblem, batched: bool = True):
@@ -28,7 +28,7 @@ class JmetalProblem(Problem[Solution]):
         """"""
         raise NotImplementedError
 
-    def _evaluate_batch(self, solutions: List[Solution]):
+    def _evaluate_batch(self, solutions: List[ChemicalSolution]):
         """"""
         list_sols = [solut.variables for solut in solutions]
         list_scores = self.problem.evaluate_solution(list_sols, self.batched)
@@ -41,7 +41,7 @@ class JmetalProblem(Problem[Solution]):
                     solution.objectives[j] = list_scores[i][j]
         return solutions
 
-    def _evaluate_single(self, solution: Solution):
+    def _evaluate_single(self, solution: ChemicalSolution):
         """"""
         candidate = solution.variables
         p = self.problem.evaluate_solution(candidate, self.batched)

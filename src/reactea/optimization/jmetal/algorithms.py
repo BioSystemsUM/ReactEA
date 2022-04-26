@@ -3,7 +3,7 @@ from typing import TypeVar, List
 import cytoolz
 from jmetal.algorithm.singleobjective import GeneticAlgorithm
 
-from reactea.optimization.solution import Solution
+from reactea.optimization.solution import ChemicalSolution
 
 
 class ReactorGeneticAlgorithm(GeneticAlgorithm):
@@ -13,7 +13,7 @@ class ReactorGeneticAlgorithm(GeneticAlgorithm):
         """"""
         super(ReactorGeneticAlgorithm, self).__init__(**kwarg)
 
-    def replacement(self, population: List[Solution], offspring_population: List[Solution]):
+    def replacement(self, population: List[ChemicalSolution], offspring_population: List[ChemicalSolution]):
         """"""
         population.extend(offspring_population)
 

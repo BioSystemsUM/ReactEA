@@ -1,5 +1,5 @@
 from reactea.case_studies.case_study import CaseStudy
-from reactea.optimization.evaluation import Caloric, SweetnessPrediction, AggregatedSum
+from reactea.optimization.evaluation import Caloric, AggregatedSum, SweetnessPredictionDeepSweet
 from reactea.optimization.problem import ChemicalProblem
 
 
@@ -8,7 +8,7 @@ class SweetReactor(CaseStudy):
 
     def objective(self, configs: dict, multi_objective: bool = False):
         """"""
-        f1 = SweetnessPrediction(configs)
+        f1 = SweetnessPredictionDeepSweet(configs)
         f2 = Caloric()
         if multi_objective:
             problem = ChemicalProblem([f1, f2], configs)
