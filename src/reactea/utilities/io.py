@@ -88,7 +88,7 @@ class Writers:
         with open(destFile, 'w') as f:
             f.write("SMILES;" + feval_names + "\n")
             for i, solution in enumerate(final_pop):
-                f.write(str(solution.values) + ";" + ";".join([str(round(x, 3)) for x in solution.fitness]) + "\n")
+                f.write(str(solution.variables) + ";" + ";".join([str(round(x, 3)) for x in solution.fitness]) + "\n")
 
         # save unique solutions
         df = pd.read_csv(destFile, sep=';', header=0)
