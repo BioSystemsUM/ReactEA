@@ -44,13 +44,12 @@ class EA(AbstractEA):
                  mp: bool = EAConstants.MP,
                  visualizer: bool = EAConstants.VISUALIZER,
                  algorithm: str = EAConstants.ALGORITHM,
-                 batched: bool = EAConstants.BATCHED,
                  configs: dict = None,
                  logger: Writers = Writers.update_operators_logs
                  ):
         super(EA, self).__init__(problem, initial_population, max_generations, mp, visualizer)
         self.algorithm_name = algorithm
-        self.ea_problem = JmetalProblem(problem, batched=batched)
+        self.ea_problem = JmetalProblem(problem)
         self.reaction_rules = reaction_rules
         self.standardizer = standardizer
         self.coreactants = coreactants
