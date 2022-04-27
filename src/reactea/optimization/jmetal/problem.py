@@ -30,7 +30,7 @@ class JmetalProblem(Problem[ChemicalSolution]):
     def _evaluate_batch(self, solutions: List[ChemicalSolution]):
         """"""
         list_sols = [solut.variables for solut in solutions]
-        list_scores = self.problem.evaluate_solution(list_sols)
+        list_scores = self.problem.evaluate_solutions(list_sols)
         for i, solution in enumerate(solutions):
             for j in range(len(list_scores[i])):
                 # JMetalPy only deals with minimization problems
@@ -43,7 +43,7 @@ class JmetalProblem(Problem[ChemicalSolution]):
     def _evaluate_single(self, solution: ChemicalSolution):
         """"""
         candidate = solution.variables
-        p = self.problem.evaluate_solution(candidate)
+        p = self.problem.evaluate_solutions(candidate)
         for i in range(len(p)):
             # JMetalPy only deals with minimization problems
             if self.obj_directions[i] == self.MAXIMIZE:
