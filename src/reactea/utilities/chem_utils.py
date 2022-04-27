@@ -16,7 +16,7 @@ class ChemUtils:
             new_order = rdmolfiles.CanonicalRankAtoms(mol)
             mol = rdmolops.RenumberAtoms(mol, new_order)
             return mol
-        except ValueError:
+        except Exception:
             return mol
 
     @staticmethod
@@ -28,7 +28,7 @@ class ChemUtils:
             else:
                 products = rule.RunReactants(tuple(mol))
                 return list(chain.from_iterable(products))
-        except ValueError:
+        except Exception:
             return ()
 
     @staticmethod
