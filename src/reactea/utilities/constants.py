@@ -16,8 +16,6 @@ class EAConstants:
     ALGORITHM = 'NSGAIII'
     # Visualizer
     VISUALIZER = False
-    # Batched
-    BATCHED = True
     # Termination Criterion
     TERMINATION_CRITERION = StoppingByEvaluations
 
