@@ -22,12 +22,11 @@ def run(configs: dict, case):
     reaction_rules, coreactants = Loaders.initialize_rules(configs)
 
     # initialize objectives
-    problem = objective(configs, configs['multi_objective'])
+    problem = objective()
 
     # Initialize EA
     ea = EA(problem, initial_population=init_pop, reaction_rules=reaction_rules, coreactants=coreactants,
-            max_generations=generations, mp=False, visualizer=False, algorithm=algorithm, batched=configs["batched"],
-            configs=configs)
+            max_generations=generations, mp=False, visualizer=False, algorithm=algorithm, configs=configs)
 
     # Run EA
     final_pop = ea.run()
@@ -50,7 +49,7 @@ if __name__ == '__main__':
     configs = Loaders.get_config_from_json(configPath)
 
     # Define the case study
-    case_study = SweetReactor()
+    case_study = SweetReactor(configs, configs['multi_objective'])
 
     # Run
     run(configs, case_study)
