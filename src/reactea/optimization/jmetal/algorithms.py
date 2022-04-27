@@ -1,4 +1,4 @@
-from typing import TypeVar, List
+from typing import List
 
 import cytoolz
 from jmetal.algorithm.singleobjective import GeneticAlgorithm
