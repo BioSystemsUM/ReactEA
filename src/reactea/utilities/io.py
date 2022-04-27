@@ -88,7 +88,8 @@ class Writers:
         with open(destFile, 'w') as f:
             f.write("SMILES;" + feval_names + "\n")
             for i, solution in enumerate(final_pop):
-                f.write(str(solution.variables) + ";" + ";".join([str(round(x, 3)) for x in solution.fitness]) + "\n")
+                f.write(str(solution.variables.smiles) + ";" +
+                        ";".join([str(abs(round(x, 3))) for x in solution.objectives]) + "\n")
 
         # save unique solutions
         df = pd.read_csv(destFile, sep=';', header=0)
@@ -111,11 +112,11 @@ class Writers:
                 else:
                     ocs = []
                     rules = []
-                f.write(f"{sol.variables};{ocs};{rules}\n")
+                f.write(f"{sol.variables.smiles};{ocs};{rules}\n")
 
     @staticmethod
     def save_configs(configs: dict):
-        with open(Loaders.from_root(f"/outputs/{configs['exp_name']}/configs.json"), 'w') as outfile:
+        with open(Loaders.from_root(f"/outputs/{configs['exp_name']}/configs.yaml"), 'w') as outfile:
             yaml.dump(configs, outfile)
 
     @staticmethod
