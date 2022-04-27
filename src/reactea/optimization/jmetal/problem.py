@@ -9,11 +9,10 @@ from reactea.optimization.solution import ChemicalSolution
 class JmetalProblem(Problem[ChemicalSolution]):
     """"""
 
-    def __init__(self, problem: ChemicalProblem, batched: bool = True):
+    def __init__(self, problem: ChemicalProblem):
         """"""
         super(JmetalProblem, self).__init__()
         self.problem = problem
-        self.batched = batched
         self.number_of_objectives = len(self.problem.fevaluation)
         self.obj_directions = []
         self.obj_labels = []
@@ -31,7 +30,7 @@ class JmetalProblem(Problem[ChemicalSolution]):
     def _evaluate_batch(self, solutions: List[ChemicalSolution]):
         """"""
         list_sols = [solut.variables for solut in solutions]
-        list_scores = self.problem.evaluate_solution(list_sols, self.batched)
+        list_scores = self.problem.evaluate_solution(list_sols)
         for i, solution in enumerate(solutions):
             for j in range(len(list_scores[i])):
                 # JMetalPy only deals with minimization problems
@@ -44,7 +43,7 @@ class JmetalProblem(Problem[ChemicalSolution]):
     def _evaluate_single(self, solution: ChemicalSolution):
         """"""
         candidate = solution.variables
-        p = self.problem.evaluate_solution(candidate, self.batched)
+        p = self.problem.evaluate_solution(candidate)
         for i in range(len(p)):
             # JMetalPy only deals with minimization problems
             if self.obj_directions[i] == self.MAXIMIZE:
@@ -54,7 +53,9 @@ class JmetalProblem(Problem[ChemicalSolution]):
         return solution
 
     def evaluate(self, solutions):
-        return self._evaluate_batch(solutions) if self.batched else self._evaluate_single(solutions)
+        """"""
+        return self._evaluate_batch(solutions) if isinstance(solutions, list) else self._evaluate_single(solutions)
 
     def get_name(self) -> str:
+        """"""
         return self.problem.get_name()
