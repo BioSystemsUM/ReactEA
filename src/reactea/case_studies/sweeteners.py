@@ -8,19 +8,16 @@ class SweetReactor(CaseStudy):
     Sweeteners Case Study. Optimizes sweetener probability and probability of not being caloric.
     """
 
-    def __init__(self, configs: dict, multi_objective: bool = False):
+    def __init__(self, multi_objective: bool = False):
         """
         Initializes the sweet and non-caloric case study.
 
         Parameters
         ----------
-        configs : dict
-            dictionary with the experiment configurations.
         multi_objective: bool
             boolean defining if we are facing a single or multi-objective optimization problem.
         """
-        super(SweetReactor, self).__init__(configs, multi_objective)
-        self.configs = configs
+        super(SweetReactor, self).__init__(multi_objective)
         self.multi_objective = multi_objective
 
     def objective(self):
@@ -34,14 +31,14 @@ class SweetReactor(CaseStudy):
             ChemicalProblem object defining the evaluation functions, SweetnessPredictionDeepSweet and Caloric,
             of this optimization problem.
         """
-        f1 = SweetnessPredictionDeepSweet(self.configs)
+        f1 = SweetnessPredictionDeepSweet()
         f2 = Caloric()
         if self.multi_objective:
-            problem = ChemicalProblem([f1, f2], self.configs)
+            problem = ChemicalProblem([f1, f2])
             return problem
         else:
             f3 = AggregatedSum([f1, f2], [0.5, 0.5])
-            problem = ChemicalProblem([f3], self.configs)
+            problem = ChemicalProblem([f3])
             return problem
 
     def name(self):
