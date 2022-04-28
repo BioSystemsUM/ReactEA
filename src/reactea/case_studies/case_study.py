@@ -7,18 +7,15 @@ class CaseStudy(ABC):
     A Case Study defines the evaluation functions to use in the optimization problem.
     """
 
-    def __init__(self, configs: dict, multi_objective: bool = False):
+    def __init__(self, multi_objective: bool = False):
         """
         Initializes the case study at a class level.
 
         Parameters
         ----------
-         configs : dict
-            dictionary with the experiment configurations.
         multi_objective: bool
             boolean defining if we are facing a single or multi-objective optimization problem.
         """
-        self.configs = configs
         self.multi_objective = multi_objective
 
     @abstractmethod
