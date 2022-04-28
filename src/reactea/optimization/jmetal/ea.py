@@ -31,8 +31,11 @@ moea_map = {
 }
 
 
-class EA(AbstractEA):
-    """"""
+class ChemicalEA(AbstractEA):
+    """
+    Class representing an ChemicalEA.
+    Runs the Evolutionary Algorithm engine.
+    """
 
     def __init__(self,
                  problem: ChemicalProblem,
@@ -47,7 +50,35 @@ class EA(AbstractEA):
                  configs: dict = None,
                  logger: Writers = Writers.update_operators_logs
                  ):
-        super(EA, self).__init__(problem, initial_population, max_generations, mp, visualizer)
+        """
+        Initializes the EA object.
+
+        Parameters
+        ----------
+        problem: ChemicalProblem
+            Chemical problem to solve
+        initial_population: List[Compound]
+            list of compounds that constitute the initial population
+        reaction_rules: List[ReactionRule]
+            pool of available reaction rules
+        standardizer: MolecularStandardizer
+            molecular standardizer to use
+        coreactants: List[Compound]
+            list of coreactants if available
+        max_generations: int
+            maximum number of generations
+        mp: bool
+            use multiprocessing (true) out not (false)
+        visualizer: bool
+            use visualization of the solutions (true) or not (false)
+        algorithm: str
+            EA algorithm to use
+        configs: dict
+            configurations of the experiment
+        logger: Writers
+            writer to use for the operators logs
+        """
+        super(ChemicalEA, self).__init__(problem, initial_population, max_generations, mp, visualizer)
         self.algorithm_name = algorithm
         self.ea_problem = JmetalProblem(problem)
         self.reaction_rules = reaction_rules
@@ -64,7 +95,14 @@ class EA(AbstractEA):
         self.termination_criterion = EAConstants.TERMINATION_CRITERION(self.max_generations * self.population_size)
 
     def _run_so(self):
-        """"""
+        """
+        Runs a single-objective optimization.
+
+        Returns
+        -------
+        List[ChemicalSolution]:
+            final Chemical solutions
+        """
         if self.algorithm_name == 'SA':
             print("Running SA")
             mutation = SAConstants.MUTATION(SAConstants.MUTATION_PROBABILITY,
@@ -116,7 +154,14 @@ class EA(AbstractEA):
         return result
 
     def _run_mo(self):
-        """"""
+        """
+        Runs a multi-objective optimization.
+
+        Returns
+        -------
+        List[ChemicalSolution]:
+            final Chemical solutions
+        """
         if self.algorithm_name in moea_map.keys():
             f = moea_map[self.algorithm_name]
         else:

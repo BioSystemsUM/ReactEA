@@ -117,7 +117,7 @@ class Compound:
 
     def _to_smiles(self):
         """
-        Internal method to convert RDKit Mol objects to SMILES strings.
+        Internal method to convert RDKit Mol objects into SMILES strings.
 
         Returns
         -------
