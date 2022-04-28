@@ -49,7 +49,7 @@ if __name__ == '__main__':
     configs = Loaders.get_config_from_json(configPath)
 
     # Define the case study
-    case_study = SweetReactor(configs, configs['multi_objective'])
+    case_study = SweetReactor(configs['multi_objective'])
 
     # Run
     run(configs, case_study)
