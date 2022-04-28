@@ -9,7 +9,7 @@ class ReactionRule:
     Each Reaction Rule is characterized by an id, smarts string, ChemicalReaction object and possible coreactants ids.
     """
 
-    def __init__(self, smarts: str, rule_id: Union[str, int], coreactants_ids: List[Union[str, int]] = None):
+    def __init__(self, smarts: str, rule_id: Union[str, int], coreactants_ids: str = None):
         """
         Initializes the Reaction Rule.
 
@@ -111,8 +111,8 @@ class ReactionRule:
 
         Returns
         -------
-        List[Union[str, int]]
-            List of the Reaction Rule' coreactants ids.
+        str
+            Reaction Rule' coreactants ids.
         """
         return self._coreactants_ids
 
@@ -124,15 +124,15 @@ class ReactionRule:
 
         Parameters
         ----------
-        value: List[Union[str, int]]
-            New coreactants ids list.
+        value: str
+            New coreactants ids.
 
         Returns
         -------
         ValueError
             Raises a ValueError.
         """
-        raise ValueError("Correactants information should not be modified!")
+        raise ValueError("Coreactants information should not be modified!")
 
     def _to_reaction(self):
         """
@@ -150,7 +150,7 @@ class ReactionRule:
 
     def _to_smarts(self):
         """
-        Internal method to convert ChemicalReaction objects to SMARTS strings.
+        Internal method to convert ChemicalReaction objects into SMARTS strings.
 
         Returns
         -------
