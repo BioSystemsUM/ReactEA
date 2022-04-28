@@ -23,7 +23,7 @@ class ChemicalEvaluationFunction(ABC):
         Parameters
         ----------
         maximize: bool
-            If it is a mazimization problem.
+            If it is a maximization problem.
         worst_fitness: float
             The worst fitness that can given to a solution.
         """
@@ -54,7 +54,7 @@ class ChemicalEvaluationFunction(ABC):
         Returns
         -------
         str:
-            name of the ecaluation function.
+            name of the evaluation function.
         """
         raise NotImplementedError
 
@@ -268,7 +268,7 @@ class Caloric(ChemicalEvaluationFunction):
     Penalizes molecules with specific groups that are related with being caloric or not.
     """
 
-    def __init__(self, maximize=True, worst_fitness=0):
+    def __init__(self, maximize: bool = True, worst_fitness: float = -1.0):
         """
         Initializes the Caloric evaluation function.
 
@@ -301,10 +301,12 @@ class Caloric(ChemicalEvaluationFunction):
         try:
             caloric_smarts = MolFromSmarts("[Or5,Or6,Or7,Or8,Or9,Or10,Or11,Or12]")
             n_matches = len(candidate.GetSubstructMatches(caloric_smarts))
-            score = [1 / (n_matches * penalty_ratio + 1)]
+            if n_matches > 0:
+                return [self.worst_fitness]
+            else:
+                return [1.0]
         except Exception:
-            score = [self.worst_fitness]
-        return score
+            return [self.worst_fitness]
 
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """
