@@ -1,7 +1,7 @@
 from rdkit import RDLogger
 
 from reactea.case_studies.sweeteners import SweetReactor
-from reactea.optimization.jmetal.ea import EA
+from reactea.optimization.jmetal.ea import ChemicalEA
 from reactea.utilities.io import Loaders, Writers
 
 def run(configs: dict, case):
@@ -25,8 +25,8 @@ def run(configs: dict, case):
     problem = objective()
 
     # Initialize EA
-    ea = EA(problem, initial_population=init_pop, reaction_rules=reaction_rules, coreactants=coreactants,
-            max_generations=generations, mp=False, visualizer=False, algorithm=algorithm, configs=configs)
+    ea = ChemicalEA(problem, initial_population=init_pop, reaction_rules=reaction_rules, coreactants=coreactants,
+                    max_generations=generations, mp=False, visualizer=False, algorithm=algorithm, configs=configs)
 
     # Run EA
     final_pop = ea.run()
@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
     # Load config file
     configPath = "/configs/example_config.yaml"
-    configs = Loaders.get_config_from_json(configPath)
+    configs = Loaders.get_config_from_yaml(configPath)
 
     # Define the case study
     case_study = SweetReactor(configs['multi_objective'])
