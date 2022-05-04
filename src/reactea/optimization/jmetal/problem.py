@@ -1,5 +1,7 @@
+import random
 from typing import List, Union
 
+from reactea.chem.compounds import Compound
 from reactea.optimization.problem import ChemicalProblem
 from jmetal.core.problem import Problem
 
@@ -11,7 +13,7 @@ class JmetalProblem(Problem[ChemicalSolution]):
     Class representing a jmetal problem.
     """
 
-    def __init__(self, problem: ChemicalProblem):
+    def __init__(self, problem: ChemicalProblem, initial_pop: List[Compound]):
         """
         Initializes a jmetal problem.
 
@@ -22,6 +24,7 @@ class JmetalProblem(Problem[ChemicalSolution]):
         """
         super(JmetalProblem, self).__init__()
         self.problem = problem
+        self.initial_pop = initial_pop
         self.number_of_objectives = len(self.problem.fevaluation)
         self.obj_directions = []
         self.obj_labels = []
@@ -41,7 +44,9 @@ class JmetalProblem(Problem[ChemicalSolution]):
         ChemicalSolution:
             random solution
         """
-        raise NotImplementedError
+        new_solution = ChemicalSolution(self.initial_pop[random.randint(0, len(self.initial_pop)-1)],
+                                        [0.0]*self.number_of_objectives)
+        return new_solution
 
     def _evaluate_batch(self, solutions: List[ChemicalSolution]):
         """
