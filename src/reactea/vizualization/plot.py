@@ -1,18 +1,22 @@
+from typing import List
+
 import numpy as np
 import pandas as pd
 import matplotlib
+from jmetal.core.solution import Solution
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from pandas import plotting
 
 
+# TODO: docstrings, typehints
 class Plot:
 
     def __init__(self,
-                 plot_title = 'Pareto front approximation',
-                 reference_front = None,
-                 reference_point = None,
-                 axis_labels = None):
+                 plot_title: str = 'Pareto front approximation',
+                 reference_front: List[Solution] = None,
+                 reference_point: list = None,
+                 axis_labels: list = None):
         """
         :param plot_title: Title of the graph.
         :param axis_labels: List of axis labels.
