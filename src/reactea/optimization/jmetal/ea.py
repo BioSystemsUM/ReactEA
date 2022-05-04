@@ -1,8 +1,8 @@
 from typing import List
 
-from jmetal.algorithm.multiobjective import NSGAII, SPEA2, GDE3
+from jmetal.algorithm.multiobjective import NSGAII, SPEA2, GDE3, IBEA, RandomSearch
 from jmetal.algorithm.multiobjective.nsgaiii import NSGAIII
-from jmetal.algorithm.singleobjective import SimulatedAnnealing
+from jmetal.algorithm.singleobjective import SimulatedAnnealing, EvolutionStrategy, LocalSearch
 
 from reactea.optimization.ea import AbstractEA
 from .algorithms import ReactorGeneticAlgorithm as GeneticAlgorithm
@@ -11,28 +11,19 @@ from .generators import ChemicalGenerator
 from .observers import PrintObjectivesStatObserver, VisualizerObserver
 from .problem import JmetalProblem
 from reactea.utilities.constants import EAConstants, ChemConstants, SAConstants, GAConstants, NSGAIIIConstants, \
-    GDE3Constants
+    GDE3Constants, ESConstants, LSConstants, IBEAConstants
 from ..problem import ChemicalProblem
 from ...chem.compounds import Compound
 from ...chem.reaction_rules import ReactionRule
 from ...chem.standardization import MolecularStandardizer
 from ...utilities.io import Writers
 
-soea_map = {
-    'GA': GeneticAlgorithm,
-    'SA': SimulatedAnnealing
-}
-# MOEA alternatives
-moea_map = {
-    'NSGAII': NSGAII,
-    'SPEA2': SPEA2,
-    'NSGAIII': NSGAIII,
-    'GDE3': GDE3
-}
 
-
-class EA(AbstractEA):
-    """"""
+class ChemicalEA(AbstractEA):
+    """
+    Class representing an ChemicalEA.
+    Runs the Evolutionary Algorithm engine.
+    """
 
     def __init__(self,
                  problem: ChemicalProblem,
@@ -44,13 +35,39 @@ class EA(AbstractEA):
                  mp: bool = EAConstants.MP,
                  visualizer: bool = EAConstants.VISUALIZER,
                  algorithm: str = EAConstants.ALGORITHM,
-                 batched: bool = EAConstants.BATCHED,
                  configs: dict = None,
                  logger: Writers = Writers.update_operators_logs
                  ):
-        super(EA, self).__init__(problem, initial_population, max_generations, mp, visualizer)
+        """
+        Initializes the EA object.
+
+        Parameters
+        ----------
+        problem: ChemicalProblem
+            Chemical problem to solve
+        initial_population: List[Compound]
+            list of compounds that constitute the initial population
+        reaction_rules: List[ReactionRule]
+            pool of available reaction rules
+        standardizer: MolecularStandardizer
+            molecular standardizer to use
+        coreactants: List[Compound]
+            list of coreactants if available
+        max_generations: int
+            maximum number of generations
+        mp: bool
+            use multiprocessing (true) out not (false)
+        visualizer: bool
+            use visualization of the solutions (true) or not (false)
+        algorithm: str
+            EA algorithm to use
+        configs: dict
+            configurations of the experiment
+        logger: Writers
+            writer to use for the operators logs
+        """
+        super(ChemicalEA, self).__init__(problem, initial_population, max_generations, mp, visualizer)
         self.algorithm_name = algorithm
-        self.ea_problem = JmetalProblem(problem, batched=batched)
         self.reaction_rules = reaction_rules
         self.standardizer = standardizer
         self.coreactants = coreactants
@@ -58,6 +75,7 @@ class EA(AbstractEA):
         self.logger = logger
         self.initial_population = ChemicalGenerator(initial_population)
         self.population_evaluator = ChemicalEvaluator()
+        self.ea_problem = JmetalProblem(problem, initial_population)
         if isinstance(initial_population, list):
             self.population_size = len(initial_population)
         else:
@@ -65,50 +83,68 @@ class EA(AbstractEA):
         self.termination_criterion = EAConstants.TERMINATION_CRITERION(self.max_generations * self.population_size)
 
     def _run_so(self):
-        """"""
+        """
+        Runs a single-objective optimization.
+
+        Returns
+        -------
+        List[ChemicalSolution]:
+            final Chemical solutions
+        """
+        mutation = EAConstants.MUTATION(EAConstants.MUTATION_PROBABILITY,
+                                        self.reaction_rules,
+                                        self.standardizer,
+                                        self.coreactants,
+                                        self.configs,
+                                        self.logger)
+        crossover = EAConstants.CROSSOVER(EAConstants.CROSSOVER_PROBABILITY,
+                                          self.reaction_rules,
+                                          self.standardizer,
+                                          self.coreactants,
+                                          self.configs,
+                                          self.logger
+                                          )
         if self.algorithm_name == 'SA':
-            print("Running SA")
-            mutation = SAConstants.MUTATION(SAConstants.MUTATION_PROBABILITY,
-                                            self.reaction_rules,
-                                            self.standardizer,
-                                            self.coreactants,
-                                            self.configs,
-                                            self.logger)
-            algorithm = SimulatedAnnealing(
-                problem=self.ea_problem,
-                mutation=mutation,
-                termination_criterion=self.termination_criterion,
-                solution_generator=self.initial_population
-            )
+            print("Running Simulated Annealing!")
+            algorithm = SimulatedAnnealing(problem=self.ea_problem,
+                                           mutation=mutation,
+                                           termination_criterion=self.termination_criterion,
+                                           solution_generator=self.initial_population
+                                           )
             algorithm.temperature = SAConstants.TEMPERATURE
             algorithm.minimum_temperature = SAConstants.MINIMUM_TEMPERATURE
             algorithm.alpha = SAConstants.ALPHA
+        elif self.algorithm_name == 'GA':
+            print("Running Genetic Algorithm!")
+            algorithm = GeneticAlgorithm(problem=self.ea_problem,
+                                         population_size=self.population_size,
+                                         offspring_population_size=self.population_size,
+                                         mutation=mutation,
+                                         crossover=crossover,
+                                         selection=GAConstants.SELECTION(),
+                                         termination_criterion=self.termination_criterion,
+                                         population_generator=self.initial_population,
+                                         population_evaluator=self.population_evaluator
+                                         )
+        elif self.algorithm_name == 'ES':
+            print("Running Evolutionary Strategy!")
+            algorithm = EvolutionStrategy(problem=self.ea_problem,
+                                          mu=int(self.population_size),
+                                          lambda_=self.population_size,
+                                          elitist=ESConstants.ELITIST,
+                                          mutation=mutation,
+                                          termination_criterion=self.termination_criterion,
+                                          population_generator=self.initial_population,
+                                          population_evaluator=self.population_evaluator)
+        elif self.algorithm_name == 'LS':
+            print("Running Local Search!")
+            self.termination_criterion = EAConstants.TERMINATION_CRITERION(self.max_generations)
+            algorithm = LocalSearch(problem=self.ea_problem,
+                                    mutation=mutation,
+                                    termination_criterion=self.termination_criterion,
+                                    comparator=LSConstants.COMPARATOR)
         else:
-            print("Running GA")
-            mutation = GAConstants.MUTATION(GAConstants.MUTATION_PROBABILITY,
-                                            self.reaction_rules,
-                                            self.standardizer,
-                                            self.coreactants,
-                                            self.configs,
-                                            self.logger)
-            crossover = GAConstants.CROSSOVER(GAConstants.CROSSOVER_PROBABILITY,
-                                              self.reaction_rules,
-                                              self.standardizer,
-                                              self.coreactants,
-                                              self.configs,
-                                              self.logger
-                                              )
-            algorithm = GeneticAlgorithm(
-                problem=self.ea_problem,
-                population_size=self.population_size,
-                offspring_population_size=self.population_size,
-                mutation=mutation,
-                crossover=crossover,
-                selection=GAConstants.SELECTION(),
-                termination_criterion=self.termination_criterion,
-                population_generator=self.initial_population,
-                population_evaluator=self.population_evaluator
-            )
+            raise ValueError('Invalid single-objective algorithm name. Choose from SA, GA, ES and LS!')
 
         algorithm.observable.register(observer=PrintObjectivesStatObserver())
         algorithm.run()
@@ -116,32 +152,31 @@ class EA(AbstractEA):
         result = algorithm.solutions
         return result
 
+    @property
     def _run_mo(self):
-        """"""
-        if self.algorithm_name in moea_map.keys():
-            f = moea_map[self.algorithm_name]
-        else:
-            if self.ea_problem.number_of_objectives > 2:
-                self.algorithm_name = 'NSGAIII'
-                f = moea_map['NSGAIII']
-            else:
-                f = moea_map['SPEA2']
+        """
+        Runs a multi-objective optimization.
 
+        Returns
+        -------
+        List[ChemicalSolution]:
+            final Chemical solutions
+        """
+        mutation = EAConstants.MUTATION(EAConstants.MUTATION_PROBABILITY,
+                                        self.reaction_rules,
+                                        self.standardizer,
+                                        self.coreactants,
+                                        self.configs,
+                                        self.logger)
+        crossover = EAConstants.CROSSOVER(EAConstants.CROSSOVER_PROBABILITY,
+                                          self.reaction_rules,
+                                          self.standardizer,
+                                          self.coreactants,
+                                          self.configs,
+                                          self.logger
+                                          )
         print(f"Running {self.algorithm_name}")
         if self.algorithm_name == 'NSGAIII':
-            mutation = NSGAIIIConstants.MUTATION(GAConstants.MUTATION_PROBABILITY,
-                                                 self.reaction_rules,
-                                                 self.standardizer,
-                                                 self.coreactants,
-                                                 self.configs,
-                                                 self.logger)
-            crossover = NSGAIIIConstants.CROSSOVER(NSGAIIIConstants.CROSSOVER_PROBABILITY,
-                                                   self.reaction_rules,
-                                                   self.standardizer,
-                                                   self.coreactants,
-                                                   self.configs,
-                                                   self.logger
-                                                   )
             algorithm = NSGAIII(
                 problem=self.ea_problem,
                 population_size=self.population_size,
@@ -152,6 +187,17 @@ class EA(AbstractEA):
                                                                            n_points=self.population_size - 1),
                 population_generator=self.initial_population,
                 population_evaluator=self.population_evaluator,
+            )
+        elif self.algorithm_name == 'NSGAII':
+            algorithm = NSGAII(
+                problem=self.ea_problem,
+                population_size=self.population_size,
+                offspring_population_size=self.population_size,
+                mutation=mutation,
+                crossover=crossover,
+                termination_criterion=self.termination_criterion,
+                population_generator=self.initial_population,
+                population_evaluator=self.population_evaluator
             )
         elif self.algorithm_name == "GDE3":
             algorithm = GDE3(
@@ -164,21 +210,25 @@ class EA(AbstractEA):
                 population_generator=self.initial_population,
                 population_evaluator=self.population_evaluator
             )
-        else:
-            mutation = NSGAIIIConstants.MUTATION(GAConstants.MUTATION_PROBABILITY,
-                                                 self.reaction_rules,
-                                                 self.standardizer,
-                                                 self.coreactants,
-                                                 self.configs,
-                                                 self.logger)
-            crossover = NSGAIIIConstants.CROSSOVER(NSGAIIIConstants.CROSSOVER_PROBABILITY,
-                                                   self.reaction_rules,
-                                                   self.standardizer,
-                                                   self.coreactants,
-                                                   self.configs,
-                                                   self.logger
-                                                   )
-            algorithm = f(
+        elif self.algorithm_name == "IBEA":
+            algorithm = IBEA(
+                problem=self.ea_problem,
+                population_size=self.population_size,
+                offspring_population_size=self.population_size,
+                mutation=mutation,
+                crossover=crossover,
+                kappa=IBEAConstants.KAPPA,
+                termination_criterion=self.termination_criterion,
+                population_generator=self.initial_population,
+                population_evaluator=self.population_evaluator
+            )
+        elif self.algorithm_name == "RandomSearch":
+            algorithm = RandomSearch(
+                problem=self.ea_problem,
+                termination_criterion=self.termination_criterion
+            )
+        elif self.algorithm_name == "SPEA2":
+            algorithm = SPEA2(
                 problem=self.ea_problem,
                 population_size=self.population_size,
                 offspring_population_size=self.population_size,
@@ -188,7 +238,9 @@ class EA(AbstractEA):
                 population_generator=self.initial_population,
                 population_evaluator=self.population_evaluator
             )
-
+        else:
+            raise ValueError('Invalid multi-objective algorithm name. Choose from NSGAII, NSGAIII, SPEA2, GDE3, IBEA '
+                             'and RandomSearch!')
         if self.visualizer:
             algorithm.observable.register(observer=VisualizerObserver())
         algorithm.observable.register(observer=PrintObjectivesStatObserver())
