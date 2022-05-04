@@ -144,9 +144,9 @@ class AggregatedSum(ChemicalEvaluationFunction):
         super(AggregatedSum, self).__init__(maximize, worst_fitness)
         self.fevaluation = fevaluation
         if tradeoffs and len(tradeoffs) == len(fevaluation):
-            self.tradeoffs = np.array(tradeoffs)
+            self.tradeoffs = tradeoffs
         else:
-            self.tradeoffs = np.array([1 / len(self.fevaluation)] * (len(self.fevaluation)))
+            self.tradeoffs = [1 / len(self.fevaluation)] * (len(self.fevaluation))
 
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """
@@ -167,13 +167,14 @@ class AggregatedSum(ChemicalEvaluationFunction):
             evals = []
             for f in self.fevaluation:
                 evals.append(f.get_fitness(candidates))
-            res = np.transpose(np.array(evals))
+            res = np.transpose(evals)
             return np.dot(res, self.tradeoffs)
         else:
             evals = []
             for f in self.fevaluation:
                 evals.append(f.get_fitness(candidates))
-            return np.dot(evals, self.tradeoffs)
+            res = np.transpose(evals)
+            return np.dot(res, self.tradeoffs)
 
     def method_str(self):
         """
@@ -281,7 +282,7 @@ class Caloric(ChemicalEvaluationFunction):
         """
         super(Caloric, self).__init__(maximize=maximize, worst_fitness=worst_fitness)
 
-    def _match_score(self, candidate: Mol, penalty_ratio: int = 3):
+    def _match_score(self, candidate: Mol):
         """
         Internal method to identify how many groups that match the SMARTS "[Or5,Or6,Or7,Or8,Or9,Or10,Or11,Or12]" are
         present in a molecule. Molecules with more matches are more penalized.
@@ -290,8 +291,6 @@ class Caloric(ChemicalEvaluationFunction):
         ----------
         candidate: Mol
             Mol object to evaluate.
-        penalty_ratio: int
-            ratio to penalize molecules. Higher values introduces higher penalties.
 
         Returns
         -------
