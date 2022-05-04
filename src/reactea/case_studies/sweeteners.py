@@ -37,7 +37,7 @@ class SweetReactor(CaseStudy):
             problem = ChemicalProblem([f1, f2])
             return problem
         else:
-            f3 = AggregatedSum([f1, f2], [0.5, 0.5])
+            f3 = AggregatedSum([f1, f2], [0.7, 0.3])
             problem = ChemicalProblem([f3])
             return problem
 
