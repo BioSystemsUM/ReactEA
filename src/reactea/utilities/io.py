@@ -183,7 +183,7 @@ class Writers:
             f.write("SMILES;" + feval_names + "\n")
             for i, solution in enumerate(final_pop):
                 f.write(str(solution.variables.smiles) + ";" +
-                        ";".join([str(abs(round(x, 3))) for x in solution.objectives]) + "\n")
+                        ";".join([str(round(x, 3)*-1) for x in solution.objectives]) + "\n")
 
         # save unique solutions
         df = pd.read_csv(destFile, sep=';', header=0)
@@ -251,8 +251,7 @@ class Writers:
         file = f"/outputs/{configs['exp_name']}/ReactionMutationLogs.txt"
         file = Loaders.from_root(file)
         objectives = []
-        # TODO: check if abs makes sense for all objectives
         for obj in solution.objectives:
-            objectives.append(str(abs(round(obj, 3))))
+            objectives.append(str(round(obj, 3)*-1))
         with open(file, 'a+') as log:
             log.write(f"{solution.variables.smiles},{mutant},{rule_id},{','.join(objectives)}\n")
