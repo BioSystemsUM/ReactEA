@@ -1,6 +1,6 @@
 from typing import List
 
-from jmetal.util.evaluator import Evaluator
+from jmetal.util.evaluator import Evaluator, DaskEvaluator
 
 from reactea.optimization.problem import Problem
 from reactea.optimization.solution import ChemicalSolution
@@ -28,5 +28,5 @@ class ChemicalEvaluator(Evaluator):
         List[ChemicalSolutions]:
             evaluated chemical solutions
         """
-        Evaluator.evaluate_solution(solution_list, problem)
+        DaskEvaluator.evaluate_solution(solution_list, problem)
         return solution_list
