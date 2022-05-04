@@ -110,7 +110,7 @@ class ChemicalProblem(Problem):
             evals = []
             for f in self.fevaluation:
                 evals.append(f(candidates))
-            return evals
+            return list(*evals)
 
     @staticmethod
     def get_name():
