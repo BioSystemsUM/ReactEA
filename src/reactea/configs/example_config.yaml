@@ -1,8 +1,8 @@
-exp_name: "example_exp"
+exp_name: "GA_rr_200esc_400gen_0.7sweet_0.3_caloric"
 
 compounds:
     init_pop_path: "/data/compounds/ecoli_sink.tsv"
-    init_pop_size: 100
+    init_pop_size: 200
 
 rules:
     rules_path: "/data/reactionrules/retrorules/retrorules_forward_score.5.tsv"
@@ -10,7 +10,7 @@ rules:
     use_coreactant_info: False
     coreactants_path: "/path/..."
 
-multi_objective: True
+multi_objective: False
 batched: True
-generations: 50
-algorithm: "NSGAIII"
+generations: 400
+algorithm: "GA"
