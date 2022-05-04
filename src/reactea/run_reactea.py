@@ -4,40 +4,42 @@ from reactea.case_studies.sweeteners import SweetReactor
 from reactea.optimization.jmetal.ea import ChemicalEA
 from reactea.utilities.io import Loaders, Writers
 
-def run(configs: dict, case):
+
+def run(configurations: dict, case):
     # set up objective
     objective = case.objective
 
     # Read configurations
-    generations = configs["generations"]
-    algorithm = configs["algorithm"]
+    generations = configurations["generations"]
+    algorithm = configurations["algorithm"]
 
     # set up folders
-    Writers.set_up_folders(f"outputs/{configs['exp_name']}/")
+    Writers.set_up_folders(f"outputs/{configurations['exp_name']}/")
 
     # initialize population
-    init_pop = Loaders.initialize_population(configs)
+    init_pop = Loaders.initialize_population(configurations)
 
     # initialize reaction rules
-    reaction_rules, coreactants = Loaders.initialize_rules(configs)
+    reaction_rules, coreactants = Loaders.initialize_rules(configurations)
 
     # initialize objectives
     problem = objective()
 
     # Initialize EA
-    ea = ChemicalEA(problem, initial_population=init_pop, reaction_rules=reaction_rules, coreactants=coreactants,
-                    max_generations=generations, mp=False, visualizer=False, algorithm=algorithm, configs=configs)
+    ea = ChemicalEA(problem, initial_population=init_pop, reaction_rules=reaction_rules,
+                    coreactants=coreactants, max_generations=generations, mp=False, visualizer=False,
+                    algorithm=algorithm, configs=configurations)
 
     # Run EA
     final_pop = ea.run()
 
     # Save population
-    Writers.save_final_pop(final_pop, configs, case.feval_names())
+    Writers.save_final_pop(final_pop, configurations, case.feval_names())
     # Save Transformations
-    Writers.save_intermediate_transformations(final_pop, configs)
+    Writers.save_intermediate_transformations(final_pop, configurations)
 
     # save configs
-    Writers.save_configs(configs)
+    Writers.save_configs(configurations)
 
 
 if __name__ == '__main__':
@@ -53,4 +55,3 @@ if __name__ == '__main__':
 
     # Run
     run(configs, case_study)
-
