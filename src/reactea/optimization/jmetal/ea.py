@@ -106,6 +106,8 @@ class ChemicalEA(AbstractEA):
                                           )
         if self.algorithm_name == 'SA':
             print("Running Simulated Annealing!")
+            if len(self.initial_population.initial_population) != 1:
+                raise ValueError('For running SA, only one initial compound must be provided!')
             algorithm = SimulatedAnnealing(problem=self.ea_problem,
                                            mutation=mutation,
                                            termination_criterion=self.termination_criterion,
@@ -136,8 +138,12 @@ class ChemicalEA(AbstractEA):
                                           termination_criterion=self.termination_criterion,
                                           population_generator=self.initial_population,
                                           population_evaluator=self.population_evaluator)
+        # TODO: check if LS is working as supposed, fitness never improves, check comparator problem, if problems are
+        #  not solvable remove this algorithm
         elif self.algorithm_name == 'LS':
             print("Running Local Search!")
+            if len(self.initial_population.initial_population) != 1:
+                raise ValueError('For running SA, only one initial compound must be provided!')
             self.termination_criterion = EAConstants.TERMINATION_CRITERION(self.max_generations)
             algorithm = LocalSearch(problem=self.ea_problem,
                                     mutation=mutation,
