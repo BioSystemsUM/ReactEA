@@ -125,7 +125,6 @@ class ChemicalSolution(Solution, ChemicalSolutionInterface):
         return hash(str(self.variables))
 
 
-# TODO: best place to put this functions
 def dominance_test(solution1: ChemicalSolution, solution2: ChemicalSolution, maximize: bool = True):
     """
     Tests Pareto dominance.
