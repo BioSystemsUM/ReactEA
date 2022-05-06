@@ -1,10 +1,25 @@
 from jmetal.algorithm.multiobjective.nsgaiii import UniformReferenceDirectionFactory
 from jmetal.operator import BinaryTournamentSelection
-from jmetal.util.comparator import DominanceComparator
 from jmetal.util.termination_criterion import StoppingByEvaluations
 
 from reactea.chem.standardization import ChEMBLStandardizer
+from reactea.optimization.comparators import ParetoDominanceComparator
 from reactea.optimization.jmetal.operators import ReactorPseudoCrossover, ReactorMutation
+
+
+class ExperimentConstants:
+    """
+    Class containing a set of the experiment constants
+    """
+    EXP_NAME = 'Experimente1'
+    INITIAl_POPULATION_PATH = '/data/compounds/ecoli_sink.tsv'
+    POPULATION_SIZE = 10
+    RULES_PATH = '/data/reactionrules/retrorules/retrorules_forward_score.5.tsv'
+    MAX_RULES_BY_ITER = 1000
+    USE_COREACTANT_INFO = False
+    COREACTANTS_PATH = ""
+    MULTI_OBJECTIVE = False
+    BATCHED = True
 
 
 class EAConstants:
@@ -58,7 +73,7 @@ class LSConstants:
     """
     Class containing a set of Local Search parameters constants
     """
-    COMPARATOR = DominanceComparator
+    COMPARATOR = ParetoDominanceComparator
 
 
 class NSGAIIIConstants:
