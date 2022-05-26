@@ -143,7 +143,7 @@ class ChemicalEA(AbstractEA):
         elif self.algorithm_name == 'LS':
             print("Running Local Search!")
             if len(self.initial_population.initial_population) != 1:
-                raise ValueError('For running SA, only one initial compound must be provided!')
+                raise ValueError('For running LS, only one initial compound must be provided!')
             self.termination_criterion = EAConstants.TERMINATION_CRITERION(self.max_generations)
             algorithm = LocalSearch(problem=self.ea_problem,
                                     mutation=mutation,
