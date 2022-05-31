@@ -1,7 +1,8 @@
 from itertools import chain
 from typing import Union, List
+from urllib import parse
 
-from rdkit.Chem import Mol, rdmolfiles, rdmolops
+from rdkit.Chem import Mol, rdmolfiles, rdmolops, MolFromSmiles, Draw, AllChem
 from rdkit.Chem.rdChemReactions import ChemicalReaction
 
 
@@ -58,3 +59,46 @@ class ChemUtils:
                 return list(chain.from_iterable(products))
         except Exception:
             return ()
+
+    @staticmethod
+    def smiles_to_svg(smiles: str, size: tuple = (690, 400)):
+        """
+        Returns the SVG representation of a molecule.
+
+        Parameters
+        ----------
+        smiles: str
+            SMILES string
+        size: tuple
+            SVG size
+
+        Returns
+        -------
+        str:
+            SVG string
+        """
+        mol = MolFromSmiles(smiles)
+        try:
+            rdmolops.Kekulize(mol)
+        except:
+            pass
+        drawer = Draw.rdMolDraw2D.MolDraw2DSVG(size[0], size[1])
+        AllChem.Compute2DCoords(mol)
+        drawer.DrawMolecule(mol)
+        drawer.FinishDrawing()
+        svg = drawer.GetDrawingText().replace("svg:", "")
+        return svg
+
+    @staticmethod
+    def smiles_to_image(smiles):
+        """
+        Converts a SMILES string to an image.
+
+        Parameters
+        ----------
+        smiles: str
+            SMILES string
+        """
+        svg_string = ChemUtils.smiles_to_svg(smiles)
+        impath = 'data:image/svg+xml;charset=utf-8,' + parse.quote(svg_string, safe="")
+        return impath
