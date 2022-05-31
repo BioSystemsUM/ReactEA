@@ -52,7 +52,7 @@ if __name__ == '__main__':
     configs = Loaders.get_config_from_yaml(configPath)
 
     # Define the case study
-    case_study = SweetReactor(configs['multi_objective'])
+    case_study = SweetReactor(configs)
 
     # Run
     run(configs, case_study)
