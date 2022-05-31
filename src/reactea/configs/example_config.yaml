@@ -1,8 +1,8 @@
-exp_name: "TEST_vizualization"
+exp_name: "TEST_NEW_EVALS_MO"
 
 compounds:
     init_pop_path: "/data/compounds/ecoli_sink.tsv"
-    init_pop_size: 10
+    init_pop_size: 100
 
 rules:
     rules_path: "/data/reactionrules/retrorules/retrorules_rr02_flat_all_forward.tsv"
@@ -12,5 +12,5 @@ rules:
 
 multi_objective: True
 batched: True
-generations: 4
+generations: 100
 algorithm: "NSGAIII"
