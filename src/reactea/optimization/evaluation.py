@@ -3,9 +3,10 @@ from functools import reduce
 from typing import List, Union
 
 import numpy as np
-from rdkit.Chem import MolFromSmarts, Mol, MolToSmiles, GetSymmSSSR
+from rdkit.Chem import MolFromSmarts, Mol, MolToSmiles, GetSymmSSSR, EnumerateStereoisomers
 from rdkit.Chem.Crippen import MolLogP
 from rdkit.Chem.Descriptors import MolWt
+from rdkit.Chem.EnumerateStereoisomers import StereoEnumerationOptions
 from rdkit.Chem.QED import qed
 
 from reactea.utilities.io import Loaders
@@ -756,3 +757,83 @@ class NumberOfLargeRings(ChemicalEvaluationFunction):
             name of the evaluation function
         """
         return "NumberOfLargeRings"
+
+
+class StereoisomersCounter(ChemicalEvaluationFunction):
+    """
+    Number Of Stereoisomers evaluation function.
+    Computes the number of stereoisomers of molecules.
+    """
+
+    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
+        """
+        Initializes the StereoisomersCounter evaluation function.
+
+        Parameters
+        ----------
+        maximize: bool
+            if the goal is to maximize (True) or minimize (False) the fitness of the evaluation function.
+        worst_fitness: float
+            The worst fitness possible for the evaluation function.
+        """
+        super(StereoisomersCounter, self).__init__(maximize, worst_fitness)
+
+    def _chiral_count(self, mol: Mol):
+        """
+        Computes the chiral count of a molecule and penalizes molecules with many stereoisomers.
+
+        Parameters
+        ----------
+        mol: Mol
+            Mol object to calculate the molecular weight
+
+        Returns
+        -------
+        List[int]
+            list with the penalized score
+        """
+        try:
+            chiralCount = EnumerateStereoisomers.GetStereoisomerCount(mol,
+                                                                      options=StereoEnumerationOptions(unique=True))
+            if chiralCount < 5:
+                score = 1
+            else:
+                score = 1.0 / np.log(chiralCount * 100.0)
+
+        except Exception:
+            score = self.worst_fitness
+        return [score]
+
+    def get_fitness(self, candidates: Union[Mol, List[Mol]]):
+        """
+        Returns the fitness of a set of Mol objects.
+        In this case it's the stereoisomers count penalty of the molecules.
+
+        Parameters
+        ----------
+        candidates: Union[Mol, List[Mol]]
+            Mol objects to evaluate.
+
+        Returns
+        -------
+        List[int]:
+            list of stereoisomers count penalty scores of the candidate Mol objects.
+        """
+        if isinstance(candidates, list):
+            scores = []
+            for mol in candidates:
+                scores.extend(self._chiral_count(mol))
+            return scores
+        else:
+            return self._chiral_count(candidates)
+
+    def method_str(self):
+        """
+        Get name of the evaluation function.
+
+        Returns
+        -------
+        str:
+            name of the evaluation function
+        """
+        return "StereoisomersCounter"
