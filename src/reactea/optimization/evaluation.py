@@ -3,12 +3,14 @@ from functools import reduce
 from typing import List, Union
 
 import numpy as np
-from rdkit.Chem import MolFromSmarts, Mol, MolToSmiles, GetSymmSSSR, EnumerateStereoisomers
+from rdkit import DataStructs
+from rdkit.Chem import MolFromSmarts, Mol, MolToSmiles, GetSymmSSSR, EnumerateStereoisomers, AllChem
 from rdkit.Chem.Crippen import MolLogP
 from rdkit.Chem.Descriptors import MolWt
 from rdkit.Chem.EnumerateStereoisomers import StereoEnumerationOptions
 from rdkit.Chem.QED import qed
 
+from reactea.chem.compounds import Compound
 from reactea.utilities.io import Loaders
 
 
@@ -703,7 +705,7 @@ class NumberOfLargeRings(ChemicalEvaluationFunction):
         Parameters
         ----------
         mol: Mol
-            Mol object to calculate the molecular weight
+            Mol object to calculate the largest ring score
 
         Returns
         -------
@@ -785,7 +787,7 @@ class StereoisomersCounter(ChemicalEvaluationFunction):
         Parameters
         ----------
         mol: Mol
-            Mol object to calculate the molecular weight
+            Mol object to calculate the chiral count
 
         Returns
         -------
@@ -837,3 +839,82 @@ class StereoisomersCounter(ChemicalEvaluationFunction):
             name of the evaluation function
         """
         return "StereoisomersCounter"
+
+
+class SimilarityToInitial(ChemicalEvaluationFunction):
+    """
+    Similarity to Initial evaluation function.
+    Compares current solutions with the initial population in terms of Tanimoto Similarity.
+    """
+
+    def __init__(self, initial_population: List[Compound], maximize: bool = True, worst_fitness: float = 0.0):
+        """
+        Initializes the SimilarityToInitial evaluation function.
+
+        Parameters
+        ----------
+        initial_population: List[Compound]
+            initial population of compounds to compare current compound with.
+        maximize: bool
+            if the goal is to maximize (True) or minimize (False) the fitness of the evaluation function.
+        worst_fitness: float
+            The worst fitness possible for the evaluation function.
+        """
+        super(SimilarityToInitial, self).__init__(maximize, worst_fitness)
+        self.fingerprints = [AllChem.GetMorganFingerprint(cmp.mol, 2) for cmp in initial_population]
+
+    def _compute_distance(self, mol: Mol):
+        """
+        Computes the distance (1 - tanimoto similarity) between the current molecule and the initial population.
+
+        Parameters
+        ----------
+        mol: Mol
+            Mol object to calculate the distance
+
+        Returns
+        -------
+        List[int]
+            list with the distance score
+        """
+        try:
+            fp = AllChem.GetMorganFingerprint(mol, 2)
+            similarities = DataStructs.BulkTanimotoSimilarity(fp, self.fingerprints)
+            score = 1 - max(similarities)
+        except Exception:
+            score = self.worst_fitness
+        return [score]
+
+    def get_fitness(self, candidates: Union[Mol, List[Mol]]):
+        """
+        Returns the fitness of a set of Mol objects.
+        In this case it's the distance of the molecule to the initial population.
+
+        Parameters
+        ----------
+        candidates: Union[Mol, List[Mol]]
+            Mol objects to evaluate.
+
+        Returns
+        -------
+        List[int]:
+            list of distances of the candidate Mol objects.
+        """
+        if isinstance(candidates, list):
+            scores = []
+            for mol in candidates:
+                scores.extend(self._compute_distance(mol))
+            return scores
+        else:
+            return self._compute_distance(candidates)
+
+    def method_str(self):
+        """
+        Get name of the evaluation function.
+
+        Returns
+        -------
+        str:
+            name of the evaluation function
+        """
+        return "SimilarityToInitial"
