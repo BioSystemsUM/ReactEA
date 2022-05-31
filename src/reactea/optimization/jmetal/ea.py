@@ -158,7 +158,6 @@ class ChemicalEA(AbstractEA):
         result = algorithm.solutions
         return result
 
-    @property
     def _run_mo(self):
         """
         Runs a multi-objective optimization.
@@ -248,9 +247,10 @@ class ChemicalEA(AbstractEA):
             raise ValueError('Invalid multi-objective algorithm name. Choose from NSGAII, NSGAIII, SPEA2, GDE3, IBEA '
                              'and RandomSearch!')
         if self.visualizer:
+            # TODO: allow vizualization (VizualizerObserver not working properly).
             algorithm.observable.register(observer=VisualizerObserver())
         algorithm.observable.register(observer=PrintObjectivesStatObserver())
 
         algorithm.run()
-        result = algorithm.solutions
-        return result
+        results = algorithm.solutions
+        return results
