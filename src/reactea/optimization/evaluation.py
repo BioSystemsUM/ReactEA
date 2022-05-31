@@ -4,7 +4,7 @@ from typing import List, Union
 
 import numpy as np
 from rdkit import DataStructs
-from rdkit.Chem import MolFromSmarts, Mol, MolToSmiles, GetSymmSSSR, EnumerateStereoisomers, AllChem
+from rdkit.Chem import MolFromSmarts, Mol, MolToSmiles, GetSymmSSSR, EnumerateStereoisomers, AllChem, MolFromSmiles
 from rdkit.Chem.Crippen import MolLogP
 from rdkit.Chem.Descriptors import MolWt
 from rdkit.Chem.EnumerateStereoisomers import StereoEnumerationOptions
@@ -322,8 +322,12 @@ class PenalizedSweetness(ChemicalEvaluationFunction):
         int
             number of matches.
         """
-        caloric_smarts = MolFromSmarts("[Or5,Or6,Or7,Or8,Or9,Or10,Or11,Or12]")
-        return len(candidate.GetSubstructMatches(caloric_smarts))
+        try :
+            caloric_smarts = MolFromSmarts("[Or5,Or6,Or7,Or8,Or9,Or10,Or11,Or12]")
+            score = len(candidate.GetSubstructMatches(caloric_smarts))
+        except Exception:
+            score = self.worst_fitness
+        return score
 
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """
@@ -718,9 +722,11 @@ class NumberOfLargeRings(ChemicalEvaluationFunction):
             if len(ringsSize) > 0:
                 largestRing = max(ringsSize)
                 if largestRing > 6:
-                    return largestRing - 6.0
-
-            return 0.0
+                    score = largestRing - 6.0
+                else:
+                    score = 0.0
+            else:
+                score = 0.0
 
         except Exception:
             score = self.worst_fitness
@@ -847,21 +853,21 @@ class SimilarityToInitial(ChemicalEvaluationFunction):
     Compares current solutions with the initial population in terms of Tanimoto Similarity.
     """
 
-    def __init__(self, initial_population: List[Compound], maximize: bool = True, worst_fitness: float = 0.0):
+    def __init__(self, initial_population: List[str], maximize: bool = True, worst_fitness: float = 0.0):
         """
         Initializes the SimilarityToInitial evaluation function.
 
         Parameters
         ----------
-        initial_population: List[Compound]
-            initial population of compounds to compare current compound with.
+        initial_population: List[str]
+            initial population of compound' smiles to compare current compound with.
         maximize: bool
             if the goal is to maximize (True) or minimize (False) the fitness of the evaluation function.
         worst_fitness: float
             The worst fitness possible for the evaluation function.
         """
         super(SimilarityToInitial, self).__init__(maximize, worst_fitness)
-        self.fingerprints = [AllChem.GetMorganFingerprint(cmp.mol, 2) for cmp in initial_population]
+        self.fingerprints = [AllChem.GetMorganFingerprint(MolFromSmiles(cmp), 2) for cmp in initial_population]
 
     def _compute_distance(self, mol: Mol):
         """
