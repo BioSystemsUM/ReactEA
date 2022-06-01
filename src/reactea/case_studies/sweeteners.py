@@ -24,6 +24,7 @@ class SweetReactor(CaseStudy):
         super(SweetReactor, self).__init__(configs['multi_objective'])
         self.multi_objective = configs['multi_objective']
         self.population_smiles = Loaders.load_initial_population_smiles(configs)
+        self.feval_names_str = None
 
     def objective(self):
         """
@@ -43,12 +44,14 @@ class SweetReactor(CaseStudy):
         f5 = LogP()
         f6 = SimilarityToInitial(self.population_smiles)
         if self.multi_objective:
-            f_ag = AggregatedSum([f2, f3, f4, f5], [0.3, 0.3, 0.1, 0.3])
-            problem = ChemicalProblem([f1, f_ag, f6])
+            f_ag = AggregatedSum([f2, f3, f4, f5], [0.3, -0.3, 0.1, -0.3])
+            problem = ChemicalProblem([f1, f6, f_ag])
+            self.feval_names_str = f"{f1.method_str()};{f6.method_str()};{f_ag.method_str()}"
             return problem
         else:
-            f_ag = AggregatedSum([f1, f2, f3, f4, f5], [0.5, 0.15, 0.1, 0.05, 0.05, 0.15])
+            f_ag = AggregatedSum([f1, f2, f3, f4, f5], [0.5, 0.15, -0.1, 0.05, -0.05, 0.15])
             problem = ChemicalProblem([f_ag])
+            self.feval_names_str = f"{f_ag.method_str()}"
             return problem
 
     def name(self):
@@ -71,4 +74,4 @@ class SweetReactor(CaseStudy):
         str
             Name of the evaluation functions used in this case study.
         """
-        return f"probSweet;caloric" if self.multi_objective else f"probSweet-caloric"
+        return self.feval_names_str
