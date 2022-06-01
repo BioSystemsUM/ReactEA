@@ -46,7 +46,7 @@ class ChemicalSolution(Solution, ChemicalSolutionInterface):
     A Chemical Solution is represented by a Compound object and respective objectives' fitness.
     """
 
-    def __init__(self, variables: Compound, objectives=None, is_maximization: bool = True):
+    def __init__(self, variables: Compound, objectives: List[Num] = None, is_maximization: bool = True):
         """
         Initializes a Chemical Solution.
 
