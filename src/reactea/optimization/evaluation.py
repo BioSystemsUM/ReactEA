@@ -10,7 +10,6 @@ from rdkit.Chem.Descriptors import MolWt
 from rdkit.Chem.EnumerateStereoisomers import StereoEnumerationOptions
 from rdkit.Chem.QED import qed
 
-from reactea.chem.compounds import Compound
 from reactea.utilities.io import Loaders
 
 
@@ -69,56 +68,6 @@ class ChemicalEvaluationFunction(ABC):
         return self.get_fitness(candidate)
 
 
-class DummyEvalFunction(ChemicalEvaluationFunction):
-    """
-    Dummy evaluation function.
-    """
-
-    def __init__(self, maximize: bool = True, worst_fitness: float = -1.0):
-        """
-        Initializes a Dummy Evaluation Function.
-
-        Parameters
-        ----------
-        maximize: bool
-            if the goal is to maximize (True) or minimize (False) the fitness of the evaluation function.
-        worst_fitness: float
-            The worst fitness possible for the evaluation function.
-        """
-        super(DummyEvalFunction, self).__init__(maximize, worst_fitness)
-
-    def get_fitness(self, candidates: Union[Mol, List[Mol]]):
-        """
-        Returns the fitness of a set of Mol objects.
-        In this case it's only the size of the molecule' SMILES string.
-
-        Parameters
-        ----------
-        candidates: Union[Mol, List[Mol]]
-            Mol objects to evaluate.
-
-        Returns
-        -------
-        List[int]:
-            weighted fitness of the evaluation functions.
-        """
-        if isinstance(candidates, list):
-            return [len(MolToSmiles(candidate)) for candidate in candidates]
-        else:
-            return [len(MolToSmiles(candidates))]
-
-    def method_str(self):
-        """
-        Get name of the evaluation function.
-
-        Returns
-        -------
-        str:
-            name of the evaluation function
-        """
-        return "DummyEF"
-
-
 class AggregatedSum(ChemicalEvaluationFunction):
     """
     AggregatedSum evaluation function.
@@ -130,7 +79,7 @@ class AggregatedSum(ChemicalEvaluationFunction):
                  fevaluation: List[ChemicalEvaluationFunction],
                  tradeoffs: List[float] = None,
                  maximize: bool = True,
-                 worst_fitness: float = 0.0):
+                 worst_fitness: str = 'mean'):
         """
         Initializes a AggregatedSum Evaluation Function.
 
@@ -142,10 +91,16 @@ class AggregatedSum(ChemicalEvaluationFunction):
             list of tradeoffs/weights between the evaluation functions.
         maximize: bool
             if the goal is to maximize (True) or minimize (False) the fitness of the evaluation function.
-        worst_fitness: float
-            The worst fitness possible for the evaluation function.
+        worst_fitness: str
+            Function to compute worst fitness from the passed ChemicalEvaluationFunctions (choose from mean, max, min).
         """
-        super(AggregatedSum, self).__init__(maximize, worst_fitness)
+        if worst_fitness == 'mean':
+            self.worst_fitness = np.mean([f.worst_fitness for f in fevaluation])
+        elif worst_fitness == 'max':
+            self.worst_fitness = np.max([f.worst_fitness for f in fevaluation])
+        else:
+            self.worst_fitness = np.min([f.worst_fitness for f in fevaluation])
+        super(AggregatedSum, self).__init__(maximize, self.worst_fitness)
         self.fevaluation = fevaluation
         if tradeoffs and len(tradeoffs) == len(fevaluation):
             self.tradeoffs = tradeoffs
@@ -524,7 +479,7 @@ class QED(ChemicalEvaluationFunction):
     with known drugs.
     """
 
-    def __init__(self, maximize=True, worst_fitness=-10.0):
+    def __init__(self, maximize=True, worst_fitness=0.0):
         """
         Initializes the QED evaluation function.
 
