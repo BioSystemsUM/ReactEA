@@ -1,8 +1,9 @@
+from typing import List
+
 from reactea.case_studies.case_study import CaseStudy
 from reactea.optimization.evaluation import AggregatedSum, PenalizedSweetness, MolecularWeight, NumberOfLargeRings, \
     StereoisomersCounter, LogP, SimilarityToInitial
 from reactea.optimization.problem import ChemicalProblem
-from reactea.utilities.io import Loaders
 
 
 class SweetReactor(CaseStudy):
@@ -12,7 +13,7 @@ class SweetReactor(CaseStudy):
     stereoisomers count, logP and similarity to initial.
     """
 
-    def __init__(self, configs):
+    def __init__(self, initial_population: List[str], configs: dict):
         """
         Initializes the sweet and non-caloric case study.
 
@@ -23,7 +24,7 @@ class SweetReactor(CaseStudy):
         """
         super(SweetReactor, self).__init__(configs['multi_objective'])
         self.multi_objective = configs['multi_objective']
-        self.population_smiles = Loaders.load_initial_population_smiles(configs)
+        self.population_smiles = initial_population
         self.feval_names_str = None
 
     def objective(self):
