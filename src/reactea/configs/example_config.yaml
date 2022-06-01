@@ -1,16 +1,16 @@
-exp_name: "example_exp"
+exp_name: "TEST_NEW_EVALS_MO"
 
 compounds:
     init_pop_path: "/data/compounds/ecoli_sink.tsv"
     init_pop_size: 100
 
 rules:
-    rules_path: "/data/reactionrules/retrorules/retrorules_forward_score.5.tsv"
+    rules_path: "/data/reactionrules/retrorules/retrorules_rr02_flat_all_forward.tsv"
     max_rules_by_iter: 1000
     use_coreactant_info: False
     coreactants_path: "/path/..."
 
 multi_objective: True
 batched: True
-generations: 50
+generations: 100
 algorithm: "NSGAIII"

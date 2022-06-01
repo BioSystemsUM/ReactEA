@@ -106,6 +106,8 @@ class ChemicalEA(AbstractEA):
                                           )
         if self.algorithm_name == 'SA':
             print("Running Simulated Annealing!")
+            if len(self.initial_population.initial_population) != 1:
+                raise ValueError('For running SA, only one initial compound must be provided!')
             algorithm = SimulatedAnnealing(problem=self.ea_problem,
                                            mutation=mutation,
                                            termination_criterion=self.termination_criterion,
@@ -136,8 +138,12 @@ class ChemicalEA(AbstractEA):
                                           termination_criterion=self.termination_criterion,
                                           population_generator=self.initial_population,
                                           population_evaluator=self.population_evaluator)
+        # TODO: check if LS is working as supposed, fitness never improves, check comparator problem, if problems are
+        #  not solvable remove this algorithm
         elif self.algorithm_name == 'LS':
             print("Running Local Search!")
+            if len(self.initial_population.initial_population) != 1:
+                raise ValueError('For running LS, only one initial compound must be provided!')
             self.termination_criterion = EAConstants.TERMINATION_CRITERION(self.max_generations)
             algorithm = LocalSearch(problem=self.ea_problem,
                                     mutation=mutation,
@@ -152,7 +158,6 @@ class ChemicalEA(AbstractEA):
         result = algorithm.solutions
         return result
 
-    @property
     def _run_mo(self):
         """
         Runs a multi-objective optimization.
@@ -242,9 +247,10 @@ class ChemicalEA(AbstractEA):
             raise ValueError('Invalid multi-objective algorithm name. Choose from NSGAII, NSGAIII, SPEA2, GDE3, IBEA '
                              'and RandomSearch!')
         if self.visualizer:
+            # TODO: allow vizualization (VizualizerObserver not working properly).
             algorithm.observable.register(observer=VisualizerObserver())
         algorithm.observable.register(observer=PrintObjectivesStatObserver())
 
         algorithm.run()
-        result = algorithm.solutions
-        return result
+        results = algorithm.solutions
+        return results

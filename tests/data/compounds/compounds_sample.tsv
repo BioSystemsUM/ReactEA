@@ -1,0 +1,12 @@
+compound_id	smiles
+id_0	N=C(O)NC(O)C(=O)O
+id_1	Nc1ncnc2c1ncn2C1OC(COP(=O)(O)OC(=O)c2cccc(O)c2O)C(O)C1O
+id_2	CC1(O)OCC(O)C1(O)O
+id_3	CC1(O)OCC(O)C1=O
+id_4	CC(C)(COP(=O)(O)OP(=O)(O)OCC1OC(n2cnc3c(N)ncnc32)C(O)C1OP(=O)(O)O)C(O)C(O)=NCCC(O)=NCCSC(=O)CC(O)CCC(=O)O
+id_5	CC(C)(O)C(O)C(=O)O
+id_6	CCC(C)(O)C(O)C(=O)O
+id_7	N=C(N)N=C(O)c1nc(Cl)c(N2CCCCCC2)nc1N
+id_8	O=C(O)C(O)CO
+id_9	CC(C)(CO)C(O)C(=O)O
+id_10	CC(C)(CO)C(O)C(O)=NCCC(=O)O

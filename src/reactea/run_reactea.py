@@ -5,6 +5,7 @@ from reactea.optimization.jmetal.ea import ChemicalEA
 from reactea.utilities.io import Loaders, Writers
 
 
+# TODO: change everything to work with the constants except if they are in the configs
 def run(configurations: dict, case):
     # set up objective
     objective = case.objective
@@ -50,8 +51,11 @@ if __name__ == '__main__':
     configPath = "/configs/example_config.yaml"
     configs = Loaders.get_config_from_yaml(configPath)
 
+    # Load initial population
+    init_pop_smiles = Loaders.load_initial_population_smiles(configs)
+
     # Define the case study
-    case_study = SweetReactor(configs['multi_objective'])
+    case_study = SweetReactor(init_pop_smiles, configs)
 
     # Run
     run(configs, case_study)
