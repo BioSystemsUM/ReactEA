@@ -24,4 +24,3 @@ class TestAggregatedSum(EvaluationFunctionBaseTestCase, TestCase):
         scores = spds.get_fitness(mols)
 
         self.assertEqual(len(scores), len(mols))
-        self.assertEqual(scores[-1], spds.worst_fitness)
