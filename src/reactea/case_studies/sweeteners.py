@@ -1,6 +1,6 @@
 from reactea.case_studies.case_study import CaseStudy
-from reactea.optimization.evaluation import Caloric, AggregatedSum, SweetnessPredictionDeepSweet, PenalizedSweetness, \
-    MolecularWeight, NumberOfLargeRings, StereoisomersCounter, LogP, SimilarityToInitial
+from reactea.optimization.evaluation import AggregatedSum, PenalizedSweetness, MolecularWeight, NumberOfLargeRings, \
+    StereoisomersCounter, LogP, SimilarityToInitial
 from reactea.optimization.problem import ChemicalProblem
 from reactea.utilities.io import Loaders
 
@@ -18,8 +18,8 @@ class SweetReactor(CaseStudy):
 
         Parameters
         ----------
-        multi_objective: bool
-            boolean defining if we are facing a single or multi-objective optimization problem.
+        configs: dict
+            dictionary with the experiment configurations.
         """
         super(SweetReactor, self).__init__(configs['multi_objective'])
         self.multi_objective = configs['multi_objective']
