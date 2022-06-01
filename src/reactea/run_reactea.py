@@ -52,10 +52,10 @@ if __name__ == '__main__':
     configs = Loaders.get_config_from_yaml(configPath)
 
     # Load initial population
-    init_pop = Loaders.load_initial_population_smiles(configs)
+    init_pop_smiles = Loaders.load_initial_population_smiles(configs)
 
     # Define the case study
-    case_study = SweetReactor(init_pop, configs)
+    case_study = SweetReactor(init_pop_smiles, configs)
 
     # Run
     run(configs, case_study)
