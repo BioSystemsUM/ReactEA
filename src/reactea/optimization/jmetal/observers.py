@@ -28,7 +28,14 @@ class VisualizerObserver(Observer):
         self.non_dominated = non_dominated
 
     def update(self, *args, **kwargs):
-        """"""
+        """
+        Updates the observer and plots a StreamingPlot with the reference point and front..
+
+        Parameters
+        ----------
+        args: arguments passed to the observer
+        kwargs: keyword arguments passed to the observer.
+        """
         evaluations = kwargs['EVALUATIONS']
         solutions = kwargs['SOLUTIONS']
 
