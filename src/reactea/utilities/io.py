@@ -135,7 +135,7 @@ class Loaders:
         List[Compound]:
             list of compounds to use as coreactants
         """
-        coreactants_df = pd.read_csv(Loaders.from_root(configs["rules"]["coreactants_path"]), header=0, set='\t')
+        coreactants_df = pd.read_csv(Loaders.from_root(configs["rules"]["coreactants_path"]), header=0, sep='\t')
         return [ChemConstants.STANDARDIZER().standardize(
             Compound(row['smiles'], row["compound_id"])) for _, row in coreactants_df.iterrows()]
 
