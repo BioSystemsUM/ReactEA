@@ -45,12 +45,12 @@ class SweetReactor(CaseStudy):
         f5 = LogP()
         f6 = SimilarityToInitial(self.population_smiles)
         if self.multi_objective:
-            f_ag = AggregatedSum([f2, f3, f4, f5], [0.3, -0.3, 0.1, -0.3])
+            f_ag = AggregatedSum([f2, f3, f4, f5], [0.3, 0.3, 0.1, 0.3])
             problem = ChemicalProblem([f1, f6, f_ag])
             self.feval_names_str = f"{f1.method_str()};{f6.method_str()};{f_ag.method_str()}"
             return problem
         else:
-            f_ag = AggregatedSum([f1, f2, f3, f4, f5], [0.5, 0.15, -0.1, 0.05, -0.05, 0.15])
+            f_ag = AggregatedSum([f1, f2, f3, f4, f5], [0.5, 0.15, 0.1, 0.05, 0.05, 0.15])
             problem = ChemicalProblem([f_ag])
             self.feval_names_str = f"{f_ag.method_str()}"
             return problem
