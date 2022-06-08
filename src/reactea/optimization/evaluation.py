@@ -404,7 +404,7 @@ class LogP(ChemicalEvaluationFunction):
     Computes the partition coefficient.
     """
 
-    def __init__(self, maximize=False, worst_fitness=30):
+    def __init__(self, maximize=True, worst_fitness=0.0):
         """
         Initializes the LogP evaluation function.
 
@@ -432,7 +432,7 @@ class LogP(ChemicalEvaluationFunction):
             list with the partition coefficient of the molecule
         """
         try:
-            score = MolLogP(mol)
+            score = 1 - (MolLogP(mol)/25)  # 25 is the highest logp obtained in MOSES and our generated molecules
         except Exception:
             score = self.worst_fitness
         return [score]
@@ -644,7 +644,7 @@ class NumberOfLargeRings(ChemicalEvaluationFunction):
     Computes the average molecular weight of molecules.
     """
 
-    def __init__(self, maximize: bool = False, worst_fitness: float = 10.0):
+    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
         """
         Initializes the NumberOfLargeRings evaluation function.
 
@@ -677,11 +677,11 @@ class NumberOfLargeRings(ChemicalEvaluationFunction):
             if len(ringsSize) > 0:
                 largestRing = max(ringsSize)
                 if largestRing > 6:
-                    score = largestRing - 6.0
+                    score = 1 / np.log((largestRing-6.0)*100)
                 else:
-                    score = 0.0
+                    score = 1.0
             else:
-                score = 0.0
+                score = 1.0
 
         except Exception:
             score = self.worst_fitness
