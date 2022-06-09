@@ -76,7 +76,10 @@ class ReactorMutation(Mutation[ChemicalSolution]):
                 if self.coreactants is not None:
                     rule_reactants_ids = rule.coreactants_ids
                     reactants = self.set_coreactants(rule_reactants_ids, compound, self.coreactants)
-                    reactants = [reac.mol for reac in reactants]
+                    if not isinstance(reactants, list):
+                        reactants = compound.mol
+                    else:
+                        reactants = [reac.mol for reac in reactants]
                 else:
                     reactants = compound.mol
 
