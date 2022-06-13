@@ -1,6 +1,6 @@
 from typing import List
 
-from jmetal.algorithm.multiobjective import NSGAII, SPEA2, GDE3, IBEA, RandomSearch
+from jmetal.algorithm.multiobjective import NSGAII, SPEA2, IBEA, RandomSearch
 from jmetal.algorithm.multiobjective.nsgaiii import NSGAIII
 from jmetal.algorithm.singleobjective import SimulatedAnnealing, EvolutionStrategy, LocalSearch
 
@@ -11,7 +11,7 @@ from .generators import ChemicalGenerator
 from .observers import PrintObjectivesStatObserver, VisualizerObserver
 from .problem import JmetalProblem
 from reactea.utilities.constants import EAConstants, ChemConstants, SAConstants, GAConstants, NSGAIIIConstants, \
-    GDE3Constants, ESConstants, LSConstants, IBEAConstants
+    ESConstants, LSConstants, IBEAConstants
 from ..problem import ChemicalProblem
 from ...chem.compounds import Compound
 from ...chem.reaction_rules import ReactionRule
@@ -204,17 +204,6 @@ class ChemicalEA(AbstractEA):
                 population_generator=self.initial_population,
                 population_evaluator=self.population_evaluator
             )
-        elif self.algorithm_name == "GDE3":
-            algorithm = GDE3(
-                problem=self.ea_problem,
-                population_size=self.population_size,
-                cr=GDE3Constants.CR,
-                f=GDE3Constants.F,
-                k=GDE3Constants.K,
-                termination_criterion=self.termination_criterion,
-                population_generator=self.initial_population,
-                population_evaluator=self.population_evaluator
-            )
         elif self.algorithm_name == "IBEA":
             algorithm = IBEA(
                 problem=self.ea_problem,
@@ -244,7 +233,7 @@ class ChemicalEA(AbstractEA):
                 population_evaluator=self.population_evaluator
             )
         else:
-            raise ValueError('Invalid multi-objective algorithm name. Choose from NSGAII, NSGAIII, SPEA2, GDE3, IBEA '
+            raise ValueError('Invalid multi-objective algorithm name. Choose from NSGAII, NSGAIII, SPEA2, IBEA '
                              'and RandomSearch!')
         if self.visualizer:
             # TODO: allow vizualization (VizualizerObserver not working properly).
