@@ -1,6 +1,6 @@
 import copy
 import random
-from typing import List
+from typing import List, Union
 
 from jmetal.core.operator import Mutation, Crossover
 from rdkit.Chem import MolToSmiles
@@ -20,12 +20,12 @@ class ReactorMutation(Mutation[ChemicalSolution]):
     """
 
     def __init__(self,
-                 probability: float = 0.1,
-                 reaction_rules: List[ReactionRule] = None,
-                 standardizer: MolecularStandardizer = None,
-                 coreactants: List[Compound] = None,
-                 configs: dict = None,
-                 logger: callable = None):
+                 probability: float,
+                 reaction_rules: List[ReactionRule],
+                 standardizer: Union[MolecularStandardizer, None],
+                 coreactants: Union[List[Compound], None],
+                 configs: dict,
+                 logger: Union[callable, None] = None):
         """
         Initializes a ReactorMutation operator.
 
@@ -35,13 +35,13 @@ class ReactorMutation(Mutation[ChemicalSolution]):
             probability of mutation to occur
         reaction_rules: List[ReactionRule]
             pool or reaction rules to use
-        standardizer: MolecularStandardizer
+        standardizer: Union[MolecularStandardizer, None]
             standardizer to standardize new solutions
-        coreactants: List[Compound]
+        coreactants: Union[List[Compound], None]
             list of coreactants to use (when available)
         configs: dict
             configurations of the experiment
-        logger: callable
+        logger: Union[callable, None]
             function to save all intermediate transformations (accepted and not accepted)
         """
         super(ReactorMutation, self).__init__(probability=probability)
@@ -166,12 +166,12 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
     """
 
     def __init__(self,
-                 probability: float = 1.0,
-                 reaction_rules: List[ReactionRule] = None,
-                 standardizer: MolecularStandardizer = None,
-                 coreactants: List[Compound] = None,
-                 configs: dict = None,
-                 logger: callable = None):
+                 probability: float,
+                 reaction_rules: List[ReactionRule],
+                 standardizer: Union[MolecularStandardizer, None],
+                 coreactants: Union[List[Compound], None],
+                 configs: dict,
+                 logger: Union[callable, None] = None):
         """
         Initializes a ReactorPseudoCrossover operator.
 
@@ -181,13 +181,13 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
             probability of mutation to occur
         reaction_rules: List[ReactionRule]
             pool or reaction rules to use
-        standardizer: MolecularStandardizer
+        standardizer: Union[MolecularStandardizer, None]
             standardizer to standardize new solutions
-        coreactants: List[Compound]
+        coreactants: Union[List[Compound], None]
             list of coreactants to use (when available)
         configs: dict
             configurations of the experiment
-        logger: callable
+        logger: Union[callable, None]
             function to save all intermediate transformations (accepted and not accepted)
         """
         super(ReactorPseudoCrossover, self).__init__(probability=probability)

@@ -145,7 +145,7 @@ class ReactionRule:
         """
         try:
             return ReactionFromSmarts(self._smarts)
-        except Exception:
+        except ValueError:
             return None
 
     def _to_smarts(self):
@@ -157,7 +157,4 @@ class ReactionRule:
         str:
             Converted SMARTS string.
         """
-        try:
-            return ReactionToSmarts(self._reaction)
-        except Exception:
-            return None
+        return ReactionToSmarts(self._reaction)

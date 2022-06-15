@@ -31,7 +31,7 @@ class StoppingByEvaluationsOrMeanFitnessValue(TerminationCriterion):
         """
         self.evaluations = kwargs["EVALUATIONS"]
         solutions = kwargs["SOLUTIONS"]
-        mean_fit = np.mean([s.objecives for s in solutions])
+        mean_fit = np.mean([s.objectives for s in solutions])
         self.value = mean_fit
 
     @property

@@ -41,3 +41,11 @@ class TestReactionRules(TestCase):
         r_r_2.rule_id = r_r_1.rule_id
         self.assertEqual(r_r_2.smarts, r_r_1.smarts)
         self.assertEqual(r_r_2.rule_id, r_r_1.rule_id)
+
+        with self.assertRaises(ValueError):
+            r_r_2.coreactants_ids = r_r_1.coreactants_ids
+
+        invalid_smarts = r_r_1.smarts[10:15]
+        r_r_2.smarts = invalid_smarts
+        self.assertEqual(r_r_2.smarts, invalid_smarts)
+        self.assertTrue(r_r_2.reaction is None)
