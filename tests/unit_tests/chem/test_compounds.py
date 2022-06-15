@@ -28,3 +28,11 @@ class TestCompound(TestCase):
         cmp2.smiles = 'CO'
         self.assertEqual(cmp2.smiles, 'CO')
         self.assertTrue(cmp2.mol != cmp1.mol)
+
+        cmp2.cmp_id = 'id3'
+        self.assertEqual(cmp2.cmp_id, 'id3')
+
+        invalid_smiles = 'CC('
+        cmp2.smiles = invalid_smiles
+        self.assertEqual(cmp2.smiles, invalid_smiles)
+        self.assertTrue(cmp2.mol is None)
