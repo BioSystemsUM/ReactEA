@@ -11,8 +11,8 @@ class ExperimentConstants:
     """
     Class containing a set of the experiment constants
     """
-    EXP_NAME = 'Experimente1'
-    INITIAl_POPULATION_PATH = '/data/compounds/ecoli_sink.tsv'
+    EXP_NAME = 'Experiment1'
+    INITIAL_POPULATION_PATH = '/data/compounds/ecoli_sink.tsv'
     POPULATION_SIZE = 10
     RULES_PATH = '/data/reactionrules/retrorules/retrorules_forward_score.5.tsv'
     MAX_RULES_BY_ITER = 1000
