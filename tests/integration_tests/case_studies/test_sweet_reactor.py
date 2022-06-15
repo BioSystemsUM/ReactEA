@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from _utils import initialize_population, initialize_rules, load_initial_population_smiles, SOURCE_DIR
+from _utils import initialize_population, initialize_rules, load_initial_population_smiles
 from base_test_cases import CaseStudiesBaseTestCase
 from reactea.case_studies.sweeteners import SweetReactor
 from reactea.optimization.jmetal.ea import ChemicalEA
