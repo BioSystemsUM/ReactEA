@@ -29,8 +29,4 @@ class ParetoDominanceComparator:
             0 if solution1 and solution2 are non-dominated,
             1 if solution2 is dominated by solution1.
         """
-        if solution1 is None:
-            raise Exception("The solution1 is None")
-        elif solution2 is None:
-            raise Exception("The solution2 is None")
         return dominance_test(solution1, solution2)
