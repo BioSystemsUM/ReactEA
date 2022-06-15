@@ -217,6 +217,8 @@ class ChemicalEA(AbstractEA):
                 population_evaluator=self.population_evaluator
             )
         elif self.algorithm_name == "RandomSearch":
+            if len(self.initial_population.initial_population) != 1:
+                raise ValueError('For running RandomSearch, only one initial compound must be provided!')
             algorithm = RandomSearch(
                 problem=self.ea_problem,
                 termination_criterion=self.termination_criterion
