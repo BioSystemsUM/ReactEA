@@ -182,10 +182,9 @@ class SweetnessPredictionDeepSweet(ChemicalEvaluationFunction):
             list with the sweetness prediction.
         """
         try:
-            res, _ = self.ensemble.predict([mol])
-        except Exception:
-            res = [self.worst_fitness]
-        return res
+            return self.ensemble.predict([mol])[0]
+        except:
+            return [self.worst_fitness]
 
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """
@@ -257,19 +256,18 @@ class PenalizedSweetness(ChemicalEvaluationFunction):
             sweetness probability.
         """
         try:
-            res, _ = self.ensemble.predict([mol])
-        except Exception:
-            res = [self.worst_fitness]
-        return res[0]
+            return self.ensemble.predict([mol])[0][0]
+        except:
+            return self.worst_fitness
 
-    def _match_score(self, candidate: Mol):
+    def _match_score(self, mol: Mol):
         """
         Internal method to identify how many groups that match the SMARTS "[Or5,Or6,Or7,Or8,Or9,Or10,Or11,Or12]" are
         present in a molecule. Molecules with more matches are more penalized.
 
         Parameters
         ----------
-        candidate: Mol
+        mol: Mol
             Mol object to evaluate.
 
         Returns
@@ -277,12 +275,11 @@ class PenalizedSweetness(ChemicalEvaluationFunction):
         int
             number of matches.
         """
-        try :
+        try:
             caloric_smarts = MolFromSmarts("[Or5,Or6,Or7,Or8,Or9,Or10,Or11,Or12]")
-            score = len(candidate.GetSubstructMatches(caloric_smarts))
-        except Exception:
-            score = self.worst_fitness
-        return score
+            return len(mol.GetSubstructMatches(caloric_smarts))
+        except:
+            return self.worst_fitness
 
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """
@@ -338,14 +335,14 @@ class Caloric(ChemicalEvaluationFunction):
         """
         super(Caloric, self).__init__(maximize=maximize, worst_fitness=worst_fitness)
 
-    def _match_score(self, candidate: Mol):
+    def _match_score(self, mol: Mol):
         """
         Internal method to identify how many groups that match the SMARTS "[Or5,Or6,Or7,Or8,Or9,Or10,Or11,Or12]" are
         present in a molecule. Molecules with more matches are more penalized.
 
         Parameters
         ----------
-        candidate: Mol
+        mol: Mol
             Mol object to evaluate.
 
         Returns
@@ -355,12 +352,12 @@ class Caloric(ChemicalEvaluationFunction):
         """
         try:
             caloric_smarts = MolFromSmarts("[Or5,Or6,Or7,Or8,Or9,Or10,Or11,Or12]")
-            n_matches = len(candidate.GetSubstructMatches(caloric_smarts))
+            n_matches = len(mol.GetSubstructMatches(caloric_smarts))
             if n_matches > 0:
                 return [self.worst_fitness]
             else:
                 return [1.0]
-        except Exception:
+        except:
             return [self.worst_fitness]
 
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
@@ -432,10 +429,9 @@ class LogP(ChemicalEvaluationFunction):
             list with the partition coefficient of the molecule
         """
         try:
-            score = 1 - (MolLogP(mol)/25)  # 25 is the highest logp obtained in MOSES and our generated molecules
-        except Exception:
-            score = self.worst_fitness
-        return [score]
+            return [1 - (MolLogP(mol)/25)]  # 25 is the highest logp obtained in MOSES and our generated molecules
+        except:
+            return [self.worst_fitness]
 
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """
@@ -507,10 +503,9 @@ class QED(ChemicalEvaluationFunction):
             list with the drug-likeliness score of the molecule
         """
         try:
-            score = qed(mol)
-        except Exception:
-            score = self.worst_fitness
-        return [score]
+            return [qed(mol)]
+        except:
+            return [self.worst_fitness]
 
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """
@@ -593,15 +588,13 @@ class MolecularWeight(ChemicalEvaluationFunction):
         try:
             mw = MolWt(mol)
             if mw < self.min_weight:
-                score = np.cos((mw - self.min_weight+200) / 320)
+                return [np.cos((mw - self.min_weight+200) / 320)]
             elif mw < self.max_weight:
-                score = 1.0
+                return [1.0]
             else:
-                score = 1.0 / np.log(mw / 250.0)
-
+                return [1.0 / np.log(mw / 250.0)]
         except Exception:
-            score = self.worst_fitness
-        return [score]
+            return [self.worst_fitness]
 
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """
@@ -677,15 +670,13 @@ class NumberOfLargeRings(ChemicalEvaluationFunction):
             if len(ringsSize) > 0:
                 largestRing = max(ringsSize)
                 if largestRing > 6:
-                    score = 1 / np.log((largestRing-6.0)*100)
+                    return [1 / np.log((largestRing-6.0)*100)]
                 else:
-                    score = 1.0
+                    return [1.0]
             else:
-                score = 1.0
-
-        except Exception:
-            score = self.worst_fitness
-        return [score]
+                return [1.0]
+        except:
+            return [self.worst_fitness]
 
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """
@@ -759,13 +750,12 @@ class StereoisomersCounter(ChemicalEvaluationFunction):
             chiralCount = EnumerateStereoisomers.GetStereoisomerCount(mol,
                                                                       options=StereoEnumerationOptions(unique=True))
             if chiralCount < 5:
-                score = 1
+                return [1.0]
             else:
-                score = 1.0 / np.log(chiralCount * 100.0)
+                return [1.0 / np.log(chiralCount * 100.0)]
 
         except Exception:
-            score = self.worst_fitness
-        return [score]
+            return [self.worst_fitness]
 
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """
@@ -841,10 +831,9 @@ class SimilarityToInitial(ChemicalEvaluationFunction):
         try:
             fp = AllChem.GetMorganFingerprint(mol, 2)
             similarities = DataStructs.BulkTanimotoSimilarity(fp, self.fingerprints)
-            score = 1 - max(similarities)
+            return [1 - max(similarities)]
         except Exception:
-            score = self.worst_fitness
-        return [score]
+            return [self.worst_fitness]
 
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """

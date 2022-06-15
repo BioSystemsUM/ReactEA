@@ -83,15 +83,6 @@ class NSGAIIIConstants:
     REFERENCE_DIRECTIONS = UniformReferenceDirectionFactory
 
 
-class GDE3Constants:
-    """
-    Class containing a set of GDE3 parameters constants
-    """
-    CR = 0.5
-    F = 0.5
-    K = 0.5
-
-
 class IBEAConstants:
     """
     Class containing a set of IBEA parameters constants

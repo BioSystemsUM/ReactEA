@@ -1,13 +1,14 @@
 from unittest import TestCase
 
-from _utils import initialize_population, initialize_rules, load_initial_population_smiles, SOURCE_DIR
+from _utils import initialize_population, initialize_rules, load_initial_population_smiles
 from base_test_cases import CaseStudiesBaseTestCase
-from reactea.case_studies.sweeteners import SweetReactor
+from reactea.case_studies.compound_quality import CompoundQuality
+
 from reactea.optimization.jmetal.ea import ChemicalEA
 from reactea.utilities.io import Writers
 
 
-class TestSweetReactor(CaseStudiesBaseTestCase, TestCase):
+class TestCompoundQuality(CaseStudiesBaseTestCase, TestCase):
 
     def test_case_study(self):
         # initialize population
@@ -17,7 +18,7 @@ class TestSweetReactor(CaseStudiesBaseTestCase, TestCase):
         init_pop_smiles = load_initial_population_smiles(self.configs)
 
         # case study
-        case_study = SweetReactor(init_pop_smiles, self.configs)
+        case_study = CompoundQuality(init_pop_smiles, self.configs)
 
         # set up objective
         objective = case_study.objective

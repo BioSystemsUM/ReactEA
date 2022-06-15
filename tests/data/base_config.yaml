@@ -2,15 +2,15 @@ exp_name: "INTEGRATION_TESTS"
 
 compounds:
     init_pop_path: "/data/compounds/compounds_sample.tsv"
-    init_pop_size: 10
+    init_pop_size: 4
 
 rules:
     rules_path: "/data/reactionrules/retrorules_sample.tsv"
-    max_rules_by_iter: 100
+    max_rules_by_iter: 10
     use_coreactant_info: False
     coreactants_path: "/path/..."
 
 multi_objective: True
 batched: True
-generations: 10
+generations: 2
 algorithm: "NSGAIII"
