@@ -110,10 +110,7 @@ class Compound:
         Mol:
             Converted Mol object.
         """
-        try:
-            return MolFromSmiles(self._smiles)
-        except Exception:
-            return None
+        return MolFromSmiles(self._smiles)
 
     def _to_smiles(self):
         """
@@ -124,7 +121,7 @@ class Compound:
         str:
             Converted smiles string.
         """
-        try:
-            return MolToSmiles(self._mol)
-        except Exception:
+        if self._mol is None:
             return None
+        else:
+            return MolToSmiles(self._mol)
