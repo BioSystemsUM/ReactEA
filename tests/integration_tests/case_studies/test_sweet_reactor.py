@@ -19,11 +19,11 @@ class TestSweetReactor(CaseStudiesBaseTestCase, TestCase):
 
         # initialize population
         init_pop = initialize_population(self.configs)
-        self.assertEqual(len(init_pop), self.configs['compounds']['init_pop_size'])
+        self.assertEqual(len(init_pop), self.configs['init_pop_size'])
 
         # initialize population smiles
         init_pop_smiles = load_initial_population_smiles(self.configs)
-        self.assertEqual(len(init_pop_smiles), self.configs['compounds']['init_pop_size'])
+        self.assertEqual(len(init_pop_smiles), self.configs['init_pop_size'])
 
         # case study
         case_study = SweetReactor(init_pop_smiles, self.configs)

@@ -16,14 +16,14 @@ class TestSOAlgorithms(AlgorithmsBaseTestCase, TestCase):
 
         # define number of molecules to use to only 1 in the case of RandomSearch
         if algorithm in ['SA', 'LS']:
-            self.configs['compounds']['init_pop_size'] = 1
+            self.configs['init_pop_size'] = 1
         # initialize population
         init_pop = initialize_population(self.configs)
-        self.assertEqual(len(init_pop), self.configs['compounds']['init_pop_size'])
+        self.assertEqual(len(init_pop), self.configs['init_pop_size'])
 
         # initialize population smiles
         init_pop_smiles = load_initial_population_smiles(self.configs)
-        self.assertEqual(len(init_pop_smiles), self.configs['compounds']['init_pop_size'])
+        self.assertEqual(len(init_pop_smiles), self.configs['init_pop_size'])
 
         # case study
         case_study = CompoundQuality(init_pop_smiles, self.configs)
