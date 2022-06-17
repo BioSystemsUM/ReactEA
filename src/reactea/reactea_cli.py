@@ -84,7 +84,7 @@ def __run_cli():
                         help="Experiment name (used to create folder with the results).",
                         type=str,
                         default='temp/')
-    parser.add_argument("--smiles', help='Initial compound SMILES string to use.", type=str, default=None)
+    parser.add_argument("--smiles", help="Initial compound SMILES string to use.", type=str, default=None)
     parser.add_argument("--init_pop_path",
                         help="Path to the initial population.",
                         type=str,
@@ -92,7 +92,7 @@ def __run_cli():
     parser.add_argument("--init_pop_size",
                         help="Initial population size (default=None, uses all).",
                         type=int,
-                        default=None)
+                        default=100)
     parser.add_argument("--rules_path",
                         help="Path to the reaction rules.",
                         type=str,
