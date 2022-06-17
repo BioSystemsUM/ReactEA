@@ -73,8 +73,8 @@ class Loaders:
         List[Compound]:
             list of compounds to use as initial population
         """
-        cmp_df = pd.read_csv(Loaders.from_root(configs["compounds"]["init_pop_path"]), header=0, sep='\t')
-        cmp_df = cmp_df.sample(configs["compounds"]["init_pop_size"])
+        cmp_df = pd.read_csv(Loaders.from_root(configs["init_pop_path"]), header=0, sep='\t')
+        cmp_df = cmp_df.sample(configs["init_pop_size"])
         return [ChemConstants.STANDARDIZER().standardize(
             Compound(row['smiles'], row["compound_id"])) for _, row in cmp_df.iterrows()]
 
@@ -93,8 +93,8 @@ class Loaders:
         List[str]:
             list of compound' smiles used as initial population
         """
-        cmp_df = pd.read_csv(Loaders.from_root(configs["compounds"]["init_pop_path"]), header=0, sep='\t')
-        cmp_df = cmp_df.sample(configs["compounds"]["init_pop_size"])
+        cmp_df = pd.read_csv(Loaders.from_root(configs["init_pop_path"]), header=0, sep='\t')
+        cmp_df = cmp_df.sample(configs["init_pop_size"])
         return cmp_df.smiles.values
 
     @staticmethod
@@ -112,8 +112,8 @@ class Loaders:
         List[ReactionRule]:
             list of reaction rules to use
         """
-        rules_df = pd.read_csv(Loaders.from_root(configs["rules"]["rules_path"]), header=0, sep='\t')
-        if configs["rules"]["use_coreactant_info"]:
+        rules_df = pd.read_csv(Loaders.from_root(configs["rules_path"]), header=0, sep='\t')
+        if configs["use_coreactant_info"]:
             coreactants = Loaders.initialize_coreactants(configs)
             return [ReactionRule(row['smarts'],
                                  row["rule_id"], row["coreactants_ids"]) for _, row in rules_df.iterrows()], coreactants
@@ -135,7 +135,7 @@ class Loaders:
         List[Compound]:
             list of compounds to use as coreactants
         """
-        coreactants_df = pd.read_csv(Loaders.from_root(configs["rules"]["coreactants_path"]), header=0, sep='\t')
+        coreactants_df = pd.read_csv(Loaders.from_root(configs["coreactants_path"]), header=0, sep='\t')
         return [ChemConstants.STANDARDIZER().standardize(
             Compound(row['smiles'], row["compound_id"])) for _, row in coreactants_df.iterrows()]
 
