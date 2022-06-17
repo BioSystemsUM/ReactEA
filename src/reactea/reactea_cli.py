@@ -1,4 +1,5 @@
 import argparse
+from datetime import datetime
 
 from rdkit import RDLogger
 
@@ -9,6 +10,7 @@ from reactea.utilities.io import Loaders, Writers
 def setup_configuration_file(args):
     # creacte dictionary from parser.parse_args()
     config_dict = vars(args)
+    config_dict['time'] = datetime.now().strftime('%m-%d_%H-%M-%S')
     return config_dict
 
 def str_to_case_study(name):
