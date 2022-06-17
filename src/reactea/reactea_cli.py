@@ -1,6 +1,9 @@
 import argparse
 
-from reactea.utilities.io import Loaders
+from rdkit import RDLogger
+
+from reactea.optimization.jmetal.ea import ChemicalEA
+from reactea.utilities.io import Loaders, Writers
 
 
 def setup_configuration_file(args):
@@ -8,11 +11,66 @@ def setup_configuration_file(args):
     config_dict = vars(args)
     return config_dict
 
+def str_to_case_study(name):
+    if name == "CompoundQuality":
+        from reactea.case_studies.compound_quality import CompoundQuality
+        return CompoundQuality
+    elif name == "SweetReactor":
+        from reactea.case_studies.sweeteners import SweetReactor
+        return SweetReactor
+    else:
+        raise ValueError(f"Case study {name} not found.")
+
 def run(configs):
     """
     Run ReactEA.
     """
-    pass
+    print(configs)
+    if configs['verbose']:
+        # Mute RDKit logs
+        RDLogger.DisableLog("rdApp.*")
+
+    # Load initial population
+    init_pop_smiles = Loaders.load_initial_population_smiles(configs)
+
+    # define case study
+    case_study = str_to_case_study(configs["case_study"])(init_pop_smiles, configs)
+    # set up objective function
+    objective = case_study.objective
+
+    # get some EA parameters
+    generations = configs["generations"]
+    algorithm = configs["algorithm"]
+
+    # set up folders
+    Writers.set_up_folders(f"outputs/{configs['exp_name']}/")
+
+    # initialize population
+    init_pop = Loaders.initialize_population(configs)
+
+    # initialize reaction rules
+    reaction_rules, coreactants = Loaders.initialize_rules(configs)
+
+    # initialize objectives
+    problem = objective()
+
+    # Initialize EA
+    ea = ChemicalEA(problem, initial_population=init_pop, reaction_rules=reaction_rules,
+                    coreactants=coreactants, max_generations=generations, mp=False, visualizer=False,
+                    algorithm=algorithm, configs=configs)
+
+    # Run EA
+    final_pop = ea.run()
+
+    # Save population
+    Writers.save_final_pop(final_pop, configs, case_study.feval_names())
+    # Save Transformations
+    Writers.save_intermediate_transformations(final_pop, configs)
+
+    # save configs
+    Writers.save_configs(configs)
+
+
 
 def __run_cli():
     """
@@ -56,9 +114,10 @@ def __run_cli():
     parser.add_argument("--batched", help="Use batched optimization.", type=bool, default=True)
     parser.add_argument("--generations", help="Number of generations.", type=int, default=100)
     parser.add_argument("--algorithm", help="Algorithm to use in the EA.", type=str, default="NSGAIII")
-    parser.add_argument("--case_study", help="Case study to use in the EA.", type=str, default="SweetReactor")
+    parser.add_argument("--case_study", help="Case study to use in the EA.", type=str, default="CompoundQuality")
     args = parser.parse_args()
 
+    # set up configuration file
     if args.config_file:
         config_file = args.config_file
         configs = Loaders.get_config_from_yaml(config_file)
@@ -68,8 +127,7 @@ def __run_cli():
     run(configs)
 
 
-
-
-
 if __name__ == "__main__":
     __run_cli()
+    # TODO: add a test for the CLI
+    # TODO: config from yaml file
