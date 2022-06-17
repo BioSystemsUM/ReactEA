@@ -72,7 +72,7 @@ class ReactorMutation(Mutation[ChemicalSolution]):
             rule = self.reaction_rules[random.randint(0, len(self.reaction_rules) - 1)]
             products = []
             i = 0
-            while len(products) < 1 and i < self.configs["rules"]["max_rules_by_iter"]:
+            while len(products) < 1 and i < self.configs["max_rules_by_iter"]:
                 if self.coreactants is not None:
                     rule_reactants_ids = rule.coreactants_ids
                     reactants = self.set_coreactants(rule_reactants_ids, compound, self.coreactants)
