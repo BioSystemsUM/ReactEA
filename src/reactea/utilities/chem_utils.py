@@ -1,10 +1,8 @@
 from itertools import chain
 from typing import Union, List
 
-from IPython.core.display import SVG
-from rdkit import Chem
-from rdkit.Chem import Mol, rdmolfiles, rdmolops, MolFromSmiles, rdDepictor
-from rdkit.Chem.Draw import rdMolDraw2D, MolToImage, DrawingOptions
+from rdkit.Chem import Mol, rdmolfiles, rdmolops, MolFromSmiles
+from rdkit.Chem.Draw import MolToImage
 from rdkit.Chem.rdChemReactions import ChemicalReaction
 
 
@@ -63,7 +61,23 @@ class ChemUtils:
             return ()
 
     @staticmethod
-    def smiles_to_img(smiles, size=(200, 200), highlightMol=False):
+    def smiles_to_img(smiles: str, size: tuple = (200, 200), highlightMol: bool = False):
+        """
+        Returns an image of a molecule from a SMILES string.
+
+        Parameters
+        ----------
+        smiles: str
+            SMILES string
+        size: tuple
+            image size
+        highlightMol: bool
+            highlight the molecule
+
+        Returns
+        -------
+        Molecule Image.
+        """
         mol = MolFromSmiles(smiles)
         if not highlightMol:
             return ChemUtils.mol_to_image(mol, size=size)
@@ -77,7 +91,25 @@ class ChemUtils:
             return ChemUtils.mol_to_image(mol, size=size, highlightAtoms=highlight_atoms, highlightBonds=hit_bonds)
 
     @staticmethod
-    def mol_to_image(mol, size, highlightAtoms=None, highlightBonds=None):
+    def mol_to_image(mol: Mol, size: tuple, highlightAtoms: list = None, highlightBonds: list = None):
+        """
+        Returns an image of a molecule.
+
+        Parameters
+        ----------
+        mol: Mol
+            RDKit Mol object
+        size: tuple
+            image size
+        highlightAtoms: list
+            list of atom to highlight
+        highlightBonds: list
+            list of bond to highlight
+
+        Returns
+        -------
+        Molecule Image.
+        """
         if highlightAtoms:
             return MolToImage(mol,
                               size=size,

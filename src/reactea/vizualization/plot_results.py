@@ -10,13 +10,33 @@ from reactea.utilities.io import Loaders
 
 
 class PlotResults:
+    """
+    Plots EA results by index.
+    """
 
     def __init__(self, output_configs: dict, solution_index: int = 0):
+        """
+        Initializes the PlotResults class.
+
+        Parameters
+        ----------
+        output_configs: dict
+            Output configuration dictionary.
+        solution_index: int
+            Index of the solution to plot.
+        """
         self.solution_index = solution_index
         self.configs = output_configs
         self.case = self.load_case()
 
     def load_case(self):
+        """
+        Loads the case to plot.
+
+        Returns
+        -------
+        Case to plot.
+        """
         return Loaders.load_results_case(self.solution_index, self.configs)
 
     def plot_results(self,
@@ -25,6 +45,22 @@ class PlotResults:
                      label_pos: float = 0.5,
                      font_size: int = 20,
                      save_fig: bool = True):
+        """
+        Plots the case as a graph. With mol images as nodes and reaction rules ids as edges.
+
+        Parameters
+        ----------
+        fig_size: tuple
+            Figure size.
+        mol_size: float
+            Molecule size.
+        label_pos: float
+            Label position relative to the edge position (0.5 is in the middle).
+        font_size: int
+            Font size.
+        save_fig: bool
+            Whether to save the figure.
+        """
         graph = nx.Graph()
         final = self.case.FINAL_SMILES
         intermediates = ast.literal_eval(self.case.INTERMEDIATE_SMILES)
@@ -63,6 +99,28 @@ class PlotResults:
                    label_pos=0.5,
                    font_size=20,
                    save_fig=True):
+        """
+        Draws the result graph.
+
+        Parameters
+        ----------
+        graph: nx.Graph
+            Graph to draw.
+        node_images: dict
+            dict with node:images.
+        edge_labels: dict
+            dict with edge:label.
+        fig_size: tuple
+            Figure size.
+        mol_size: float
+            Molecule size.
+        label_pos: float
+            Label position relative to the edge position (0.5 is in the middle).
+        font_size: int
+            Font size.
+        save_fig: bool
+            Whether to save the figure.
+        """
         pos = nx.circular_layout(graph)
         fig = plt.figure(figsize=fig_size)
         ax = plt.subplot()
@@ -98,7 +156,18 @@ class PlotResults:
 
     @staticmethod
     def crop_image_with_transparency(img):
+        """
+        Crops the image with transparency.
 
+        Parameters
+        ----------
+        img: PIL.Image
+            Image to crop.
+
+        Returns
+        -------
+        Cropped image.
+        """
         # Insuring the image has an alpha channel
         img.putalpha(255)
 
