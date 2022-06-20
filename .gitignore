@@ -138,3 +138,5 @@ dmypy.json
 /src/reactea/evaluation_models/sweet_models/
 /src/reactea/evaluation_models/deepsweet_models/
 /src/reactea/outputs/*
+
+notes.md
