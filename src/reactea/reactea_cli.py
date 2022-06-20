@@ -8,10 +8,11 @@ from reactea.utilities.io import Loaders, Writers
 
 
 def setup_configuration_file(args):
-    # creacte dictionary from parser.parse_args()
+    # create dictionary from parser.parse_args()
     config_dict = vars(args)
     config_dict['time'] = datetime.now().strftime('%m-%d_%H-%M-%S')
     return config_dict
+
 
 def str_to_case_study(name):
     if name == "CompoundQuality":
@@ -23,11 +24,13 @@ def str_to_case_study(name):
     else:
         raise ValueError(f"Case study {name} not found.")
 
+
 def run(configs):
     """
     Run ReactEA.
     """
-    print(configs)
+
+    # shutdown RDKit logs
     if configs['verbose']:
         # Mute RDKit logs
         RDLogger.DisableLog("rdApp.*")
@@ -73,14 +76,16 @@ def run(configs):
     Writers.save_configs(configs)
 
 
-
 def __run_cli():
     """
     Command line interface.
     All options for running ReactEA are defined here.
     """
     parser = argparse.ArgumentParser(description="Command Line Interface for running ReactEA.")
-    parser.add_argument("--config_file", type=str, help="Path to the configuration file.", default=None)
+    parser.add_argument("--config_file",
+                        type=str,
+                        help="Path to the configuration file. If supplied no other argument needs to be specified!",
+                        default=None)
     parser.add_argument("--verbose", help="Enable RDKit logs.", type=bool, default=False)
     parser.add_argument("--exp_name",
                         help="Experiment name (used to create folder with the results).",
@@ -131,5 +136,3 @@ def __run_cli():
 
 if __name__ == "__main__":
     __run_cli()
-    # TODO: add a test for the CLI
-    # TODO: config from yaml file
