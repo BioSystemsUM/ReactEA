@@ -16,7 +16,6 @@ class AbstractEA(ABC):
                  problem: Problem,
                  initial_population: List[Compound],
                  max_generations: int = EAConstants.MAX_GENERATIONS,
-                 mp: bool = True,
                  visualizer: bool = False):
         """
         Initializes a EA.
