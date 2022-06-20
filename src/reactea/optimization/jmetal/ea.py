@@ -32,7 +32,6 @@ class ChemicalEA(AbstractEA):
                  standardizer: MolecularStandardizer = ChemConstants.STANDARDIZER,
                  coreactants: List[Compound] = None,
                  max_generations: int = EAConstants.MAX_GENERATIONS,
-                 mp: bool = EAConstants.MP,
                  visualizer: bool = EAConstants.VISUALIZER,
                  algorithm: str = EAConstants.ALGORITHM,
                  configs: dict = None,
@@ -55,8 +54,6 @@ class ChemicalEA(AbstractEA):
             list of coreactants if available
         max_generations: int
             maximum number of generations
-        mp: bool
-            use multiprocessing (true) out not (false)
         visualizer: bool
             use visualization of the solutions (true) or not (false)
         algorithm: str
@@ -66,7 +63,7 @@ class ChemicalEA(AbstractEA):
         logger: Writers
             writer to use for the operators logs
         """
-        super(ChemicalEA, self).__init__(problem, initial_population, max_generations, mp, visualizer)
+        super(ChemicalEA, self).__init__(problem, initial_population, max_generations, visualizer)
         self.algorithm_name = algorithm
         self.reaction_rules = reaction_rules
         self.standardizer = standardizer
@@ -138,8 +135,6 @@ class ChemicalEA(AbstractEA):
                                           termination_criterion=self.termination_criterion,
                                           population_generator=self.initial_population,
                                           population_evaluator=self.population_evaluator)
-        # TODO: check if LS is working as supposed, fitness never improves, check comparator problem, if problems are
-        #  not solvable remove this algorithm
         elif self.algorithm_name == 'LS':
             print("Running Local Search!")
             if len(self.initial_population.initial_population) != 1:
