@@ -1,4 +1,5 @@
 import argparse
+import time
 from datetime import datetime
 
 from rdkit import RDLogger
@@ -11,6 +12,7 @@ def setup_configuration_file(args):
     # create dictionary from parser.parse_args()
     config_dict = vars(args)
     config_dict['time'] = datetime.now().strftime('%m-%d_%H-%M-%S')
+    config_dict['start_time'] = time.time()
     return config_dict
 
 
@@ -46,6 +48,7 @@ def run(configs):
     # get some EA parameters
     generations = configs["generations"]
     algorithm = configs["algorithm"]
+    visualize = configs["visualize"]
 
     # set up folders
     Writers.set_up_folders(f"outputs/{configs['exp_name']}/")
@@ -60,8 +63,8 @@ def run(configs):
     problem = objective()
 
     # Initialize EA
-    ea = ChemicalEA(problem, initial_population=init_pop, reaction_rules=reaction_rules,
-                    coreactants=coreactants, max_generations=generations, mp=False, visualizer=False,
+    ea = ChemicalEA(problem=problem, initial_population=init_pop, reaction_rules=reaction_rules,
+                    coreactants=coreactants, max_generations=generations, visualizer=visualize,
                     algorithm=algorithm, configs=configs)
 
     # Run EA
@@ -73,7 +76,9 @@ def run(configs):
     Writers.save_intermediate_transformations(final_pop, configs)
 
     # save configs
+    configs['run_time'] = time.time() - configs['start_time']
     Writers.save_configs(configs)
+    print(f"Run time: {configs['run_time']} seconds!")
 
 
 def __run_cli():
@@ -122,6 +127,7 @@ def __run_cli():
     parser.add_argument("--generations", help="Number of generations.", type=int, default=100)
     parser.add_argument("--algorithm", help="Algorithm to use in the EA.", type=str, default="NSGAIII")
     parser.add_argument("--case_study", help="Case study to use in the EA.", type=str, default="CompoundQuality")
+    parser.add_argument("--visualize", help="Visualize results.", type=bool, default=False)
     args = parser.parse_args()
 
     # set up configuration file
