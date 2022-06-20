@@ -29,8 +29,6 @@ class AbstractEA(ABC):
             List of Compound objects to use as initial population.
         max_generations: int
             number of max generations
-        mp: bool
-            use multiprocessing (True) or not (False)
         visualizer: bool
             use a visualizer (True) or not (False)
 
@@ -39,7 +37,6 @@ class AbstractEA(ABC):
         self.problem = problem
         self.initial_population = initial_population
         self.max_generations = max_generations
-        self.mp = mp
         self.visualizer = visualizer
 
     def run(self):
