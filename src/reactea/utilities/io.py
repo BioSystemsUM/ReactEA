@@ -36,7 +36,7 @@ class Loaders:
         str:
             file path from root
         """
-        return f"{ROOT_DIR}{file_path}"
+        return f"{ROOT_DIR}/{file_path}"
 
     @staticmethod
     def get_config_from_yaml(yaml_file: str):
