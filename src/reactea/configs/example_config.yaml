@@ -1,5 +1,7 @@
 exp_name: "TEST_NEW_EVALS_MO"
 
+case_study: "SweetReactor"
+
 init_pop_path: "/data/compounds/ecoli_sink.tsv"
 init_pop_size: 100
 
@@ -12,3 +14,4 @@ multi_objective: True
 batched: True
 generations: 100
 algorithm: "NSGAIII"
+verbose: False
