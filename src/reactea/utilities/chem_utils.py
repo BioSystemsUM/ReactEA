@@ -1,8 +1,10 @@
 from itertools import chain
 from typing import Union, List
-from urllib import parse
 
-from rdkit.Chem import Mol, rdmolfiles, rdmolops, MolFromSmiles, Draw, AllChem
+from IPython.core.display import SVG
+from rdkit import Chem
+from rdkit.Chem import Mol, rdmolfiles, rdmolops, MolFromSmiles, rdDepictor
+from rdkit.Chem.Draw import rdMolDraw2D, MolToImage, DrawingOptions
 from rdkit.Chem.rdChemReactions import ChemicalReaction
 
 
@@ -61,44 +63,25 @@ class ChemUtils:
             return ()
 
     @staticmethod
-    def smiles_to_svg(smiles: str, size: tuple = (690, 400)):
-        """
-        Returns the SVG representation of a molecule.
-
-        Parameters
-        ----------
-        smiles: str
-            SMILES string
-        size: tuple
-            SVG size
-
-        Returns
-        -------
-        str:
-            SVG string
-        """
+    def smiles_to_img(smiles, size=(200, 200), highlightMol=False):
         mol = MolFromSmiles(smiles)
-        try:
-            rdmolops.Kekulize(mol)
-        except:
-            pass
-        drawer = Draw.rdMolDraw2D.MolDraw2DSVG(size[0], size[1])
-        AllChem.Compute2DCoords(mol)
-        drawer.DrawMolecule(mol)
-        drawer.FinishDrawing()
-        svg = drawer.GetDrawingText().replace("svg:", "")
-        return svg
+        if not highlightMol:
+            return ChemUtils.mol_to_image(mol, size=size)
+        else:
+            highlight_atoms = list(mol.GetSubstructMatch(mol))
+            hit_bonds = []
+            for bond in mol.GetBonds():
+                aid1 = highlight_atoms[bond.GetBeginAtomIdx()]
+                aid2 = highlight_atoms[bond.GetEndAtomIdx()]
+                hit_bonds.append(mol.GetBondBetweenAtoms(aid1, aid2).GetIdx())
+            return ChemUtils.mol_to_image(mol, size=size, highlightAtoms=highlight_atoms, highlightBonds=hit_bonds)
 
     @staticmethod
-    def smiles_to_image(smiles):
-        """
-        Converts a SMILES string to an image.
-
-        Parameters
-        ----------
-        smiles: str
-            SMILES string
-        """
-        svg_string = ChemUtils.smiles_to_svg(smiles)
-        impath = 'data:image/svg+xml;charset=utf-8,' + parse.quote(svg_string, safe="")
-        return impath
+    def mol_to_image(mol, size, highlightAtoms=None, highlightBonds=None):
+        if highlightAtoms:
+            return MolToImage(mol,
+                              size=size,
+                              highlightAtoms=highlightAtoms,
+                              highlightBonds=highlightBonds,
+                              highlightColor=(1, 0.8, 0.79))
+        return MolToImage(mol, size)

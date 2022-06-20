@@ -164,6 +164,25 @@ class Loaders:
         ensemble = Ensemble(list_of_models, models_folder_path)
         return ensemble
 
+    @staticmethod
+    def load_results_case(index: int, configs: dict):
+        """
+        Loads the results file.
+
+        Parameters
+        ----------
+        index: int
+            index of the case to load
+        configs: dict
+            configurations of the experiment (containing path to results file)
+
+        Returns
+        -------
+        pandas.DataFrame:
+            dataframe containing the results
+        """
+        return pd.read_csv(configs["transformations_path"], header=0, sep=';').iloc[index]
+
 
 class Writers:
     """
