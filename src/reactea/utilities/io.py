@@ -1,4 +1,5 @@
 import os
+import time
 from datetime import datetime
 from typing import List
 
@@ -56,6 +57,7 @@ class Loaders:
         with open(Loaders.from_root(yaml_file), 'r') as config_file:
             config_dict = yaml.safe_load(config_file)
         config_dict['time'] = datetime.now().strftime('%m-%d_%H-%M-%S')
+        config_dict['start_time'] = time.time()
         return config_dict
 
     @staticmethod
