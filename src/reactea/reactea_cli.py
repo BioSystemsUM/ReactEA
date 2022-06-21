@@ -4,7 +4,9 @@ from datetime import datetime
 
 from rdkit import RDLogger
 
+from reactea.chem.compounds import Compound
 from reactea.optimization.jmetal.ea import ChemicalEA
+from reactea.utilities.constants import ChemConstants
 from reactea.utilities.io import Loaders, Writers
 from reactea.vizualization.plot_results import PlotResults
 
@@ -34,12 +36,17 @@ def run(configs):
     """
 
     # shutdown RDKit logs
-    if configs['verbose']:
+    if not configs['verbose']:
         # Mute RDKit logs
         RDLogger.DisableLog("rdApp.*")
 
     # Load initial population
-    init_pop_smiles = Loaders.load_initial_population_smiles(configs)
+    if not configs.get("smiles"):
+        init_pop, init_pop_smiles = Loaders.initialize_population(configs)
+    else:
+        # TODO: test this part
+        init_pop_smiles = configs['smiles']
+        init_pop = [ChemConstants.STANDARDIZER().standardize(Compound(init_pop_smiles[0], 'id0'))]
 
     # define case study
     case_study = str_to_case_study(configs["case_study"])(init_pop_smiles, configs)
@@ -53,9 +60,6 @@ def run(configs):
 
     # set up folders
     Writers.set_up_folders(f"outputs/{configs['exp_name']}/")
-
-    # initialize population
-    init_pop = Loaders.initialize_population(configs)
 
     # initialize reaction rules
     reaction_rules, coreactants = Loaders.initialize_rules(configs)
