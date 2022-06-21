@@ -1,14 +1,14 @@
-exp_name: "TEST_Visualization"
+exp_name: "TEST_MUTATOR"
 
-case_study: "CompoundQuality"
+case_study: "SweetReactor"
 
 init_pop_path: "/data/compounds/ecoli_sink.tsv"
 init_pop_size: 100
 
-rules_path: "/data/reactionrules/retrorules/retrorules_rr02_flat_all_forward.tsv"
+rules_path: "/data/reactionrules/all_rules/all_reaction_rules.tsv"
 max_rules_by_iter: 1000
-use_coreactant_info: False
-coreactants_path: "/path/..."
+use_coreactant_info: True
+coreactants_path: "/data/reactionrules/all_rules/all_coreactants.tsv"
 
 multi_objective: True
 batched: True
