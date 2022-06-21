@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from rdkit.Chem import Mol
+from rdkit.Chem import Mol, rdmolops
 from chembl_structure_pipeline import standardizer
 
 from reactea.chem.compounds import Compound
@@ -78,6 +78,8 @@ class ChEMBLStandardizer(MolecularStandardizer):
         try:
             mol = standardizer.standardize_mol(mol)
             mol, _ = standardizer.get_parent_mol(mol)
-            return mol
+            mol_frags = rdmolops.GetMolFrags(mol, asMols=True)
+            largest_mol = max(mol_frags, default=mol, key=lambda m: m.GetNumAtoms())
+            return largest_mol
         except Exception:
             return mol
