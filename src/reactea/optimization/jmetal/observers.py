@@ -11,16 +11,30 @@ from reactea.optimization.solution import non_dominated_population
 S = TypeVar('S')
 
 
-# TODO: docstrings
 class VisualizerObserver(Observer):
-    """"""
+    """
+    Class representing an observer that plots the pareto front approximation.
+    """
 
     def __init__(self,
                  reference_front: List[S] = None,
                  reference_point: list = None,
                  display_frequency: float = 1.0,
                  non_dominated: bool = True):
-        """"""
+        """
+        Initializes a VisualizerObserver.
+
+        Parameters
+        ----------
+        reference_front: List[S]
+            Reference front to plot.
+        reference_point: list
+            Reference point to plot.
+        display_frequency: float
+            Frequency of updates.
+        non_dominated: bool
+            If True, only the non-dominated solutions are plotted.
+        """
         self.figure = None
         self.display_frequency = display_frequency
         self.reference_point = reference_point
@@ -29,7 +43,7 @@ class VisualizerObserver(Observer):
 
     def update(self, *args, **kwargs):
         """
-        Updates the observer and plots a StreamingPlot with the reference point and front..
+        Updates the observer and plots a StreamingPlot with the reference point and front.
 
         Parameters
         ----------

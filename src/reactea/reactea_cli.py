@@ -6,6 +6,7 @@ from rdkit import RDLogger
 
 from reactea.optimization.jmetal.ea import ChemicalEA
 from reactea.utilities.io import Loaders, Writers
+from reactea.vizualization.plot_results import PlotResults
 
 
 def setup_configuration_file(args):
@@ -79,6 +80,8 @@ def run(configs):
     configs['run_time'] = time.time() - configs['start_time']
     Writers.save_configs(configs)
     print(f"Run time: {configs['run_time']} seconds!")
+
+    PlotResults(configs, solution_index=0).plot_results(save_fig=True)
 
 
 def __run_cli():
