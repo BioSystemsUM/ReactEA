@@ -90,7 +90,6 @@ class ReactorMutation(Mutation[ChemicalSolution]):
                     mutant = products[rp]
                     mutant_id = f"{compound.cmp_id}--{rule.rule_id}_"
                     mutant = Compound(MolToSmiles(mutant), mutant_id)
-                    # TODO: check if the ChEMBL standardizer is working properly
                     mutant = self.standardizer().standardize(mutant)
                     solution.variables = mutant
                     if 'original_compound' not in solution.attributes.keys():

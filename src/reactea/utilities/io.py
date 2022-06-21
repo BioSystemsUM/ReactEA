@@ -104,7 +104,7 @@ class Loaders:
             return [ReactionRule(row['smarts'], row["rule_id"]) for _, row in rules_df.iterrows()], None
 
     @staticmethod
-    def initialize_coreactants(configs: dict):
+    def initialize_coreactants(configs: dict, standardize: bool = False):
         """
         Loads the set of coreactants
 
@@ -112,6 +112,8 @@ class Loaders:
         ----------
         configs: dict
             configurations of the experiment (containing path to coreactants file)
+        standardize: bool
+            whether to standardize the coreactants
 
         Returns
         -------
@@ -119,8 +121,11 @@ class Loaders:
             list of compounds to use as coreactants
         """
         coreactants_df = pd.read_csv(Loaders.from_root(configs["coreactants_path"]), header=0, sep='\t')
-        return [ChemConstants.STANDARDIZER().standardize(
-            Compound(row['smiles'], row["compound_id"])) for _, row in coreactants_df.iterrows()]
+        if standardize:
+            return [ChemConstants.STANDARDIZER().standardize(
+                Compound(row['smiles'], row["compound_id"])) for _, row in coreactants_df.iterrows()]
+        else:
+            return [Compound(row['smiles'], row["compound_id"]) for _, row in coreactants_df.iterrows()]
 
     @staticmethod
     def load_deepsweet_ensemble():
