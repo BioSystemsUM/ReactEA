@@ -19,7 +19,7 @@ class ChemicalEvaluationFunction(ABC):
     Child classes must implement the get_fitness and method_str methods.
     """
 
-    def __init__(self, maximize: bool = True, worst_fitness: float = -1.0):
+    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
         """
         Initializes the Chemical Evaluation Function class.
 
