@@ -78,26 +78,7 @@ class Loaders:
         cmp_df = pd.read_csv(Loaders.from_root(configs["init_pop_path"]), header=0, sep='\t')
         cmp_df = cmp_df.sample(configs["init_pop_size"])
         return [ChemConstants.STANDARDIZER().standardize(
-            Compound(row['smiles'], row["compound_id"])) for _, row in cmp_df.iterrows()]
-
-    @staticmethod
-    def load_initial_population_smiles(configs: dict):
-        """
-        Loads the initial population smiles.
-
-        Parameters
-        ----------
-        configs: dict
-            configurations of the experiment (containing path to initial population file)
-
-        Returns
-        -------
-        List[str]:
-            list of compound' smiles used as initial population
-        """
-        cmp_df = pd.read_csv(Loaders.from_root(configs["init_pop_path"]), header=0, sep='\t')
-        cmp_df = cmp_df.sample(configs["init_pop_size"])
-        return cmp_df.smiles.values
+            Compound(row['smiles'], row["compound_id"])) for _, row in cmp_df.iterrows()], cmp_df.smiles.values
 
     @staticmethod
     def initialize_rules(configs: dict):
