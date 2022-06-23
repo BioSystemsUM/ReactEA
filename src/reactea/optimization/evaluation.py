@@ -3,8 +3,9 @@ from functools import reduce
 from typing import List, Union
 
 import numpy as np
+from joblib import Parallel, delayed
 from rdkit import DataStructs
-from rdkit.Chem import MolFromSmarts, Mol, MolToSmiles, GetSymmSSSR, EnumerateStereoisomers, AllChem, MolFromSmiles
+from rdkit.Chem import MolFromSmarts, Mol, GetSymmSSSR, EnumerateStereoisomers, AllChem, MolFromSmiles, MolToSmiles
 from rdkit.Chem.Crippen import MolLogP
 from rdkit.Chem.Descriptors import MolWt
 from rdkit.Chem.EnumerateStereoisomers import StereoEnumerationOptions
@@ -33,19 +34,38 @@ class ChemicalEvaluationFunction(ABC):
         self.maximize = maximize
         self.worst_fitness = worst_fitness
 
-    @abstractmethod
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """
-        Get fitness of a set of solutions.
+        Evaluates the fitness of the candidate(s).
 
         Parameters
         ----------
         candidates: Union[Mol, List[Mol]]
-            Mol objects to get fitness from.
+            The candidate(s) to evaluate.
+
         Returns
         -------
-        Union[List[Num], List[List[Num]]
-            Fitness of each Mol object
+        List[float]
+            The fitness(es) of the candidate(s).
+        """
+        if isinstance(candidates, Mol):
+            candidates = [candidates]
+        return Parallel(n_jobs=-1, backend="multiprocessing")(delayed(self.get_fitness_single)(candidate)
+                                                              for candidate in candidates)
+
+    @abstractmethod
+    def get_fitness_single(self, candidate: Mol):
+        """
+        Get fitness of a single solution.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to get fitness from.
+        Returns
+        -------
+        float
+            Fitness of the Mol object
         """
         raise NotImplementedError
 
@@ -92,7 +112,8 @@ class AggregatedSum(ChemicalEvaluationFunction):
         maximize: bool
             if the goal is to maximize (True) or minimize (False) the fitness of the evaluation function.
         worst_fitness: str
-            Function to compute worst fitness from the passed ChemicalEvaluationFunctions (choose from mean, max, min).
+            Function to compute the worst fitness from the passed ChemicalEvaluationFunctions
+            (choose from mean, max, min).
         """
         if worst_fitness == 'mean':
             self.worst_fitness = np.mean([f.worst_fitness for f in fevaluation])
@@ -109,31 +130,45 @@ class AggregatedSum(ChemicalEvaluationFunction):
 
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """
-        Returns the fitness of a set of Mol objects.
-        In this case it's the weighted fitness of multiple evaluation functions.
+        Evaluates the fitness of the candidate(s).
 
         Parameters
         ----------
         candidates: Union[Mol, List[Mol]]
-            Mol objects to evaluate.
+            The candidate(s) to evaluate.
 
         Returns
         -------
-        List[int]:
-            length of the Mol objects' SMILES strings .
+        List[float]
+            The fitness(es) of the candidate(s).
         """
-        if isinstance(candidates, list):
-            evals = []
-            for f in self.fevaluation:
-                evals.append(f.get_fitness(candidates))
-            res = np.transpose(evals)
-            return np.dot(res, self.tradeoffs)
-        else:
-            evals = []
-            for f in self.fevaluation:
-                evals.append(f.get_fitness(candidates))
-            res = np.transpose(evals)
-            return np.dot(res, self.tradeoffs)
+        if "Sweetness" in self.method_str():
+            return self.get_fitness_single(candidates)
+        if isinstance(candidates, Mol):
+            candidates = [candidates]
+        return Parallel(n_jobs=-1, backend="multiprocessing")(delayed(self.get_fitness_single)(candidate)
+                                                              for candidate in candidates)
+
+    def get_fitness_single(self, candidate: Mol):
+        """
+        Returns the fitness of a single Mol object.
+        In this case it's the weighted fitness of multiple evaluation functions.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        float:
+            fitness of the Mol object.
+        """
+        evals = []
+        for f in self.fevaluation:
+            evals.append(f.get_fitness_single(candidate))
+        res = np.transpose(evals)
+        return np.dot(res, self.tradeoffs)
 
     def method_str(self):
         """
@@ -167,47 +202,72 @@ class SweetnessPredictionDeepSweet(ChemicalEvaluationFunction):
         super(SweetnessPredictionDeepSweet, self).__init__(maximize, worst_fitness)
         self.ensemble = Loaders.load_deepsweet_ensemble()
 
-    def _predict_sweet_prob(self, mol: Mol):
+    def _predict_sweet_prob(self, candidates: List[Mol]):
         """
-        Internal method to predict sweetness probability using the ensemble from DeepSweet.
+        Computes the predicted sweetness probability of a list of Mol objects.
 
         Parameters
         ----------
-        mol: Mol
-            Mol object to predict sweetness from.
+        candidates: List[Mol]
 
         Returns
         -------
-        List[int]
-            list with the sweetness prediction.
+        List[float]:
+            predicted sweetness probability of the candidates.
         """
-        try:
-            return self.ensemble.predict([mol])[0]
-        except:
-            return [self.worst_fitness]
+        return self.ensemble.predict(candidates)[0]
 
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """
-        Returns the fitness of a set of Mol objects.
-        In this case it's the sweetness probability of the molecules.
+        Computes the predicted sweetness probability of a list of Mol objects.
+        Handles invalid molecules.
 
         Parameters
         ----------
         candidates: Union[Mol, List[Mol]]
-            Mol objects to evaluate.
+            Mol object or list of Mol objects to get the fitness from.
 
         Returns
         -------
-        List[int]:
-            list of sweetness probability of the candidate Mol objects.
+        List[float]:
+            predicted sweetness probability of the candidates.
         """
-        if isinstance(candidates, list):
-            scores = []
-            for mol in candidates:
-                scores.extend(self._predict_sweet_prob(mol))
-            return scores
-        else:
-            return self._predict_sweet_prob(candidates)
+        if isinstance(candidates, Mol):
+            candidates = [candidates]
+        invalid = [i for i in range(len(candidates)) if not self.invalid_candidate(candidates[i])]
+        candidates = [x for i, x in enumerate(candidates) if i not in invalid]
+        scores = self._predict_sweet_prob(candidates)
+        for i in invalid:
+            scores = np.insert(scores, i, 0.0)
+        scores = [np.max([0, i]) for i in scores]
+        return scores
+
+    def get_fitness_single(self, candidate: Mol):
+        """
+        Returns the fitness of a single Mol object.
+        Same as get_fitness (alias).
+        """
+        return self.get_fitness(candidate)
+
+    @staticmethod
+    def invalid_candidate(candidate: Mol):
+        """
+        Returns whether a candidate is invalid or not for the Deepsweet ensemble prediction.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to check.
+
+        Returns
+        -------
+        bool:
+            True if the candidate is invalid, False otherwise.
+        """
+        if isinstance(candidate, Mol):
+            if len(MolToSmiles(candidate)) <= 128:
+                return True
+        return False
 
     def method_str(self):
         """
@@ -241,68 +301,29 @@ class PenalizedSweetness(ChemicalEvaluationFunction):
         super(PenalizedSweetness, self).__init__(maximize, worst_fitness)
         self.ensemble = Loaders.load_deepsweet_ensemble()
 
-    def _predict_sweet_prob(self, mol: Mol):
-        """
-        Internal method to predict sweetness probability using the ensemble from DeepSweet.
-
-        Parameters
-        ----------
-        mol: Mol
-            Mol object to predict sweetness from.
-
-        Returns
-        -------
-        float
-            sweetness probability.
-        """
-        try:
-            return self.ensemble.predict([mol])[0][0]
-        except:
-            return self.worst_fitness
-
-    def _match_score(self, mol: Mol):
-        """
-        Internal method to identify how many groups that match the SMARTS "[Or5,Or6,Or7,Or8,Or9,Or10,Or11,Or12]" are
-        present in a molecule. Molecules with more matches are more penalized.
-
-        Parameters
-        ----------
-        mol: Mol
-            Mol object to evaluate.
-
-        Returns
-        -------
-        int
-            number of matches.
-        """
-        try:
-            caloric_smarts = MolFromSmarts("[Or5,Or6,Or7,Or8,Or9,Or10,Or11,Or12]")
-            return len(mol.GetSubstructMatches(caloric_smarts))
-        except:
-            return self.worst_fitness
-
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """
-        Returns the fitness of a set of Mol objects.
-        In this case it's the sweetness probability of the molecules.
+        Computes the predicted penalized sweetness probability of a list of Mol objects.
+        Sweetness prediction is penalized by the presence of groups that confer caloric value to the molecule.
 
         Parameters
         ----------
         candidates: Union[Mol, List[Mol]]
-            Mol objects to evaluate.
+            Mol object or list of Mol objects to get the fitness from.
 
         Returns
         -------
-        List[int]:
-            list of sweetness probability of the candidate Mol objects.
+        List[float]:
+            predicted penalized sweetness probability of the candidates.
         """
-        if isinstance(candidates, list):
-            scores = []
-            for mol in candidates:
-                scores.append(self._predict_sweet_prob(mol)*(1 / (self._match_score(mol)+1)))
-            return scores
-        else:
-            return [self._predict_sweet_prob(candidates)*(1 / (self._match_score(candidates)+1))]
+        return np.multiply(SweetnessPredictionDeepSweet().get_fitness(candidates), Caloric().get_fitness(candidates))
+
+    def get_fitness_single(self, candidate: Mol):
+        """
+        Returns the fitness of a single Mol object.
+        Same as get_fitness (alias).
+        """
+        return self.get_fitness(candidate)
 
     def method_str(self):
         """
@@ -347,41 +368,32 @@ class Caloric(ChemicalEvaluationFunction):
 
         Returns
         -------
-        List[float]
+        float
             caloric score
         """
         try:
             caloric_smarts = MolFromSmarts("[Or5,Or6,Or7,Or8,Or9,Or10,Or11,Or12]")
             n_matches = len(mol.GetSubstructMatches(caloric_smarts))
-            if n_matches > 0:
-                return [self.worst_fitness]
-            else:
-                return [1.0]
+            return 1 / (n_matches + 1)
         except:
-            return [self.worst_fitness]
+            return self.worst_fitness
 
-    def get_fitness(self, candidates: Union[Mol, List[Mol]]):
+    def get_fitness_single(self, candidate: Mol):
         """
-        Returns the fitness of a set of Mol objects.
-        In this case it's the caloric score of the molecules.
+        Returns the fitness of a single Mol object.
+        In this case it's the caloric score of the molecule.
 
         Parameters
         ----------
-        candidates: Union[Mol, List[Mol]]
-            Mol objects to evaluate.
+        candidate: Mol
+            Mol object to evaluate.
 
         Returns
         -------
-        List[int]:
-            list of caloric scores of the candidate Mol objects.
+        float:
+            caloric score of the candidate Mol object.
         """
-        if isinstance(candidates, list):
-            scores = []
-            for mol in candidates:
-                scores.extend(self._match_score(mol))
-            return scores
-        else:
-            return self._match_score(candidates)
+        return self._match_score(candidate)
 
     def method_str(self):
         """
@@ -425,36 +437,30 @@ class LogP(ChemicalEvaluationFunction):
 
         Returns
         -------
-        List[float]
-            list with the partition coefficient of the molecule
+        float
+            partition coefficient of the molecule
         """
         try:
-            return [1 - (MolLogP(mol)/25)]  # 25 is the highest logp obtained in MOSES and our generated molecules
+            return 1 - (MolLogP(mol)/25)  # 25 is the highest logp obtained in MOSES and our generated molecules
         except:
-            return [self.worst_fitness]
+            return self.worst_fitness
 
-    def get_fitness(self, candidates: Union[Mol, List[Mol]]):
+    def get_fitness_single(self, candidate: Mol):
         """
-        Returns the fitness of a set of Mol objects.
-        In this case it's the partition coefficient of the molecules.
+        Returns the fitness of a single Mol object.
+        In this case it's the partition coefficient of the molecule.
 
         Parameters
         ----------
-        candidates: Union[Mol, List[Mol]]
-            Mol objects to evaluate.
+        candidate: Mol
+            Mol object to evaluate.
 
         Returns
         -------
-        List[int]:
-            list of partition coefficients of the candidate Mol objects.
+        float:
+            partition coefficients of the candidate Mol object.
         """
-        if isinstance(candidates, list):
-            scores = []
-            for mol in candidates:
-                scores.extend(self._get_logp(mol))
-            return scores
-        else:
-            return self._get_logp(candidates)
+        return self._get_logp(candidate)
 
     def method_str(self):
         """
@@ -499,36 +505,30 @@ class QED(ChemicalEvaluationFunction):
 
         Returns
         -------
-        List[float]
-            list with the drug-likeliness score of the molecule
+        float:
+            drug-likeliness score of the molecule
         """
         try:
-            return [qed(mol)]
+            return qed(mol)
         except:
-            return [self.worst_fitness]
+            return self.worst_fitness
 
-    def get_fitness(self, candidates: Union[Mol, List[Mol]]):
+    def get_fitness_single(self, candidate: Mol):
         """
-        Returns the fitness of a set of Mol objects.
-        In this case it's the drug-likeliness score of the molecules.
+        Returns the fitness of a single Mol object.
+        In this case it's the drug-likeliness score of the molecule.
 
         Parameters
         ----------
-        candidates: Union[Mol, List[Mol]]
-            Mol objects to evaluate.
+        candidate: Mol
+            Mol object to evaluate.
 
         Returns
         -------
-        List[int]:
-            list of drug-likeliness scores of the candidate Mol objects.
+        float:
+            drug-likeliness scores of the candidate Mol object.
         """
-        if isinstance(candidates, list):
-            scores = []
-            for mol in candidates:
-                scores.extend(self._qed(mol))
-            return scores
-        else:
-            return self._qed(candidates)
+        return self._qed(candidate)
 
     def method_str(self):
         """
@@ -582,42 +582,36 @@ class MolecularWeight(ChemicalEvaluationFunction):
 
         Returns
         -------
-        List[float]
-            list with the molelular weight of the molecule
+        float:
+            molecular weight of the molecule
         """
         try:
             mw = MolWt(mol)
             if mw < self.min_weight:
-                return [np.cos((mw - self.min_weight+200) / 320)]
+                return np.cos((mw - self.min_weight+200) / 320)
             elif mw < self.max_weight:
-                return [1.0]
+                return 1.0
             else:
-                return [1.0 / np.log(mw / 250.0)]
+                return 1.0 / np.log(mw / 250.0)
         except Exception:
-            return [self.worst_fitness]
+            return self.worst_fitness
 
-    def get_fitness(self, candidates: Union[Mol, List[Mol]]):
+    def get_fitness_single(self, candidate: Mol):
         """
-        Returns the fitness of a set of Mol objects.
-        In this case it's the molecular weight score of the molecules.
+        Returns the fitness of a single Mol object.
+        In this case it's the molecular weight score of the molecule.
 
         Parameters
         ----------
-        candidates: Union[Mol, List[Mol]]
-            Mol objects to evaluate.
+        candidate: Mol
+            Mol object to evaluate.
 
         Returns
         -------
-        List[int]:
-            list of molecular weight scores of the candidate Mol objects.
+        float:
+            molecular weight score of the candidate Mol object.
         """
-        if isinstance(candidates, list):
-            scores = []
-            for mol in candidates:
-                scores.extend(self._mol_weight(mol))
-            return scores
-        else:
-            return self._mol_weight(candidates)
+        return self._mol_weight(candidate)
 
     def method_str(self):
         """
@@ -661,8 +655,8 @@ class NumberOfLargeRings(ChemicalEvaluationFunction):
 
         Returns
         -------
-        List[int]
-            list with the penalized value
+        float:
+            penalized ring size score
         """
         try:
             ringsSize = [len(ring) for ring in GetSymmSSSR(mol)]
@@ -670,36 +664,30 @@ class NumberOfLargeRings(ChemicalEvaluationFunction):
             if len(ringsSize) > 0:
                 largestRing = max(ringsSize)
                 if largestRing > 6:
-                    return [1 / np.log((largestRing-6.0)*100)]
+                    return 1 / np.log((largestRing-6.0)*100)
                 else:
-                    return [1.0]
+                    return 1.0
             else:
-                return [1.0]
+                return 1.0
         except:
-            return [self.worst_fitness]
+            return self.worst_fitness
 
-    def get_fitness(self, candidates: Union[Mol, List[Mol]]):
+    def get_fitness_single(self, candidate: Mol):
         """
-        Returns the fitness of a set of Mol objects.
-        In this case it's the largest ring penalty of the molecules.
+        Returns the fitness of a set of Mol object.
+        In this case it's the largest ring penalty of the molecule.
 
         Parameters
         ----------
-        candidates: Union[Mol, List[Mol]]
-            Mol objects to evaluate.
+        candidate: Mol
+            Mol object to evaluate.
 
         Returns
         -------
-        List[int]:
-            list of ring penalty scores of the candidate Mol objects.
+        float:
+            ring penalty scores of the candidate Mol object.
         """
-        if isinstance(candidates, list):
-            scores = []
-            for mol in candidates:
-                scores.extend(self._ring_size(mol))
-            return scores
-        else:
-            return self._ring_size(candidates)
+        return self._ring_size(candidate)
 
     def method_str(self):
         """
@@ -743,42 +731,36 @@ class StereoisomersCounter(ChemicalEvaluationFunction):
 
         Returns
         -------
-        List[int]
-            list with the penalized score
+        int
+            penalized chiral count score
         """
         try:
             chiralCount = EnumerateStereoisomers.GetStereoisomerCount(mol,
                                                                       options=StereoEnumerationOptions(unique=True))
             if chiralCount < 5:
-                return [1.0]
+                return 1.0
             else:
-                return [1.0 / np.log(chiralCount * 100.0)]
+                return 1.0 / np.log(chiralCount * 100.0)
 
         except Exception:
-            return [self.worst_fitness]
+            return self.worst_fitness
 
-    def get_fitness(self, candidates: Union[Mol, List[Mol]]):
+    def get_fitness_single(self, candidate: Mol):
         """
-        Returns the fitness of a set of Mol objects.
-        In this case it's the stereoisomers count penalty of the molecules.
+        Returns the fitness of a single Mol object.
+        In this case it's the stereoisomers count penalty of the molecule.
 
         Parameters
         ----------
-        candidates: Union[Mol, List[Mol]]
-            Mol objects to evaluate.
+        candidate: Mol
+            Mol object to evaluate.
 
         Returns
         -------
-        List[int]:
-            list of stereoisomers count penalty scores of the candidate Mol objects.
+        int:
+            stereoisomers count penalty score of the candidate Mol object.
         """
-        if isinstance(candidates, list):
-            scores = []
-            for mol in candidates:
-                scores.extend(self._chiral_count(mol))
-            return scores
-        else:
-            return self._chiral_count(candidates)
+        return self._chiral_count(candidate)
 
     def method_str(self):
         """
@@ -816,7 +798,7 @@ class SimilarityToInitial(ChemicalEvaluationFunction):
 
     def _compute_distance(self, mol: Mol):
         """
-        Computes the distance (1 - tanimoto similarity) between the current molecule and the initial population.
+        Computes the distance (1 - Tanimoto similarity) between the current molecule and the initial population.
 
         Parameters
         ----------
@@ -825,38 +807,32 @@ class SimilarityToInitial(ChemicalEvaluationFunction):
 
         Returns
         -------
-        List[int]
-            list with the distance score
+        int:
+            distance score
         """
         try:
             fp = AllChem.GetMorganFingerprint(mol, 2)
             similarities = DataStructs.BulkTanimotoSimilarity(fp, self.fingerprints)
-            return [1 - max(similarities)]
+            return 1 - max(similarities)
         except Exception:
-            return [self.worst_fitness]
+            return self.worst_fitness
 
-    def get_fitness(self, candidates: Union[Mol, List[Mol]]):
+    def get_fitness_single(self, candidate: Mol):
         """
-        Returns the fitness of a set of Mol objects.
+        Returns the fitness of a single Mol object.
         In this case it's the distance of the molecule to the initial population.
 
         Parameters
         ----------
-        candidates: Union[Mol, List[Mol]]
-            Mol objects to evaluate.
+        candidate: Mol
+            Mol object to evaluate.
 
         Returns
         -------
-        List[int]:
-            list of distances of the candidate Mol objects.
+        int:
+            distance of the candidate Mol object.
         """
-        if isinstance(candidates, list):
-            scores = []
-            for mol in candidates:
-                scores.extend(self._compute_distance(mol))
-            return scores
-        else:
-            return self._compute_distance(candidates)
+        return self._compute_distance(candidate)
 
     def method_str(self):
         """
