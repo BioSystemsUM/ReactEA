@@ -19,13 +19,14 @@ def setup_configuration_file(args):
     return config_dict
 
 
-def str_to_case_study(name):
+def initialize_case_study(configs, init_pop_smiles=None):
+    name = configs['case_study']
     if name == "CompoundQuality":
         from reactea.case_studies.compound_quality import CompoundQuality
         return CompoundQuality
     elif name == "SweetReactor":
         from reactea.case_studies.sweeteners import SweetReactor
-        return SweetReactor
+        return SweetReactor(init_pop_smiles, configs)
     else:
         raise ValueError(f"Case study {name} not found.")
 
@@ -49,7 +50,7 @@ def run(configs):
         init_pop = [ChemConstants.STANDARDIZER().standardize(Compound(init_pop_smiles[0], 'id0'))]
 
     # define case study
-    case_study = str_to_case_study(configs["case_study"])(init_pop_smiles, configs)
+    case_study = initialize_case_study(configs, init_pop_smiles)
     # set up objective function
     objective = case_study.objective
 
