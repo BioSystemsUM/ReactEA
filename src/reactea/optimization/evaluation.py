@@ -265,7 +265,7 @@ class SweetnessPredictionDeepSweet(ChemicalEvaluationFunction):
             True if the candidate is invalid, False otherwise.
         """
         if isinstance(candidate, Mol):
-            if len(MolToSmiles(candidate)) <= 128:
+            if 5 <= len(MolToSmiles(candidate)) <= 128:
                 return True
         return False
 
