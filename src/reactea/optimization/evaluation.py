@@ -188,7 +188,7 @@ class SweetnessPredictionDeepSweet(ChemicalEvaluationFunction):
     For more info see: https://github.com/BioSystemsUM/DeepSweet
     """
 
-    def __init__(self, maximize=True, worst_fitness=0.0):
+    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
         """
         Initializes the Sweetness Prediction DeepSweet evaluation function.
 
@@ -287,7 +287,7 @@ class PenalizedSweetness(ChemicalEvaluationFunction):
     For more info see: https://github.com/BioSystemsUM/DeepSweet
     """
 
-    def __init__(self, maximize=True, worst_fitness=0.0):
+    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
         """
         Initializes the Penalized Sweetness evaluation function.
 
@@ -413,7 +413,7 @@ class LogP(ChemicalEvaluationFunction):
     Computes the partition coefficient.
     """
 
-    def __init__(self, maximize=True, worst_fitness=0.0):
+    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
         """
         Initializes the LogP evaluation function.
 
@@ -481,7 +481,7 @@ class QED(ChemicalEvaluationFunction):
     with known drugs.
     """
 
-    def __init__(self, maximize=True, worst_fitness=0.0):
+    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
         """
         Initializes the QED evaluation function.
 
