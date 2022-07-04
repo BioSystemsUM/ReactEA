@@ -3,13 +3,14 @@ import random
 from typing import List, Union
 
 from jmetal.core.operator import Mutation, Crossover
-from rdkit.Chem import MolToSmiles
 
 from reactea.chem.compounds import Compound
 from reactea.chem.reaction_rules import ReactionRule
 from reactea.chem.standardization import MolecularStandardizer
 from reactea.optimization.solution import ChemicalSolution
 from reactea.utilities.chem_utils import ChemUtils
+
+from rdkit.Chem import MolFromSmiles
 
 
 class ReactorMutation(Mutation[ChemicalSolution]):
@@ -69,10 +70,10 @@ class ReactorMutation(Mutation[ChemicalSolution]):
         """
         if random.random() <= self.probability:
             compound = solution.variables
-            rule = self.reaction_rules[random.randint(0, len(self.reaction_rules) - 1)]
             products = []
             i = 0
             while len(products) < 1 and i < self.configs["max_rules_by_iter"]:
+                rule = self.reaction_rules[random.randint(0, len(self.reaction_rules) - 1)]
                 if self.coreactants is not None:
                     rule_reactants_ids = rule.coreactants_ids
                     reactants = self.set_coreactants(rule_reactants_ids, compound, self.coreactants)
@@ -84,13 +85,15 @@ class ReactorMutation(Mutation[ChemicalSolution]):
                     reactants = compound.mol
 
                 products = ChemUtils.react(reactants, rule.reaction)
+                products = [pd for pd in products if MolFromSmiles(pd)]
 
                 if len(products) > 0:
-                    rp = random.randint(0, len(products) - 1)
-                    mutant = products[rp]
+                    mutant_smiles = random.choices(products, weights=[len(p) for p in products], k=1)[0]
                     mutant_id = f"{compound.cmp_id}--{rule.rule_id}_"
-                    mutant = Compound(MolToSmiles(mutant), mutant_id)
+                    mutant = Compound(mutant_smiles, mutant_id)
                     mutant = self.standardizer().standardize(mutant)
+                    if self.logger:
+                        self.logger(self.configs, solution, mutant.smiles, rule.rule_id)
                     solution.variables = mutant
                     if 'original_compound' not in solution.attributes.keys():
                         solution.attributes['original_compound'] = [compound.smiles]
@@ -98,8 +101,6 @@ class ReactorMutation(Mutation[ChemicalSolution]):
                     else:
                         solution.attributes['original_compound'].append(compound.smiles)
                         solution.attributes['rule_id'].append(rule.rule_id)
-                    if self.logger:
-                        self.logger(self.configs, solution, mutant.smiles, rule.rule_id)
                 i += 1
         return solution
 
