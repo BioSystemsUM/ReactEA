@@ -234,11 +234,7 @@ class SweetnessPredictionDeepSweet(ChemicalEvaluationFunction):
         """
         if isinstance(candidates, Mol):
             candidates = [candidates]
-        invalid = [i for i in range(len(candidates)) if not self.invalid_candidate(candidates[i])]
-        candidates = [x for i, x in enumerate(candidates) if i not in invalid]
         scores = self._predict_sweet_prob(candidates)
-        for i in invalid:
-            scores = np.insert(scores, i, 0.0)
         scores = [np.max([0, i]) for i in scores]
         return scores
 
@@ -248,26 +244,6 @@ class SweetnessPredictionDeepSweet(ChemicalEvaluationFunction):
         Same as get_fitness (alias).
         """
         return self.get_fitness(candidate)
-
-    @staticmethod
-    def invalid_candidate(candidate: Mol):
-        """
-        Returns whether a candidate is invalid or not for the Deepsweet ensemble prediction.
-
-        Parameters
-        ----------
-        candidate: Mol
-            Mol object to check.
-
-        Returns
-        -------
-        bool:
-            True if the candidate is invalid, False otherwise.
-        """
-        if isinstance(candidate, Mol):
-            if 5 <= len(MolToSmiles(candidate)) <= 128:
-                return True
-        return False
 
     def method_str(self):
         """
