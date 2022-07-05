@@ -5,7 +5,7 @@ from typing import List, Union
 import numpy as np
 from joblib import Parallel, delayed
 from rdkit import DataStructs
-from rdkit.Chem import MolFromSmarts, Mol, GetSymmSSSR, EnumerateStereoisomers, AllChem, MolFromSmiles, MolToSmiles
+from rdkit.Chem import MolFromSmarts, Mol, GetSymmSSSR, EnumerateStereoisomers, AllChem, MolFromSmiles
 from rdkit.Chem.Crippen import MolLogP
 from rdkit.Chem.Descriptors import MolWt
 from rdkit.Chem.EnumerateStereoisomers import StereoEnumerationOptions
@@ -188,7 +188,7 @@ class SweetnessPredictionDeepSweet(ChemicalEvaluationFunction):
     For more info see: https://github.com/BioSystemsUM/DeepSweet
     """
 
-    def __init__(self, maximize=True, worst_fitness=0.0):
+    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
         """
         Initializes the Sweetness Prediction DeepSweet evaluation function.
 
@@ -234,11 +234,7 @@ class SweetnessPredictionDeepSweet(ChemicalEvaluationFunction):
         """
         if isinstance(candidates, Mol):
             candidates = [candidates]
-        invalid = [i for i in range(len(candidates)) if not self.invalid_candidate(candidates[i])]
-        candidates = [x for i, x in enumerate(candidates) if i not in invalid]
         scores = self._predict_sweet_prob(candidates)
-        for i in invalid:
-            scores = np.insert(scores, i, 0.0)
         scores = [np.max([0, i]) for i in scores]
         return scores
 
@@ -248,26 +244,6 @@ class SweetnessPredictionDeepSweet(ChemicalEvaluationFunction):
         Same as get_fitness (alias).
         """
         return self.get_fitness(candidate)
-
-    @staticmethod
-    def invalid_candidate(candidate: Mol):
-        """
-        Returns whether a candidate is invalid or not for the Deepsweet ensemble prediction.
-
-        Parameters
-        ----------
-        candidate: Mol
-            Mol object to check.
-
-        Returns
-        -------
-        bool:
-            True if the candidate is invalid, False otherwise.
-        """
-        if isinstance(candidate, Mol):
-            if len(MolToSmiles(candidate)) <= 128:
-                return True
-        return False
 
     def method_str(self):
         """
@@ -287,7 +263,7 @@ class PenalizedSweetness(ChemicalEvaluationFunction):
     For more info see: https://github.com/BioSystemsUM/DeepSweet
     """
 
-    def __init__(self, maximize=True, worst_fitness=0.0):
+    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
         """
         Initializes the Penalized Sweetness evaluation function.
 
@@ -413,7 +389,7 @@ class LogP(ChemicalEvaluationFunction):
     Computes the partition coefficient.
     """
 
-    def __init__(self, maximize=True, worst_fitness=0.0):
+    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
         """
         Initializes the LogP evaluation function.
 
@@ -441,7 +417,11 @@ class LogP(ChemicalEvaluationFunction):
             partition coefficient of the molecule
         """
         try:
-            return 1 - (MolLogP(mol)/25)  # 25 is the highest logp obtained in MOSES and our generated molecules
+            logP = MolLogP(mol)
+            if logP < 0:
+                return self.worst_fitness
+            else:
+                return 1 - (MolLogP(mol)/25)  # 25 is the highest logp obtained in MOSES and our generated molecules
         except:
             return self.worst_fitness
 
@@ -481,7 +461,7 @@ class QED(ChemicalEvaluationFunction):
     with known drugs.
     """
 
-    def __init__(self, maximize=True, worst_fitness=0.0):
+    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
         """
         Initializes the QED evaluation function.
 

@@ -70,7 +70,7 @@ class VisualizerObserver(Observer):
                 # check if reference point has changed
                 reference_point = kwargs.get('REFERENCE_POINT', None)
                 # negative fitness values are converted to positive
-                population = copy.copy(solutions)
+                population = copy.deepcopy(solutions)
                 if self.non_dominated:
                     population = non_dominated_population(population)
                 for i in range(len(population)):

@@ -1,7 +1,7 @@
 from itertools import chain
 from typing import Union, List
 
-from rdkit.Chem import Mol, rdmolfiles, rdmolops, MolFromSmiles
+from rdkit.Chem import Mol, rdmolfiles, rdmolops, MolFromSmiles, MolToSmiles
 from rdkit.Chem.Draw import MolToImage
 from rdkit.Chem.rdChemReactions import ChemicalReaction
 
@@ -47,16 +47,15 @@ class ChemUtils:
 
         Returns
         -------
-        List[Mol]:
-            list o products as RDKit Mol objects
+        List[str]:
+            list of products SMILES
         """
         try:
             if not isinstance(mol, list):
                 products = rule.RunReactants((mol,))
-                return list(chain.from_iterable(products))
             else:
                 products = rule.RunReactants(tuple(mol))
-                return list(chain.from_iterable(products))
+            return list(set([MolToSmiles(s) for s in list(chain.from_iterable(products))]))
         except Exception:
             return ()
 
