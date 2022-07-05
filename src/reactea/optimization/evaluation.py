@@ -5,7 +5,7 @@ from typing import List, Union
 import numpy as np
 from joblib import Parallel, delayed
 from rdkit import DataStructs
-from rdkit.Chem import MolFromSmarts, Mol, GetSymmSSSR, EnumerateStereoisomers, AllChem, MolFromSmiles, MolToSmiles
+from rdkit.Chem import MolFromSmarts, Mol, GetSymmSSSR, EnumerateStereoisomers, AllChem, MolFromSmiles
 from rdkit.Chem.Crippen import MolLogP
 from rdkit.Chem.Descriptors import MolWt
 from rdkit.Chem.EnumerateStereoisomers import StereoEnumerationOptions
@@ -417,7 +417,11 @@ class LogP(ChemicalEvaluationFunction):
             partition coefficient of the molecule
         """
         try:
-            return 1 - (MolLogP(mol)/25)  # 25 is the highest logp obtained in MOSES and our generated molecules
+            logP = MolLogP(mol)
+            if logP < 0:
+                return self.worst_fitness
+            else:
+                return 1 - (MolLogP(mol)/25)  # 25 is the highest logp obtained in MOSES and our generated molecules
         except:
             return self.worst_fitness
 
