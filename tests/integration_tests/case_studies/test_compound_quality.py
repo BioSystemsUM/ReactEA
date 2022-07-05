@@ -47,7 +47,7 @@ class TestCompoundQuality(CaseStudiesBaseTestCase, TestCase):
 
         # Initialize EA
         ea = ChemicalEA(problem, initial_population=init_pop, reaction_rules=reaction_rules,
-                        coreactants=coreactants, max_generations=self.configs['generations'], mp=False,
+                        coreactants=coreactants, max_generations=self.configs['generations'],
                         visualizer=False, algorithm=self.configs['algorithm'], configs=self.configs)
 
         ea.termination_criterion = StoppingByEvaluationsOrMeanFitnessValue(0.95,

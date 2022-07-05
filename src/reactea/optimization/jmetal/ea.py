@@ -233,7 +233,6 @@ class ChemicalEA(AbstractEA):
             raise ValueError('Invalid multi-objective algorithm name. Choose from NSGAII, NSGAIII, SPEA2, IBEA '
                              'and RandomSearch!')
         if self.visualizer:
-            # TODO: allow vizualization (VizualizerObserver not working properly). also add tests for it
             algorithm.observable.register(observer=VisualizerObserver())
         algorithm.observable.register(observer=PrintObjectivesStatObserver())
 

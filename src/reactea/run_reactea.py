@@ -1,12 +1,13 @@
 from rdkit import RDLogger
 
+from reactea.case_studies.compound_quality import CompoundQuality
 from reactea.case_studies.sweeteners import SweetReactor
 from reactea.optimization.jmetal.ea import ChemicalEA
 from reactea.utilities.io import Loaders, Writers
 
 
 # TODO: change everything to work with the constants except if they are in the configs
-def run(configurations: dict, case):
+def run(configurations: dict, case, init_pop):
     # set up objective
     objective = case.objective
 
@@ -17,9 +18,6 @@ def run(configurations: dict, case):
     # set up folders
     Writers.set_up_folders(f"outputs/{configurations['exp_name']}/")
 
-    # initialize population
-    init_pop = Loaders.initialize_population(configurations)
-
     # initialize reaction rules
     reaction_rules, coreactants = Loaders.initialize_rules(configurations)
 
@@ -28,7 +26,7 @@ def run(configurations: dict, case):
 
     # Initialize EA
     ea = ChemicalEA(problem, initial_population=init_pop, reaction_rules=reaction_rules,
-                    coreactants=coreactants, max_generations=generations, mp=False, visualizer=False,
+                    coreactants=coreactants, max_generations=generations, visualizer=True,
                     algorithm=algorithm, configs=configurations)
 
     # Run EA
@@ -52,10 +50,10 @@ if __name__ == '__main__':
     configs = Loaders.get_config_from_yaml(configPath)
 
     # Load initial population
-    init_pop_smiles = Loaders.load_initial_population_smiles(configs)
+    init_pop, init_pop_smiles = Loaders.initialize_population(configs)
 
     # Define the case study
     case_study = SweetReactor(init_pop_smiles, configs)
 
     # Run
-    run(configs, case_study)
+    run(configs, case_study, init_pop)

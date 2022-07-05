@@ -134,6 +134,8 @@ dmypy.json
 /src/reactea/data/reactionrules/enzymaticrules/
 /src/reactea/data/reactionrules/metacycrules/
 /src/reactea/data/reactionrules/retrorules/
+/src/reactea/data/reactionrules/kb_pickaxe/
+/src/reactea/data/reactionrules/all_rules/
 /src/reactea/data/compounds/ecoli_sink.tsv
 /src/reactea/evaluation_models/sweet_models/
 /src/reactea/evaluation_models/deepsweet_models/

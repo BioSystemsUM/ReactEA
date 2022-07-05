@@ -78,26 +78,7 @@ class Loaders:
         cmp_df = pd.read_csv(Loaders.from_root(configs["init_pop_path"]), header=0, sep='\t')
         cmp_df = cmp_df.sample(configs["init_pop_size"])
         return [ChemConstants.STANDARDIZER().standardize(
-            Compound(row['smiles'], row["compound_id"])) for _, row in cmp_df.iterrows()]
-
-    @staticmethod
-    def load_initial_population_smiles(configs: dict):
-        """
-        Loads the initial population smiles.
-
-        Parameters
-        ----------
-        configs: dict
-            configurations of the experiment (containing path to initial population file)
-
-        Returns
-        -------
-        List[str]:
-            list of compound' smiles used as initial population
-        """
-        cmp_df = pd.read_csv(Loaders.from_root(configs["init_pop_path"]), header=0, sep='\t')
-        cmp_df = cmp_df.sample(configs["init_pop_size"])
-        return cmp_df.smiles.values
+            Compound(row['smiles'], row["compound_id"])) for _, row in cmp_df.iterrows()], cmp_df.smiles.values
 
     @staticmethod
     def initialize_rules(configs: dict):
@@ -123,7 +104,7 @@ class Loaders:
             return [ReactionRule(row['smarts'], row["rule_id"]) for _, row in rules_df.iterrows()], None
 
     @staticmethod
-    def initialize_coreactants(configs: dict):
+    def initialize_coreactants(configs: dict, standardize: bool = False):
         """
         Loads the set of coreactants
 
@@ -131,6 +112,8 @@ class Loaders:
         ----------
         configs: dict
             configurations of the experiment (containing path to coreactants file)
+        standardize: bool
+            whether to standardize the coreactants
 
         Returns
         -------
@@ -138,8 +121,11 @@ class Loaders:
             list of compounds to use as coreactants
         """
         coreactants_df = pd.read_csv(Loaders.from_root(configs["coreactants_path"]), header=0, sep='\t')
-        return [ChemConstants.STANDARDIZER().standardize(
-            Compound(row['smiles'], row["compound_id"])) for _, row in coreactants_df.iterrows()]
+        if standardize:
+            return [ChemConstants.STANDARDIZER().standardize(
+                Compound(row['smiles'], row["compound_id"])) for _, row in coreactants_df.iterrows()]
+        else:
+            return [Compound(row['smiles'], row["compound_id"]) for _, row in coreactants_df.iterrows()]
 
     @staticmethod
     def load_deepsweet_ensemble():
@@ -163,6 +149,25 @@ class Loaders:
 
         ensemble = Ensemble(list_of_models, models_folder_path)
         return ensemble
+
+    @staticmethod
+    def load_results_case(index: int, configs: dict):
+        """
+        Loads the results file.
+
+        Parameters
+        ----------
+        index: int
+            index of the case to load
+        configs: dict
+            configurations of the experiment (containing path to results file)
+
+        Returns
+        -------
+        pandas.DataFrame:
+            dataframe containing the results
+        """
+        return pd.read_csv(configs["transformations_path"], header=0, sep=';').iloc[index]
 
 
 class Writers:
