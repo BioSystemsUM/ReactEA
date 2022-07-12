@@ -168,13 +168,16 @@ class ChemicalEA(AbstractEA):
                                         self.coreactants,
                                         self.configs,
                                         self.logger)
-        crossover = EAConstants.CROSSOVER(EAConstants.CROSSOVER_PROBABILITY,
-                                          self.reaction_rules,
-                                          self.standardizer,
-                                          self.coreactants,
-                                          self.configs,
-                                          self.logger
-                                          )
+        try :
+            crossover = EAConstants.CROSSOVER(EAConstants.CROSSOVER_PROBABILITY,
+                                              self.reaction_rules,
+                                              self.standardizer,
+                                              self.coreactants,
+                                              self.configs,
+                                              self.logger
+                                              )
+        except TypeError:
+            crossover = EAConstants.CROSSOVER()
         print(f"Running {self.algorithm_name}")
         if self.algorithm_name == 'NSGAIII':
             algorithm = NSGAIII(

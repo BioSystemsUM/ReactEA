@@ -389,18 +389,21 @@ class LogP(ChemicalEvaluationFunction):
     Computes the partition coefficient.
     """
 
-    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
+    def __init__(self, max_logp: int = 25, maximize: bool = True, worst_fitness: float = 0.0):
         """
         Initializes the LogP evaluation function.
 
         Parameters
         ----------
+        max_logp: int
+            maximum LogP value.
         maximize: bool
             if the goal is to maximize (True) or minimize (False) the fitness of the evaluation function.
         worst_fitness: float
             The worst fitness possible for the evaluation function.
         """
         super(LogP, self).__init__(maximize=maximize, worst_fitness=worst_fitness)
+        self.max_logp = max_logp
 
     def _get_logp(self, mol: Mol):
         """
@@ -419,9 +422,11 @@ class LogP(ChemicalEvaluationFunction):
         try:
             logP = MolLogP(mol)
             if logP < 0:
-                return self.worst_fitness
+                return 1.0
+            elif logP > self.max_logp:
+                return 0.0
             else:
-                return 1 - (MolLogP(mol)/25)  # 25 is the highest logp obtained in MOSES and our generated molecules
+                return (self.max_logp - MolLogP(mol))/self.max_logp
         except:
             return self.worst_fitness
 

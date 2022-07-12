@@ -142,3 +142,5 @@ dmypy.json
 /src/reactea/outputs/*
 
 notes.md
+
+/src/reactea/vizualization/plot_unused.py

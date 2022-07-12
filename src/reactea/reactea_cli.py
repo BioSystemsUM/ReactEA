@@ -86,7 +86,7 @@ def run(configs):
     Writers.save_configs(configs)
     print(f"Run time: {configs['run_time']} seconds!")
 
-    PlotResults(configs, solution_index=0).plot_results(save_fig=True)
+    # PlotResults(configs, solution_index=0).plot_results(save_fig=True)
 
 
 def __run_cli():

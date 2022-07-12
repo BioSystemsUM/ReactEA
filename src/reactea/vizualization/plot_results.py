@@ -152,7 +152,7 @@ class PlotResults:
                                      ax=ax)
         plt.show()
         if save_fig:
-            plt.savefig(f'outputs/{self.configs["exp_name"]}/result_{self.case}_graph.png')
+            plt.savefig(f'outputs/{self.configs["exp_name"]}/result_{self.solution_index}_graph.png')
 
     @staticmethod
     def crop_image_with_transparency(img):
