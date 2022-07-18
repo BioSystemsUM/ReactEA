@@ -86,11 +86,11 @@ class ReactorMutation(Mutation[ChemicalSolution]):
 
                 products = ChemUtils.react(reactants, rule.reaction)
                 products = [pd for pd in products if MolFromSmiles(pd)]
-
+                if max([len(p) for p in products]) < 4:
+                    print(products)
+                    products = ()
                 if len(products) > 0:
-                    weights = [len(p) if len(p) > 2 else 0 for p in products]
-                    if sum(weights) == 0:
-                        weights = [1] * len(products)
+                    weights = [len(p) if len(p) > 3 else 0 for p in products]
                     mutant_smiles = random.choices(products, weights=weights, k=1)[0]
                     mutant_id = f"{compound.cmp_id}--{rule.rule_id}_"
                     mutant = Compound(mutant_smiles, mutant_id)
