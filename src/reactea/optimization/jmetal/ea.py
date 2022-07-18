@@ -94,13 +94,16 @@ class ChemicalEA(AbstractEA):
                                         self.coreactants,
                                         self.configs,
                                         self.logger)
-        crossover = EAConstants.CROSSOVER(EAConstants.CROSSOVER_PROBABILITY,
-                                          self.reaction_rules,
-                                          self.standardizer,
-                                          self.coreactants,
-                                          self.configs,
-                                          self.logger
-                                          )
+        try:
+            crossover = EAConstants.CROSSOVER(EAConstants.CROSSOVER_PROBABILITY,
+                                              self.reaction_rules,
+                                              self.standardizer,
+                                              self.coreactants,
+                                              self.configs,
+                                              self.logger
+                                              )
+        except TypeError:
+            crossover = EAConstants.CROSSOVER()
         if self.algorithm_name == 'SA':
             print("Running Simulated Annealing!")
             if len(self.initial_population.initial_population) != 1:
