@@ -150,9 +150,9 @@ class PlotResults:
                                      label_pos=label_pos,
                                      font_size=font_size,
                                      ax=ax)
-        plt.show()
         if save_fig:
             plt.savefig(f'outputs/{self.configs["exp_name"]}/result_{self.solution_index}_graph.png')
+        plt.show()
 
     @staticmethod
     def crop_image_with_transparency(img):

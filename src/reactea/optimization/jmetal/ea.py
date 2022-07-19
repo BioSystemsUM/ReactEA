@@ -217,6 +217,7 @@ class ChemicalEA(AbstractEA):
                 population_generator=self.initial_population,
                 population_evaluator=self.population_evaluator
             )
+        # TODO: debug randomsearch
         elif self.algorithm_name == "RandomSearch":
             if len(self.initial_population.initial_population) != 1:
                 raise ValueError('For running RandomSearch, only one initial compound must be provided!')
