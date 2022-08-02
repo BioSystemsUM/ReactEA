@@ -15,7 +15,7 @@
 - [Getting Started](#getting-started)
     - [Initial population](#initial-population)
 - [About Us](#about-us)
-- [Citing DeepMol](#citing-deepmol)
+- [Citing Reacrea](#citing-reactea)
 - [License](#licensing)
 
 
@@ -97,7 +97,7 @@ at the Centre of Biological Engineering, University of Minho.
 This research was financed by Portuguese Funds through FCT – Fundação para 
 a Ciência e a Tecnologia.
 
-## Citing DeepMol
+## Citing ReactEA
 
 Manuscript under preparation.
 
