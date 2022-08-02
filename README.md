@@ -15,7 +15,7 @@
 - [Getting Started](#getting-started)
     - [Initial population](#initial-population)
 - [About Us](#about-us)
-- [Citing Reacrea](#citing-reactea)
+- [Citing ReactEA](#citing-reactea)
 - [License](#licensing)
 
 
