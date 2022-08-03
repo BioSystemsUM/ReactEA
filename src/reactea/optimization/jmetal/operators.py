@@ -85,7 +85,7 @@ class ReactorMutation(Mutation[ChemicalSolution]):
                     reactants = compound.mol
 
                 products = ChemUtils.react(reactants, rule.reaction)
-                products = [pd for pd in products if MolFromSmiles(pd) and len(pd) > 3]
+                products = [pd for pd in products if MolFromSmiles(pd) and 'C' in pd.upper()]
                 if len(products) > 0:
                     if max([len(p) for p in products]) < 4:
                         products = ()
