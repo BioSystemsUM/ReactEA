@@ -85,25 +85,22 @@ class ReactorMutation(Mutation[ChemicalSolution]):
                     reactants = compound.mol
 
                 products = ChemUtils.react(reactants, rule.reaction)
-                products = [pd for pd in products if MolFromSmiles(pd) and len(pd) > 3]
+                products = [pd for pd in products if MolFromSmiles(pd) and 'C' in pd.upper() and len(pd) > 4]
                 if len(products) > 0:
-                    if max([len(p) for p in products]) < 4:
-                        products = ()
+                    weights = [len(p) if len(p) > 3 else 0 for p in products]
+                    mutant_smiles = random.choices(products, weights=weights, k=1)[0]
+                    mutant_id = f"{compound.cmp_id}--{rule.rule_id}_"
+                    mutant = Compound(mutant_smiles, mutant_id)
+                    mutant = self.standardizer().standardize(mutant)
+                    if self.logger:
+                        self.logger(self.configs, solution, mutant.smiles, rule.rule_id)
+                    solution.variables = mutant
+                    if 'original_compound' not in solution.attributes.keys():
+                        solution.attributes['original_compound'] = [compound.smiles]
+                        solution.attributes['rule_id'] = [rule.rule_id]
                     else:
-                        weights = [len(p) if len(p) > 3 else 0 for p in products]
-                        mutant_smiles = random.choices(products, weights=weights, k=1)[0]
-                        mutant_id = f"{compound.cmp_id}--{rule.rule_id}_"
-                        mutant = Compound(mutant_smiles, mutant_id)
-                        mutant = self.standardizer().standardize(mutant)
-                        if self.logger:
-                            self.logger(self.configs, solution, mutant.smiles, rule.rule_id)
-                        solution.variables = mutant
-                        if 'original_compound' not in solution.attributes.keys():
-                            solution.attributes['original_compound'] = [compound.smiles]
-                            solution.attributes['rule_id'] = [rule.rule_id]
-                        else:
-                            solution.attributes['original_compound'].append(compound.smiles)
-                            solution.attributes['rule_id'].append(rule.rule_id)
+                        solution.attributes['original_compound'].append(compound.smiles)
+                        solution.attributes['rule_id'].append(rule.rule_id)
                 i += 1
         return solution
 
