@@ -116,3 +116,28 @@ class ChemUtils:
                               highlightBonds=highlightBonds,
                               highlightColor=(1, 0.8, 0.79))
         return MolToImage(mol, size)
+
+    @staticmethod
+    def valid_product(smiles: str):
+        """
+        Returns True if the SMILES string is a valid reaction product.
+
+        Parameters
+        ----------
+        smiles: str
+            SMILES string
+        Returns
+        -------
+        bool:
+            True if the SMILES string is a valid product
+        """
+        if '*' in smiles:
+            return False
+        mol = MolFromSmiles(smiles)
+        if mol is None:
+            return False
+        if mol.GetNumAtoms() < 4:
+            return False
+        if 'C' not in [mol.GetAtomWithIdx(x).GetSymbol() for x in range(mol.GetNumAtoms())]:
+            return False
+        return True
