@@ -13,7 +13,7 @@
     - [Pip](#pip)
     - [Docker](#docker)
 - [Getting Started](#getting-started)
-    - [Initial population](#initial-population)
+    - [Using ReactEA](#using-reactea)
 - [About Us](#about-us)
 - [Citing ReactEA](#citing-reactea)
 - [License](#licensing)
@@ -86,7 +86,17 @@ python setup.py install
 
 ## Getting Started
 
-### Initial population
+### Using ReactEA:
+
+- Define a seed population of initial molecules.
+
+- Define the reaction rules to use (SMARTS), possible coreactants and the number of maximum rules to use per mutation.
+
+- Define the evaluation functions to use in the optimization.
+
+- Select the algorithm to use.
+
+- Define the number of generations.
 
 
 ## About Us
