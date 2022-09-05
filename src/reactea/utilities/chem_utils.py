@@ -133,11 +133,12 @@ class ChemUtils:
         """
         if '*' in smiles:
             return False
-        mol = MolFromSmiles(smiles)
+        mol = MolFromSmiles(smiles, sanitize=False)
         if mol is None:
             return False
         if mol.GetNumAtoms() < 4:
             return False
-        if 'C' not in [mol.GetAtomWithIdx(x).GetSymbol() for x in range(mol.GetNumAtoms())]:
+        carbon = MolFromSmiles('C')
+        if not mol.HasSubstructMatch(carbon):
             return False
         return True
