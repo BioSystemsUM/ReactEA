@@ -73,6 +73,7 @@ class ReactorMutation(Mutation[ChemicalSolution]):
             products = []
             i = 0
             while len(products) < 1 and i < self.configs["max_rules_by_iter"]:
+                i += 1
                 rule = self.reaction_rules[random.randint(0, len(self.reaction_rules) - 1)]
                 if self.coreactants is not None:
                     rule_reactants_ids = rule.coreactants_ids
@@ -100,7 +101,6 @@ class ReactorMutation(Mutation[ChemicalSolution]):
                     else:
                         solution.attributes['original_compound'].append(compound.smiles)
                         solution.attributes['rule_id'].append(rule.rule_id)
-                i += 1
         return solution
 
     @staticmethod
