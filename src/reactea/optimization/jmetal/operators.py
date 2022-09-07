@@ -1,5 +1,6 @@
 import copy
 import random
+import time
 from typing import List, Union
 
 from jmetal.core.operator import Mutation, Crossover
@@ -68,11 +69,12 @@ class ReactorMutation(Mutation[ChemicalSolution]):
         ChemicalSolution
             mutated solution
         """
+        timeout = time.time() + self.configs["mutation_timeout"]
         if random.random() <= self.probability:
             compound = solution.variables
             products = []
             i = 0
-            while len(products) < 1 and i < self.configs["max_rules_by_iter"]:
+            while len(products) < 1 and i < self.configs["max_rules_by_iter"] and time.time() > timeout:
                 i += 1
                 rule = self.reaction_rules[random.randint(0, len(self.reaction_rules) - 1)]
                 if self.coreactants is not None:
