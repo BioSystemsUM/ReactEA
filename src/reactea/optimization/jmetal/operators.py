@@ -91,7 +91,6 @@ class ReactorMutation(Mutation[ChemicalSolution]):
                     products = random.sample(products, 20)
                 products = [pd for pd in products if ChemUtils.valid_product(pd)]
                 if len(products) > 0:
-                    print(len(products))
                     mutant_smiles = random.choices(products, weights=[len(p) for p in products], k=1)[0]
                     mutant_id = f"{compound.cmp_id}--{rule.rule_id}_"
                     mutant = Compound(mutant_smiles, mutant_id)
