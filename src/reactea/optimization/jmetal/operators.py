@@ -1,5 +1,6 @@
 import copy
 import random
+import time
 from typing import List, Union
 
 from jmetal.core.operator import Mutation, Crossover
@@ -86,6 +87,8 @@ class ReactorMutation(Mutation[ChemicalSolution]):
                     reactants = compound.mol
 
                 products = ChemUtils.react(reactants, rule.reaction)
+                if len(products) > 20:
+                    products = random.sample(products, 20)
                 products = [pd for pd in products if ChemUtils.valid_product(pd)]
                 if len(products) > 0:
                     mutant_smiles = random.choices(products, weights=[len(p) for p in products], k=1)[0]
