@@ -69,12 +69,11 @@ class ReactorMutation(Mutation[ChemicalSolution]):
         ChemicalSolution
             mutated solution
         """
-        timeout = time.time() + self.configs["mutation_timeout"]
         if random.random() <= self.probability:
             compound = solution.variables
             products = []
             i = 0
-            while len(products) < 1 and i < self.configs["max_rules_by_iter"] and time.time() > timeout:
+            while len(products) < 1 and i < self.configs["max_rules_by_iter"]:
                 i += 1
                 rule = self.reaction_rules[random.randint(0, len(self.reaction_rules) - 1)]
                 if self.coreactants is not None:
@@ -88,8 +87,11 @@ class ReactorMutation(Mutation[ChemicalSolution]):
                     reactants = compound.mol
 
                 products = ChemUtils.react(reactants, rule.reaction)
+                if len(products) > 20:
+                    products = random.sample(products, 20)
                 products = [pd for pd in products if ChemUtils.valid_product(pd)]
                 if len(products) > 0:
+                    print(len(products))
                     mutant_smiles = random.choices(products, weights=[len(p) for p in products], k=1)[0]
                     mutant_id = f"{compound.cmp_id}--{rule.rule_id}_"
                     mutant = Compound(mutant_smiles, mutant_id)
