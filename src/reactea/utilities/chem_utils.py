@@ -1,8 +1,10 @@
 from itertools import chain
 from typing import Union, List
 
-from rdkit.Chem import Mol, rdmolfiles, rdmolops, MolFromSmiles, MolToSmiles
+from rdkit import DataStructs
+from rdkit.Chem import Mol, rdmolfiles, rdmolops, MolFromSmiles, MolToSmiles, RemoveHs
 from rdkit.Chem.Draw import MolToImage
+from rdkit.Chem.Fingerprints.FingerprintMols import FingerprintMol
 from rdkit.Chem.rdChemReactions import ChemicalReaction
 
 
@@ -142,3 +144,70 @@ class ChemUtils:
         if not mol.HasSubstructMatch(carbon):
             return False
         return True
+
+    @staticmethod
+    def calc_fingerprint_similarity(smiles1: str, smiles2: str):
+        """
+        Calculates the similarity between two molecules based on fingerprints.
+
+        Parameters
+        ----------
+        smiles1: str
+            The first molecule smiles.
+        smiles2: str
+            The second molecule smiles.
+        Returns
+        -------
+        float
+            The similarity between the two molecules.
+        """
+        mol1 = MolFromSmiles(smiles1)
+        mol2 = MolFromSmiles(smiles2)
+        if mol1 and mol2:
+            fp1 = FingerprintMol(mol1)
+            fp2 = FingerprintMol(mol2)
+            return DataStructs.FingerprintSimilarity(fp1, fp2)
+        return 0.0
+
+    @staticmethod
+    def most_similar_compound(smiles: str, smiles_list: List[str]):
+        """
+        Finds the most similar compound in a list of compounds.
+
+        Parameters
+        ----------
+        smiles: str
+            The smiles of the compound to find the most similar compound for.
+        smiles_list: List[str]
+            The list of compounds to find the most similar compound in.
+
+        Returns
+        -------
+        str
+            The most similar compound SMILES string.
+        """
+        if len(smiles_list) == 1:
+            return smiles_list[0]
+        sims = [ChemUtils.calc_fingerprint_similarity(smiles, s) for s in smiles_list]
+        matching = sims.index(max(sims))
+        return smiles_list[matching]
+
+    @staticmethod
+    def smiles_to_isomerical_smiles(smiles: str):
+        """
+        Converts a molecule to its canonical SMILES.
+
+        Parameters
+        ----------
+        smiles: str
+            The SMILES of the molecule.
+
+        Returns
+        -------
+        str
+            The SMILES string.
+        """
+        try:
+            return MolToSmiles(RemoveHs(MolFromSmiles(smiles)), isomericSmiles=True)
+        except TypeError:
+            return None
