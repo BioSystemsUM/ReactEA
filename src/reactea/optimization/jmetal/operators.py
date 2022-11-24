@@ -72,7 +72,7 @@ class ReactorMutation(Mutation[ChemicalSolution]):
             while len(products) < 1 and i < self.configs["max_rules_by_iter"]:
                 i += 1
                 rule = self.reaction_rules[random.randint(0, len(self.reaction_rules) - 1)]
-                reactants = rule.to_mol_list(compound)
+                reactants = rule.reactants_to_mol_list(compound)
                 products = ChemUtils.react(reactants, rule.reaction)
                 if len(products) > 20:
                     products = random.sample(products, 20)
