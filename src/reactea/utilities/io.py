@@ -7,8 +7,11 @@ import yaml
 
 import pandas as pd
 
-from deepsweet_models import DeepSweetRF, DeepSweetDNN, DeepSweetGCN, DeepSweetSVM, DeepSweetBiLSTM
-from ensemble import Ensemble
+try:
+    from deepsweet_models import DeepSweetRF, DeepSweetDNN, DeepSweetGCN, DeepSweetSVM, DeepSweetBiLSTM
+    from ensemble import Ensemble
+except ImportError:
+    pass
 from reactea.chem.compounds import Compound
 from reactea.chem.reaction_rules import ReactionRule
 from reactea.optimization.solution import ChemicalSolution
