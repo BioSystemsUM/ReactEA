@@ -83,16 +83,19 @@ class ReactorMutation(Mutation[ChemicalSolution]):
                     most_similar_product = ChemUtils.smiles_to_isomerical_smiles(most_similar_product)
                     mutant_id = f"{compound.cmp_id}--{rule.rule_id}_"
                     mutant = Compound(most_similar_product, mutant_id)
-                    mutant = self.standardizer().standardize(mutant)
-                    if self.logger:
-                        self.logger(self.configs, solution, mutant.smiles, rule.rule_id)
-                    solution.variables = mutant
-                    if 'original_compound' not in solution.attributes.keys():
-                        solution.attributes['original_compound'] = [compound.smiles]
-                        solution.attributes['rule_id'] = [rule.rule_id]
+                    if mutant.mol is not None:
+                        mutant = self.standardizer().standardize(mutant)
+                        if self.logger:
+                            self.logger(self.configs, solution, mutant.smiles, rule.rule_id)
+                        solution.variables = mutant
+                        if 'original_compound' not in solution.attributes.keys():
+                            solution.attributes['original_compound'] = [compound.smiles]
+                            solution.attributes['rule_id'] = [rule.rule_id]
+                        else:
+                            solution.attributes['original_compound'].append(compound.smiles)
+                            solution.attributes['rule_id'].append(rule.rule_id)
                     else:
-                        solution.attributes['original_compound'].append(compound.smiles)
-                        solution.attributes['rule_id'].append(rule.rule_id)
+                        products = []
         return solution
 
     def get_name(self):
