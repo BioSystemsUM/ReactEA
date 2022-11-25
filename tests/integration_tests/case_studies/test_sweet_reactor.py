@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, skip
 
 from _utils import initialize_population, load_initial_population_smiles
 from base_test_cases import CaseStudiesBaseTestCase
@@ -7,6 +7,7 @@ from reactea.optimization.jmetal.ea import ChemicalEA
 from reactea.utilities.io import Writers, Loaders
 
 
+@skip("Requires DeepSweet.")
 class TestSweetReactor(CaseStudiesBaseTestCase, TestCase):
 
     def run_case_study(self, mo=True):
