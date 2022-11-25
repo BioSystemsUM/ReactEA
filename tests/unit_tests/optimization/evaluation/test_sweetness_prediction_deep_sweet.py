@@ -1,9 +1,10 @@
-from unittest import TestCase
+from unittest import TestCase, skip
 
 from reactea.optimization.evaluation import SweetnessPredictionDeepSweet
 from .test_evaluation_functions import EvaluationFunctionBaseTestCase
 
 
+@skip("Requires DeepSweet.")
 class TestSweetnessPredictionDeepSweet(EvaluationFunctionBaseTestCase, TestCase):
 
     def test_evaluation_function(self):

@@ -7,8 +7,11 @@ import yaml
 
 import pandas as pd
 
-from deepsweet_models import DeepSweetRF, DeepSweetDNN, DeepSweetGCN, DeepSweetSVM, DeepSweetBiLSTM
-from ensemble import Ensemble
+try:
+    from deepsweet_models import DeepSweetRF, DeepSweetDNN, DeepSweetGCN, DeepSweetSVM, DeepSweetBiLSTM
+    from ensemble import Ensemble
+except ImportError:
+    pass
 from reactea.chem.compounds import Compound
 from reactea.chem.reaction_rules import ReactionRule
 from reactea.optimization.solution import ChemicalSolution
@@ -81,7 +84,7 @@ class Loaders:
             Compound(row['smiles'], row["compound_id"])) for _, row in cmp_df.iterrows()], cmp_df.smiles.values
 
     @staticmethod
-    def initialize_rules(configs: dict):
+    def initialize_rules():
         """
         Loads the reaction rules.
 
@@ -95,13 +98,11 @@ class Loaders:
         List[ReactionRule]:
             list of reaction rules to use
         """
-        rules_df = pd.read_csv(Loaders.from_root(configs["rules_path"]), header=0, sep='\t')
-        if configs["use_coreactant_info"]:
-            coreactants = Loaders.initialize_coreactants(configs)
-            return [ReactionRule(row['smarts'],
-                                 row["rule_id"], row["coreactants_ids"]) for _, row in rules_df.iterrows()], coreactants
-        else:
-            return [ReactionRule(row['smarts'], row["rule_id"]) for _, row in rules_df.iterrows()], None
+        rules_df = pd.read_csv(Loaders.from_root('/data/reactionrules/reaction_rules_reactea.tsv.bz2'),
+                               header=0,
+                               sep='\t',
+                               compression='bz2')
+        return [ReactionRule(row['SMARTS'], row["InternalID"], row['Reactants']) for _, row in rules_df.iterrows()]
 
     @staticmethod
     def initialize_coreactants(configs: dict, standardize: bool = False):

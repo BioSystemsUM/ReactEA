@@ -30,7 +30,6 @@ class ChemicalEA(AbstractEA):
                  initial_population: List[Compound],
                  reaction_rules: List[ReactionRule],
                  standardizer: MolecularStandardizer = ChemConstants.STANDARDIZER,
-                 coreactants: List[Compound] = None,
                  max_generations: int = EAConstants.MAX_GENERATIONS,
                  visualizer: bool = EAConstants.VISUALIZER,
                  algorithm: str = EAConstants.ALGORITHM,
@@ -50,8 +49,6 @@ class ChemicalEA(AbstractEA):
             pool of available reaction rules
         standardizer: MolecularStandardizer
             molecular standardizer to use
-        coreactants: List[Compound]
-            list of coreactants if available
         max_generations: int
             maximum number of generations
         visualizer: bool
@@ -67,7 +64,6 @@ class ChemicalEA(AbstractEA):
         self.algorithm_name = algorithm
         self.reaction_rules = reaction_rules
         self.standardizer = standardizer
-        self.coreactants = coreactants
         self.configs = configs
         self.logger = logger
         self.initial_population = ChemicalGenerator(initial_population)
@@ -91,14 +87,12 @@ class ChemicalEA(AbstractEA):
         mutation = EAConstants.MUTATION(EAConstants.MUTATION_PROBABILITY,
                                         self.reaction_rules,
                                         self.standardizer,
-                                        self.coreactants,
                                         self.configs,
                                         self.logger)
         try:
             crossover = EAConstants.CROSSOVER(EAConstants.CROSSOVER_PROBABILITY,
                                               self.reaction_rules,
                                               self.standardizer,
-                                              self.coreactants,
                                               self.configs,
                                               self.logger
                                               )
@@ -168,14 +162,12 @@ class ChemicalEA(AbstractEA):
         mutation = EAConstants.MUTATION(EAConstants.MUTATION_PROBABILITY,
                                         self.reaction_rules,
                                         self.standardizer,
-                                        self.coreactants,
                                         self.configs,
                                         self.logger)
         try :
             crossover = EAConstants.CROSSOVER(EAConstants.CROSSOVER_PROBABILITY,
                                               self.reaction_rules,
                                               self.standardizer,
-                                              self.coreactants,
                                               self.configs,
                                               self.logger
                                               )

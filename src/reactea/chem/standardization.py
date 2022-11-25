@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 from rdkit.Chem import Mol, rdmolops
 from chembl_structure_pipeline import standardizer
 
-from reactea.chem.compounds import Compound
-from reactea.utilities.chem_utils import ChemUtils
+from reactea.chem import Compound
+from reactea.utilities import ChemUtils
 
 
 class MolecularStandardizer(ABC):
@@ -29,6 +29,8 @@ class MolecularStandardizer(ABC):
         Compound:
             Standardized Compound object.
         """
+        if mol.mol is None:
+            return mol
         compound_representation = self._standardize(ChemUtils.canonicalize_atoms(mol.mol))
         mol.mol = compound_representation
         return mol
@@ -75,11 +77,8 @@ class ChEMBLStandardizer(MolecularStandardizer):
         Mol:
             Standardized RDKit Mol object.
         """
-        try:
-            mol = standardizer.standardize_mol(mol)
-            mol, _ = standardizer.get_parent_mol(mol)
-            mol_frags = rdmolops.GetMolFrags(mol, asMols=True)
-            largest_mol = max(mol_frags, default=mol, key=lambda m: m.GetNumAtoms())
-            return largest_mol
-        except Exception:
-            return mol
+        mol = standardizer.standardize_mol(mol)
+        mol, _ = standardizer.get_parent_mol(mol)
+        mol_frags = rdmolops.GetMolFrags(mol, asMols=True)
+        largest_mol = max(mol_frags, default=mol, key=lambda m: m.GetNumAtoms())
+        return largest_mol

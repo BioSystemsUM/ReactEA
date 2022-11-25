@@ -1,12 +1,13 @@
-from unittest import TestCase
+from unittest import TestCase, skip
 
-from _utils import initialize_population, initialize_rules, load_initial_population_smiles
+from _utils import initialize_population, load_initial_population_smiles
 from base_test_cases import CaseStudiesBaseTestCase
 from reactea.case_studies.sweeteners import SweetReactor
 from reactea.optimization.jmetal.ea import ChemicalEA
-from reactea.utilities.io import Writers
+from reactea.utilities.io import Writers, Loaders
 
 
+@skip("Requires DeepSweet.")
 class TestSweetReactor(CaseStudiesBaseTestCase, TestCase):
 
     def run_case_study(self, mo=True):
@@ -33,7 +34,7 @@ class TestSweetReactor(CaseStudiesBaseTestCase, TestCase):
         objective = case_study.objective
 
         # initialize reaction rules
-        reaction_rules, coreactants = initialize_rules(self.configs)
+        reaction_rules = Loaders.initialize_rules()
 
         # set up folders
         Writers.set_up_folders(self.output_folder)
@@ -43,7 +44,7 @@ class TestSweetReactor(CaseStudiesBaseTestCase, TestCase):
 
         # Initialize EA
         ea = ChemicalEA(problem, initial_population=init_pop, reaction_rules=reaction_rules,
-                        coreactants=coreactants, max_generations=self.configs['generations'],
+                        max_generations=self.configs['generations'],
                         visualizer=False, algorithm=self.configs['algorithm'], configs=self.configs)
 
         # Run EA

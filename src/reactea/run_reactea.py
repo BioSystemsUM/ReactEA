@@ -6,7 +6,6 @@ from reactea.optimization.jmetal.ea import ChemicalEA
 from reactea.utilities.io import Loaders, Writers
 
 
-# TODO: change everything to work with the constants except if they are in the configs
 def run(configurations: dict, case, init_pop):
     # set up objective
     objective = case.objective

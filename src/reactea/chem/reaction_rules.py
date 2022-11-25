@@ -1,6 +1,9 @@
+import uuid
 from typing import Union, List
 
 from rdkit.Chem.rdChemReactions import ReactionFromSmarts, ChemicalReaction, ReactionToSmarts
+
+from reactea.chem import Compound
 
 
 class ReactionRule:
@@ -9,7 +12,7 @@ class ReactionRule:
     Each Reaction Rule is characterized by an id, smarts string, ChemicalReaction object and possible coreactants ids.
     """
 
-    def __init__(self, smarts: str, rule_id: Union[str, int], coreactants_ids: str = None):
+    def __init__(self, smarts: str, rule_id: Union[str, int], reactants: Union[str, None] = 'Any'):
         """
         Initializes the Reaction Rule.
 
@@ -19,12 +22,15 @@ class ReactionRule:
             Reaction Rule' SMARTS string.
         rule_id: Union[str, int]
             Reaction Rule id.
-        coreactants_ids: List[Union[str, int]]
-            Reaction Rule coreactants ids.
+        reactants: Union[str, None]
+            Reaction Rule reactants.
         """
         self._smarts = smarts
         self._rule_id = rule_id
-        self._coreactants_ids = coreactants_ids
+        if reactants is None:
+            self._reactants = 'Any'
+        else:
+            self._reactants = reactants
         self._reaction = self._to_reaction()
 
     @property
@@ -105,7 +111,7 @@ class ReactionRule:
         self._smarts = self._to_smarts()
 
     @property
-    def coreactants_ids(self):
+    def reactants(self):
         """
         Reaction Rule' coreactants ids.
 
@@ -114,10 +120,10 @@ class ReactionRule:
         str
             Reaction Rule' coreactants ids.
         """
-        return self._coreactants_ids
+        return self._reactants
 
-    @coreactants_ids.setter
-    def coreactants_ids(self, value):
+    @reactants.setter
+    def reactants(self, value):
         """
         Reaction Rule' coreactants ids setter.
         Coreactants ids should not be changed.
@@ -158,3 +164,30 @@ class ReactionRule:
             Converted SMARTS string.
         """
         return ReactionToSmarts(self._reaction)
+
+    def reactants_to_mol_list(self, compound):
+        """
+        Converts the Reaction Rule' reactants into a list of RDKit molecules. The Any field is replaced by the provided
+        compound.
+
+        Parameters
+        ----------
+        compound: Compound
+            The compound to replace the Any field.
+
+        Returns
+        -------
+        reactants: List[Mol]
+            List of reactants as RDKit molecules.
+        """
+        reactants = []
+        for r in self.reactants.split(';'):
+            if r == 'Any':
+                reactants.append(compound.mol)
+            else:
+                random_id = uuid.uuid4().hex
+                reactants.append(Compound(r, random_id).mol)
+        if len(reactants) == 1:
+            return reactants[0]
+        return reactants
+

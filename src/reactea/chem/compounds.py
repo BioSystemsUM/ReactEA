@@ -46,7 +46,6 @@ class Compound:
         ----------
         new_smiles: str
             Compound new SMILES representation.
-
         """
         self._smiles = new_smiles
         self._mol = self._to_mol()

@@ -5,3 +5,5 @@ cytoolz==0.11.2
 jmetalpy
 PyYAML==6.0
 matplotlib==3.5.1
+chembl_structure_pipeline
+joblib==1.1.0
