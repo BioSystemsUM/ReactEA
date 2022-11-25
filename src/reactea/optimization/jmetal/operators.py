@@ -25,7 +25,6 @@ class ReactorMutation(Mutation[ChemicalSolution]):
                  probability: float,
                  reaction_rules: List[ReactionRule],
                  standardizer: Union[MolecularStandardizer, None],
-                 coreactants: Union[List[Compound], None],
                  configs: dict,
                  logger: Union[callable, None] = None):
         """
@@ -39,8 +38,6 @@ class ReactorMutation(Mutation[ChemicalSolution]):
             pool or reaction rules to use
         standardizer: Union[MolecularStandardizer, None]
             standardizer to standardize new solutions
-        coreactants: Union[List[Compound], None]
-            list of coreactants to use (when available)
         configs: dict
             configurations of the experiment
         logger: Union[callable, None]
@@ -49,7 +46,6 @@ class ReactorMutation(Mutation[ChemicalSolution]):
         super(ReactorMutation, self).__init__(probability=probability)
         self.reaction_rules = reaction_rules
         self.standardizer = standardizer
-        self.coreactants = coreactants
         self.configs = configs
         self.logger = logger
 
@@ -76,78 +72,31 @@ class ReactorMutation(Mutation[ChemicalSolution]):
             while len(products) < 1 and i < self.configs["max_rules_by_iter"]:
                 i += 1
                 rule = self.reaction_rules[random.randint(0, len(self.reaction_rules) - 1)]
-                if self.coreactants is not None:
-                    rule_reactants_ids = rule.coreactants_ids
-                    reactants = self.set_coreactants(rule_reactants_ids, compound, self.coreactants)
-                    if not isinstance(reactants, list):
-                        reactants = compound.mol
-                    else:
-                        reactants = [reac.mol for reac in reactants]
-                else:
-                    reactants = compound.mol
-
+                reactants = rule.reactants_to_mol_list(compound)
                 products = ChemUtils.react(reactants, rule.reaction)
                 if len(products) > 20:
                     products = random.sample(products, 20)
                 products = [pd for pd in products if ChemUtils.valid_product(pd)]
                 if len(products) > 0:
-                    mutant_smiles = random.choices(products, weights=[len(p) for p in products], k=1)[0]
+                    # keep the most similar compound
+                    most_similar_product = ChemUtils.most_similar_compound(compound.smiles, products)
+                    most_similar_product = ChemUtils.smiles_to_isomerical_smiles(most_similar_product)
                     mutant_id = f"{compound.cmp_id}--{rule.rule_id}_"
-                    mutant = Compound(mutant_smiles, mutant_id)
-                    mutant = self.standardizer().standardize(mutant)
-                    if self.logger:
-                        self.logger(self.configs, solution, mutant.smiles, rule.rule_id)
-                    solution.variables = mutant
-                    if 'original_compound' not in solution.attributes.keys():
-                        solution.attributes['original_compound'] = [compound.smiles]
-                        solution.attributes['rule_id'] = [rule.rule_id]
+                    mutant = Compound(most_similar_product, mutant_id)
+                    if mutant.mol is not None:
+                        mutant = self.standardizer().standardize(mutant)
+                        if self.logger:
+                            self.logger(self.configs, solution, mutant.smiles, rule.rule_id)
+                        solution.variables = mutant
+                        if 'original_compound' not in solution.attributes.keys():
+                            solution.attributes['original_compound'] = [compound.smiles]
+                            solution.attributes['rule_id'] = [rule.rule_id]
+                        else:
+                            solution.attributes['original_compound'].append(compound.smiles)
+                            solution.attributes['rule_id'].append(rule.rule_id)
                     else:
-                        solution.attributes['original_compound'].append(compound.smiles)
-                        solution.attributes['rule_id'].append(rule.rule_id)
+                        products = []
         return solution
-
-    @staticmethod
-    def set_coreactants(reactants: str,
-                        compound: Compound,
-                        coreactants: List[Compound]):
-        """
-        Sets coreactant information.
-        If coreactant information is available from the reaction rules and from a list of coreactants
-        it can be used to match the reaction rules allowing for instance the use of reactions with multiple
-        reagents.
-
-        Parameters
-        ----------
-        reactants: str
-            string with the reaction rule coreactant ids
-            (Any matches with the compound to mutate, other ids are looked for in the coreactant list)
-        compound: Compound
-            molecule to mutate
-        coreactants: List[Compound]
-            pool of available coreactants
-
-        Returns
-        -------
-        List
-            list of reagents (coreactants and molecule to mutate) in the correct order
-        """
-        reactants_list = []
-        if len(reactants.split(';')) > 1:
-            for r in reactants.split(';'):
-                if r == 'Any':
-                    reactants_list.append(compound)
-                else:
-                    found = False
-                    for cor in coreactants:
-                        if cor.cmp_id == r:
-                            reactants_list.append(cor)
-                            found = True
-                            break
-                    if not found:
-                        return None
-            return reactants_list
-        else:
-            return compound
 
     def get_name(self):
         """
@@ -172,7 +121,6 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
                  probability: float,
                  reaction_rules: List[ReactionRule],
                  standardizer: Union[MolecularStandardizer, None],
-                 coreactants: Union[List[Compound], None],
                  configs: dict,
                  logger: Union[callable, None] = None):
         """
@@ -186,8 +134,6 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
             pool or reaction rules to use
         standardizer: Union[MolecularStandardizer, None]
             standardizer to standardize new solutions
-        coreactants: Union[List[Compound], None]
-            list of coreactants to use (when available)
         configs: dict
             configurations of the experiment
         logger: Union[callable, None]
@@ -196,7 +142,6 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
         super(ReactorPseudoCrossover, self).__init__(probability=probability)
         self.reaction_rules = reaction_rules
         self.standardizer = standardizer
-        self.coreactants = coreactants
         self.configs = configs
         self.logger = logger
 
@@ -222,14 +167,12 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
             stepbro = ReactorMutation(self.probability,
                                       self.reaction_rules,
                                       self.standardizer,
-                                      self.coreactants,
                                       self.configs,
                                       self.logger).execute(offspring[0])
 
             stepsis = ReactorMutation(self.probability,
                                       self.reaction_rules,
                                       self.standardizer,
-                                      self.coreactants,
                                       self.configs,
                                       self.logger).execute(offspring[1])
             offspring[0] = stepbro
