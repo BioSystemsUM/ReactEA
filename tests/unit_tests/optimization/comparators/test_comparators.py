@@ -24,9 +24,6 @@ class TestComparators(ABC):
 class TestParetoDominanceComparator(TestComparators, TestCase):
 
     def test_comparator(self):
-        pass
-
-    def test_comparators(self):
         res1 = ParetoDominanceComparator().compare(self.solution1, self.solution2)
         self.assertTrue(res1 == -1)
         res2 = ParetoDominanceComparator().compare(self.solution2, self.solution1)
