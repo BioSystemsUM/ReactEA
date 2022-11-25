@@ -57,7 +57,7 @@ class ChemUtils:
                 products = rule.RunReactants((mol,))
             else:
                 products = rule.RunReactants(tuple(mol))
-            return list(set([MolToSmiles(s) for s in list(chain.from_iterable(products))]))
+            return list(set([MolToSmiles(s, sanitize=True) for s in list(chain.from_iterable(products))]))
         except Exception:
             return ()
 
