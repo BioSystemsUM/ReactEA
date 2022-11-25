@@ -1,7 +1,7 @@
 from typing import List
 
-from reactea.case_studies.case_study import CaseStudy
-from reactea.optimization.evaluation import AggregatedSum, MolecularWeight, LogP, QED
+from reactea.case_studies import CaseStudy
+from reactea.optimization.evaluation import MolecularWeight, LogP, QED, AggregatedSum
 from reactea.optimization.problem import ChemicalProblem
 
 
