@@ -11,7 +11,7 @@ from rdkit.Chem.Descriptors import MolWt
 from rdkit.Chem.EnumerateStereoisomers import StereoEnumerationOptions
 from rdkit.Chem.QED import qed
 
-from reactea.utilities.io import Loaders
+from reactea.io_streams import Loaders
 
 
 class ChemicalEvaluationFunction(ABC):

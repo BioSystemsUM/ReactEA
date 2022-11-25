@@ -6,9 +6,8 @@ from rdkit import RDLogger
 
 from reactea.chem.compounds import Compound
 from reactea.optimization.jmetal.ea import ChemicalEA
-from reactea.utilities.constants import ChemConstants
-from reactea.utilities.io import Loaders, Writers
-from reactea.vizualization.plot_results import PlotResults
+from reactea.constants import ChemConstants
+from io.io import Loaders, Writers
 
 
 def setup_configuration_file(args):

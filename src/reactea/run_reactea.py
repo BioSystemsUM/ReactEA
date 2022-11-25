@@ -1,9 +1,8 @@
 from rdkit import RDLogger
 
-from reactea.case_studies.compound_quality import CompoundQuality
 from reactea.case_studies.sweeteners import SweetReactor
 from reactea.optimization.jmetal.ea import ChemicalEA
-from reactea.utilities.io import Loaders, Writers
+from io.io import Loaders, Writers
 
 
 def run(configurations: dict, case, init_pop):

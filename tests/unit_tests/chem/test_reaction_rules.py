@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from reactea.chem.reaction_rules import ReactionRule
+from reactea.chem import ReactionRule
 
 
 class TestReactionRules(TestCase):

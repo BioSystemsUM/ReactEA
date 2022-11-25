@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from unittest import TestCase
 
-from reactea.chem.compounds import Compound
+from reactea.chem import Compound
 from reactea.optimization.comparators import ParetoDominanceComparator
 from reactea.optimization.solution import ChemicalSolution
 

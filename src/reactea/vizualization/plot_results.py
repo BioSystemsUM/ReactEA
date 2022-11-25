@@ -5,8 +5,8 @@ import numpy as np
 from PIL import Image, ImageDraw
 from matplotlib import pyplot as plt
 
-from reactea.utilities.chem_utils import ChemUtils
-from reactea.utilities.io import Loaders
+from reactea.chem import ChemUtils
+from reactea.io_streams import Loaders
 
 
 class PlotResults:
