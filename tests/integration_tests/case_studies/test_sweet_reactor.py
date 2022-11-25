@@ -7,7 +7,7 @@ from reactea.io_streams import Loaders, Writers
 from reactea.optimization.jmetal.ea import ChemicalEA
 
 
-#@skip("Requires DeepSweet.")
+@skip("Requires DeepSweet.")
 class TestSweetReactor(CaseStudiesBaseTestCase, TestCase):
 
     def run_case_study(self, mo=True):

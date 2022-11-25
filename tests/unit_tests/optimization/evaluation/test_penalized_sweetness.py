@@ -4,7 +4,7 @@ from reactea.optimization.evaluation import PenalizedSweetness
 from .test_evaluation_functions import EvaluationFunctionBaseTestCase
 
 
-#@skip("Requires DeepSweet.")
+@skip("Requires DeepSweet.")
 class TestPenalizedSweetness(EvaluationFunctionBaseTestCase, TestCase):
 
     def test_evaluation_function(self):
