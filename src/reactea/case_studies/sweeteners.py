@@ -19,6 +19,8 @@ class SweetReactor(CaseStudy):
 
         Parameters
         ----------
+        initial_population: List[str]
+            List of SMILES strings used as initial population.
         configs: dict
             dictionary with the experiment configurations.
         """
