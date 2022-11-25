@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 from rdkit.Chem import Mol, rdmolops
 from chembl_structure_pipeline import standardizer
 
-from reactea.chem.compounds import Compound
-from reactea.utilities.chem_utils import ChemUtils
+from reactea.chem import Compound
+from reactea.utilities import ChemUtils
 
 
 class MolecularStandardizer(ABC):

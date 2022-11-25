@@ -1,6 +1,6 @@
 from typing import List
 
-from reactea.case_studies.case_study import CaseStudy
+from reactea.case_studies import CaseStudy
 from reactea.optimization.evaluation import AggregatedSum, PenalizedSweetness, MolecularWeight, NumberOfLargeRings, \
     StereoisomersCounter, LogP, SimilarityToInitial
 from reactea.optimization.problem import ChemicalProblem
