@@ -3,7 +3,7 @@ from typing import Union, List
 
 from rdkit.Chem.rdChemReactions import ReactionFromSmarts, ChemicalReaction, ReactionToSmarts
 
-from reactea.chem.compounds import Compound
+from reactea.chem import Compound
 
 
 class ReactionRule:
@@ -12,7 +12,7 @@ class ReactionRule:
     Each Reaction Rule is characterized by an id, smarts string, ChemicalReaction object and possible coreactants ids.
     """
 
-    def __init__(self, smarts: str, rule_id: Union[str, int], reactants: str = None):
+    def __init__(self, smarts: str, rule_id: Union[str, int], reactants: Union[str, None] = 'Any'):
         """
         Initializes the Reaction Rule.
 
@@ -22,12 +22,15 @@ class ReactionRule:
             Reaction Rule' SMARTS string.
         rule_id: Union[str, int]
             Reaction Rule id.
-        reactants: List[Union[str, int]]
-            Reaction Rule coreactants ids.
+        reactants: Union[str, None]
+            Reaction Rule reactants.
         """
         self._smarts = smarts
         self._rule_id = rule_id
-        self._reactants = reactants
+        if reactants is None:
+            self._reactants = 'Any'
+        else:
+            self._reactants = reactants
         self._reaction = self._to_reaction()
 
     @property
