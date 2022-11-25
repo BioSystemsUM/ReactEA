@@ -33,7 +33,7 @@ class TestSweetReactor(CaseStudiesBaseTestCase, TestCase):
         objective = case_study.objective
 
         # initialize reaction rules
-        reaction_rules, coreactants = Loaders.initialize_rules()
+        reaction_rules = Loaders.initialize_rules()
 
         # set up folders
         Writers.set_up_folders(self.output_folder)

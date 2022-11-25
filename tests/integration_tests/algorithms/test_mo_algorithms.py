@@ -1,10 +1,10 @@
 from unittest import TestCase
 
-from _utils import initialize_population, load_initial_population_smiles, initialize_rules
+from _utils import initialize_population, load_initial_population_smiles
 from base_test_cases import AlgorithmsBaseTestCase
 from reactea.case_studies.compound_quality import CompoundQuality
 from reactea.optimization.jmetal.ea import ChemicalEA
-from reactea.utilities.io import Writers
+from reactea.utilities.io import Writers, Loaders
 
 
 class TestMOAlgorithms(AlgorithmsBaseTestCase, TestCase):
@@ -31,7 +31,7 @@ class TestMOAlgorithms(AlgorithmsBaseTestCase, TestCase):
         objective = case_study.objective
 
         # initialize reaction rules
-        reaction_rules, coreactants = initialize_rules(self.configs)
+        reaction_rules = Loaders.initialize_rules()
 
         # set up folders
         Writers.set_up_folders(self.output_folder)
@@ -41,7 +41,7 @@ class TestMOAlgorithms(AlgorithmsBaseTestCase, TestCase):
 
         # Initialize EA
         ea = ChemicalEA(problem, initial_population=init_pop, reaction_rules=reaction_rules,
-                        coreactants=coreactants, max_generations=self.configs['generations'],
+                        max_generations=self.configs['generations'],
                         visualizer=False, algorithm=self.configs['algorithm'], configs=self.configs)
 
         # Run EA
