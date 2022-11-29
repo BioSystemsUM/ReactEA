@@ -1,18 +1,17 @@
-exp_name: "TEST_MUTATOR"
+exp_name: "###Report_NSGAIII_v4_100_35gen_3"
 
 case_study: "SweetReactor"
 
 init_pop_path: "/data/compounds/ecoli_sink.tsv"
 init_pop_size: 100
 
-rules_path: "/data/reactionrules/all_rules/all_reaction_rules.tsv"
 max_rules_by_iter: 1000
-use_coreactant_info: True
-coreactants_path: "/data/reactionrules/all_rules/all_coreactants.tsv"
 
 multi_objective: True
 batched: True
-generations: 100
+generations: 35
 algorithm: "NSGAIII"
 verbose: False
-visualize: True
+visualize: False
+
+output_path: "outputs/"

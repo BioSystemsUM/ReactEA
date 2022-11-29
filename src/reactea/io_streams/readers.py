@@ -57,7 +57,7 @@ class Loaders:
         dict:
             dictionary containing the configurations of the experiment
         """
-        with open(Loaders.from_root(yaml_file), 'r') as config_file:
+        with open(yaml_file, 'r') as config_file:
             config_dict = yaml.safe_load(config_file)
         config_dict['time'] = datetime.now().strftime('%m-%d_%H-%M-%S')
         config_dict['start_time'] = time.time()
@@ -78,7 +78,7 @@ class Loaders:
         List[Compound]:
             list of compounds to use as initial population
         """
-        cmp_df = pd.read_csv(Loaders.from_root(configs["init_pop_path"]), header=0, sep='\t')
+        cmp_df = pd.read_csv(f"{configs['cwd']}/{configs['init_pop_path']}", header=0, sep='\t')
         cmp_df = cmp_df.sample(configs["init_pop_size"])
         return [ChemConstants.STANDARDIZER().standardize(
             Compound(row['smiles'], row["compound_id"])) for _, row in cmp_df.iterrows()], cmp_df.smiles.values
@@ -103,30 +103,6 @@ class Loaders:
                                sep='\t',
                                compression='bz2')
         return [ReactionRule(row['SMARTS'], row["InternalID"], row['Reactants']) for _, row in rules_df.iterrows()]
-
-    @staticmethod
-    def initialize_coreactants(configs: dict, standardize: bool = False):
-        """
-        Loads the set of coreactants
-
-        Parameters
-        ----------
-        configs: dict
-            configurations of the experiment (containing path to coreactants file)
-        standardize: bool
-            whether to standardize the coreactants
-
-        Returns
-        -------
-        List[Compound]:
-            list of compounds to use as coreactants
-        """
-        coreactants_df = pd.read_csv(Loaders.from_root(configs["coreactants_path"]), header=0, sep='\t')
-        if standardize:
-            return [ChemConstants.STANDARDIZER().standardize(
-                Compound(row['smiles'], row["compound_id"])) for _, row in coreactants_df.iterrows()]
-        else:
-            return [Compound(row['smiles'], row["compound_id"]) for _, row in coreactants_df.iterrows()]
 
     @staticmethod
     def load_deepsweet_ensemble():

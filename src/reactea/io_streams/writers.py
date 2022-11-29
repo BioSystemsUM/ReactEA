@@ -44,7 +44,7 @@ class Writers:
             names of the evaluation functions
         """
         # save all solutions
-        destFile = Loaders.from_root(f"/outputs/{configs['exp_name']}/FINAL_{configs['time']}.csv")
+        destFile = Loaders.from_root(f"/{configs['output_path']}/{configs['exp_name']}/FINAL_{configs['time']}.csv")
         configs["final_population_path"] = destFile
         with open(destFile, 'w') as f:
             f.write("SMILES;" + feval_names + "\n")
