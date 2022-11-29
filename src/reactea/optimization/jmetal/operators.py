@@ -1,17 +1,14 @@
 import copy
 import random
-import time
 from typing import List, Union
 
 from jmetal.core.operator import Mutation, Crossover
 
 from reactea.chem.compounds import Compound
 from reactea.chem.reaction_rules import ReactionRule
-from reactea.chem.standardization import MolecularStandardizer
+from reactea.standardizers.standardization import MolecularStandardizer
 from reactea.optimization.solution import ChemicalSolution
-from reactea.utilities.chem_utils import ChemUtils
-
-from rdkit.Chem import MolFromSmiles
+from reactea.chem.chem_utils import ChemUtils
 
 
 class ReactorMutation(Mutation[ChemicalSolution]):

@@ -4,8 +4,8 @@ from datetime import datetime
 import pandas as pd
 import yaml
 
-from reactea.chem.compounds import Compound
-from reactea.utilities.constants import ChemConstants
+from reactea.chem import Compound
+from reactea.constants import ChemConstants
 
 ROOT_DIR = os.path.dirname(__file__)
 SOURCE_DIR = os.path.dirname(__file__)[:-6]

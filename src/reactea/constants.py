@@ -2,9 +2,9 @@ from jmetal.algorithm.multiobjective.nsgaiii import UniformReferenceDirectionFac
 from jmetal.operator import BinaryTournamentSelection
 from jmetal.util.termination_criterion import StoppingByEvaluations
 
-from reactea.chem import ChEMBLStandardizer
 from reactea.optimization.comparators import ParetoDominanceComparator
 from reactea.optimization.jmetal.operators import ReactorPseudoCrossover, ReactorMutation
+from reactea.standardizers import ChEMBLStandardizer
 
 
 class ExperimentConstants:

@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from reactea.chem.compounds import Compound
+from reactea.chem import Compound
 
 
 class TestCompound(TestCase):

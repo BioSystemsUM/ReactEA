@@ -1,9 +1,8 @@
 from rdkit import RDLogger
 
-from reactea.case_studies.compound_quality import CompoundQuality
 from reactea.case_studies.sweeteners import SweetReactor
+from reactea.io_streams import Writers, Loaders
 from reactea.optimization.jmetal.ea import ChemicalEA
-from reactea.utilities.io import Loaders, Writers
 
 
 def run(configurations: dict, case, init_pop):
@@ -18,14 +17,14 @@ def run(configurations: dict, case, init_pop):
     Writers.set_up_folders(f"outputs/{configurations['exp_name']}/")
 
     # initialize reaction rules
-    reaction_rules, coreactants = Loaders.initialize_rules(configurations)
+    reaction_rules, coreactants = Loaders.initialize_rules()
 
     # initialize objectives
     problem = objective()
 
     # Initialize EA
     ea = ChemicalEA(problem, initial_population=init_pop, reaction_rules=reaction_rules,
-                    coreactants=coreactants, max_generations=generations, visualizer=True,
+                     max_generations=generations, visualizer=True,
                     algorithm=algorithm, configs=configurations)
 
     # Run EA

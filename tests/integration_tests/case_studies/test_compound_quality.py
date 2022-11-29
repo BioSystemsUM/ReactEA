@@ -3,10 +3,11 @@ from unittest import TestCase
 from _utils import initialize_population, load_initial_population_smiles
 from base_test_cases import CaseStudiesBaseTestCase
 from reactea.case_studies.compound_quality import CompoundQuality
+from reactea.io_streams import Loaders, Writers
 
 from reactea.optimization.jmetal.ea import ChemicalEA
 from reactea.optimization.jmetal.terminators import StoppingByEvaluationsOrMeanFitnessValue
-from reactea.utilities.io import Writers, Loaders
+
 
 
 class TestCompoundQuality(CaseStudiesBaseTestCase, TestCase):

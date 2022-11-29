@@ -5,10 +5,9 @@ from datetime import datetime
 from rdkit import RDLogger
 
 from reactea.chem.compounds import Compound
+from reactea.io_streams import Loaders, Writers
 from reactea.optimization.jmetal.ea import ChemicalEA
-from reactea.utilities.constants import ChemConstants
-from reactea.utilities.io import Loaders, Writers
-from reactea.vizualization.plot_results import PlotResults
+from reactea.constants import ChemConstants
 
 
 def setup_configuration_file(args):
@@ -63,14 +62,14 @@ def run(configs):
     Writers.set_up_folders(f"outputs/{configs['exp_name']}/")
 
     # initialize reaction rules
-    reaction_rules, coreactants = Loaders.initialize_rules(configs)
+    reaction_rules, coreactants = Loaders.initialize_rules()
 
     # initialize objectives
     problem = objective()
 
     # Initialize EA
     ea = ChemicalEA(problem=problem, initial_population=init_pop, reaction_rules=reaction_rules,
-                    coreactants=coreactants, max_generations=generations, visualizer=visualize,
+                    max_generations=generations, visualizer=visualize,
                     algorithm=algorithm, configs=configs)
 
     # Run EA
@@ -121,11 +120,6 @@ def __run_cli():
                         help="Maximum number of rules to use per iteration.",
                         type=int,
                         default=1000)
-    parser.add_argument("--use_coreactant_info", help="Use coreactant information.", type=bool, default=False)
-    parser.add_argument("--coreactants_path",
-                        help="Path to the coreactants.",
-                        type=str,
-                        default="/data/reactionrules/metacycrules/metacyc_coreactants.tsv")
     parser.add_argument("--multi_objective",
                         help="Use multi-objective optimization or combine all evaluation functions to a single "
                              "objective.",
