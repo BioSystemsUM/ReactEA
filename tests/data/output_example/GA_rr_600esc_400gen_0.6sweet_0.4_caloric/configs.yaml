@@ -1,0 +1,17 @@
+algorithm: GA
+batched: true
+compounds:
+  init_pop_path: /data/compounds/ecoli_sink.tsv
+  init_pop_size: 600
+exp_name: GA_rr_600esc_400gen_0.6sweet_0.4_caloric
+final_population_path: /home/jcorreia/PycharmProjects/BioSystemsUM/ReactEA/src/reactea/outputs/GA_rr_600esc_400gen_0.6sweet_0.4_caloric/FINAL_04-29_16-51-54.csv
+final_population_unique_solutions_path: /home/jcorreia/PycharmProjects/BioSystemsUM/ReactEA/src/reactea/outputs/GA_rr_600esc_400gen_0.6sweet_0.4_caloric/FINAL_04-29_16-51-54_UNIQUE_SOLUTIONS.csv
+generations: 400
+multi_objective: false
+rules:
+  coreactants_path: /path/...
+  max_rules_by_iter: 1000
+  rules_path: /data/reactionrules/retrorules/retrorules_forward_score.5.tsv
+  use_coreactant_info: false
+time: 04-29_16-51-54
+transformations_path: /home/jcorreia/PycharmProjects/BioSystemsUM/ReactEA/src/reactea/outputs/GA_rr_600esc_400gen_0.6sweet_0.4_caloric/FINAL_TRANSFORMATIONS_04-29_16-51-54.csv
