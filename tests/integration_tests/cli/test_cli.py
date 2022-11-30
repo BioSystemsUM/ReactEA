@@ -9,7 +9,7 @@ class ReactEACLITestCase(TestCase):
 
     def setUp(self):
         self.output_folder = os.path.join(TEST_DIR, 'data/output/')
-        self.config_file = os.path.join(TEST_DIR, 'data/base_config.yaml')
+        self.config_file = os.path.join(TEST_DIR, 'configs/base_config.yaml')
 
     def tearDown(self):
         if os.path.exists(self.output_folder):

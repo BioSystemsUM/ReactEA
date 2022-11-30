@@ -1,6 +1,5 @@
 from unittest import TestCase
 
-from _utils import initialize_population, load_initial_population_smiles
 from base_test_cases import AlgorithmsBaseTestCase
 from reactea.case_studies.compound_quality import CompoundQuality
 from reactea.io_streams import Loaders, Writers
@@ -17,12 +16,10 @@ class TestSOAlgorithms(AlgorithmsBaseTestCase, TestCase):
         # define number of molecules to use to only 1 in the case of RandomSearch
         if algorithm in ['SA', 'LS']:
             self.configs['init_pop_size'] = 1
-        # initialize population
-        init_pop = initialize_population(self.configs)
-        self.assertEqual(len(init_pop), self.configs['init_pop_size'])
 
-        # initialize population smiles
-        init_pop_smiles = load_initial_population_smiles(self.configs)
+        # initialize population and initialize population smiles
+        init_pop, init_pop_smiles = Loaders.initialize_population(self.configs)
+        self.assertEqual(len(init_pop), self.configs['init_pop_size'])
         self.assertEqual(len(init_pop_smiles), self.configs['init_pop_size'])
 
         # case study

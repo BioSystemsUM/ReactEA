@@ -48,7 +48,6 @@ def run():
     # Load config file
     configPath = f"{os.getcwd()}/configs/example_config.yaml"
     configs = Loaders.get_config_from_yaml(configPath)
-    configs['output_dir'] = f"{os.getcwd()}/{configs['output_path']}{configs['exp_name']}/"
 
     # Load initial population
     init_pop, init_pop_smiles = Loaders.initialize_population(configs)

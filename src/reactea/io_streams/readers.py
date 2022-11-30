@@ -63,6 +63,9 @@ class Loaders:
             config_dict = yaml.safe_load(config_file)
         config_dict['time'] = datetime.now().strftime('%m-%d_%H-%M-%S')
         config_dict['start_time'] = time.time()
+        config_dict['output_dir'] = f"{os.path.join(os.getcwd(), config_dict['output_path'])}"
+        config_dict['output_dir'] = f"{os.path.join(config_dict['output_dir'], config_dict['exp_name'])}"
+        config_dict['init_pop_path'] = f"{os.path.join(os.getcwd(), config_dict['init_pop_path'])}"
         return config_dict
 
     @staticmethod

@@ -4,7 +4,8 @@ from abc import ABC, abstractmethod
 
 from rdkit import RDLogger
 
-from _utils import load_config, ROOT_DIR, SOURCE_DIR
+from _utils import ROOT_DIR, SOURCE_DIR
+from reactea.io_streams import Loaders
 
 
 class CaseStudiesBaseTestCase(ABC):
@@ -13,9 +14,8 @@ class CaseStudiesBaseTestCase(ABC):
         # Mute RDKit logs
         RDLogger.DisableLog("rdApp.*")
 
-        data_folder = os.path.join(ROOT_DIR, 'data')
-        config_path = os.path.join(data_folder, 'base_config.yaml')
-        self.configs = load_config(config_path)
+        config_path = os.path.join(ROOT_DIR, 'configs/base_config.yaml')
+        self.configs = Loaders.get_config_from_yaml(config_path)
         self.output_folder = f"{SOURCE_DIR}/src/reactea/outputs/{self.configs['exp_name']}/"
 
     def tearDown(self):
@@ -33,9 +33,8 @@ class AlgorithmsBaseTestCase(ABC):
         # Mute RDKit logs
         RDLogger.DisableLog("rdApp.*")
 
-        data_folder = os.path.join(ROOT_DIR, 'data')
-        config_path = os.path.join(data_folder, 'base_config.yaml')
-        self.configs = load_config(config_path)
+        config_path = os.path.join(ROOT_DIR, 'configs/base_config.yaml')
+        self.configs = Loaders.get_config_from_yaml(config_path)
         self.output_folder = f"{SOURCE_DIR}/src/reactea/outputs/{self.configs['exp_name']}/"
 
     def tearDown(self):

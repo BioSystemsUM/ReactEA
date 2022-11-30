@@ -49,7 +49,6 @@ def reactea_cli(config_file):
 
     """
     configs = Loaders.get_config_from_yaml(config_file.name)
-    configs['output_dir'] = f"{os.getcwd()}{configs['output_path']}{configs['exp_name']}/"
 
     # shutdown RDKit logs
     if not configs['verbose']:
