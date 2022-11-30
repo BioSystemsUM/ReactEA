@@ -14,4 +14,4 @@ algorithm: "NSGAIII"
 verbose: False
 visualize: False
 
-output_path: "/data/output"
+output_path: "/src/reactea/outputs/"
