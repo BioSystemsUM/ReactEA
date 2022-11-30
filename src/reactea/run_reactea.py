@@ -1,3 +1,5 @@
+import os.path
+
 from rdkit import RDLogger
 
 from reactea.case_studies.sweeteners import SweetReactor
@@ -5,7 +7,7 @@ from reactea.io_streams import Writers, Loaders
 from reactea.optimization.jmetal.ea import ChemicalEA
 
 
-def run(configurations: dict, case, init_pop):
+def _run(configurations: dict, case, init_pop):
     # set up objective
     objective = case.objective
 
@@ -17,14 +19,14 @@ def run(configurations: dict, case, init_pop):
     Writers.set_up_folders(f"outputs/{configurations['exp_name']}/")
 
     # initialize reaction rules
-    reaction_rules, coreactants = Loaders.initialize_rules()
+    reaction_rules = Loaders.initialize_rules()
 
     # initialize objectives
     problem = objective()
 
     # Initialize EA
     ea = ChemicalEA(problem, initial_population=init_pop, reaction_rules=reaction_rules,
-                     max_generations=generations, visualizer=True,
+                    max_generations=generations, visualizer=True,
                     algorithm=algorithm, configs=configurations)
 
     # Run EA
@@ -39,13 +41,14 @@ def run(configurations: dict, case, init_pop):
     Writers.save_configs(configurations)
 
 
-if __name__ == '__main__':
+def run():
     # Mute RDKit logs
     RDLogger.DisableLog("rdApp.*")
 
     # Load config file
-    configPath = "/configs/example_config.yaml"
+    configPath = f"{os.getcwd()}/configs/example_config.yaml"
     configs = Loaders.get_config_from_yaml(configPath)
+    configs['output_dir'] = f"{os.getcwd()}/{configs['output_path']}{configs['exp_name']}/"
 
     # Load initial population
     init_pop, init_pop_smiles = Loaders.initialize_population(configs)
@@ -54,4 +57,8 @@ if __name__ == '__main__':
     case_study = SweetReactor(init_pop_smiles, configs)
 
     # Run
-    run(configs, case_study, init_pop)
+    _run(configs, case_study, init_pop)
+
+
+if __name__ == '__main__':
+    run()
