@@ -814,7 +814,7 @@ class SimilarityToInitial(ChemicalEvaluationFunction):
 
         Returns
         -------
-        int:
+        float:
             distance of the candidate Mol object.
         """
         return self._compute_distance(candidate)
@@ -829,3 +829,78 @@ class SimilarityToInitial(ChemicalEvaluationFunction):
             name of the evaluation function
         """
         return "SimilarityToInitial"
+
+
+class TargetSimilarity(ChemicalEvaluationFunction):
+    """
+    Similarity to a Target evaluation function.
+    Compares current solution with a target compound in terms of Tanimoto Similarity.
+    """
+
+    def __init__(self, target: str, maximize: bool = True, worst_fitness: float = 0.0):
+        """
+        Initializes the SimilarityToInitial evaluation function.
+
+        Parameters
+        ----------
+        target: str
+            target compound' smiles to compare current compound with.
+        maximize: bool
+            if the goal is to maximize (True) or minimize (False) the fitness of the evaluation function.
+        worst_fitness: float
+            The worst fitness possible for the evaluation function.
+        """
+        super(TargetSimilarity, self).__init__(maximize, worst_fitness)
+        target_mol = MolFromSmiles(target)
+        if target_mol is None:
+            raise ValueError("Invalid target smiles")
+        self.target_fingerprint = AllChem.GetMorganFingerprint(target_mol, 2)
+
+    def _compute_similarity(self, mol: Mol):
+        """
+        Computes the Tanimoto similarity between the current molecule and the target mol.
+
+        Parameters
+        ----------
+        mol: Mol
+            Mol object to calculate the distance
+
+        Returns
+        -------
+        float:
+            similarity score
+        """
+        try:
+            fp = AllChem.GetMorganFingerprint(mol, 2)
+            similarity = DataStructs.TanimotoSimilarity(fp, self.target_fingerprint)
+            return similarity
+        except Exception:
+            return self.worst_fitness
+
+    def get_fitness_single(self, candidate: Mol):
+        """
+        Returns the fitness of a single Mol object.
+        In this case it's the distance of the molecule to the target molecule.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        int:
+            distance of the candidate Mol object.
+        """
+        return self._compute_similarity(candidate)
+
+    def method_str(self):
+        """
+        Get name of the evaluation function.
+
+        Returns
+        -------
+        str:
+            name of the evaluation function
+        """
+        return "TargetSimilarity"
