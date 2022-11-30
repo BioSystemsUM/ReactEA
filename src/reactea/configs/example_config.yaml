@@ -2,7 +2,7 @@ exp_name: "###Report_NSGAIII_v4_100_35gen_3"
 
 case_study: "SweetReactor"
 
-init_pop_path: "/data/compounds/ecoli_sink.tsv"
+init_pop_path: "data/compounds/ecoli_sink.tsv"
 init_pop_size: 100
 
 max_rules_by_iter: 1000
