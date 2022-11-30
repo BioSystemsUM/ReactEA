@@ -3,7 +3,6 @@ import time
 from datetime import datetime
 
 import click as click
-import yaml
 from rdkit import RDLogger
 
 from reactea.chem import Compound
@@ -50,9 +49,8 @@ def reactea_cli(config_file):
 
     """
     configs = Loaders.get_config_from_yaml(config_file.name)
-    configs['cwd'] = os.getcwd()
+    configs['output_dir'] = f"{os.getcwd()}{configs['output_path']}{configs['exp_name']}/"
 
-    print(f"Current working directory: {os.getcwd()}")
     # shutdown RDKit logs
     if not configs['verbose']:
         # Mute RDKit logs
@@ -77,7 +75,7 @@ def reactea_cli(config_file):
     visualize = configs["visualize"]
 
     # set up folders
-    Writers.set_up_folders(os.path.join(configs['output_path'], configs['exp_name']))
+    Writers.set_up_folders(configs['output_dir'])
 
     # initialize reaction rules
     reaction_rules = Loaders.initialize_rules()
