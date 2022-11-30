@@ -40,6 +40,8 @@ class Loaders:
         str:
             file path from root
         """
+        if file_path[0] == '/':
+            file_path = file_path[1:]
         return f"{ROOT_DIR}/{file_path}"
 
     @staticmethod
@@ -87,11 +89,6 @@ class Loaders:
     def initialize_rules():
         """
         Loads the reaction rules.
-
-        Parameters
-        ----------
-        configs: dict
-            configurations of the experiment (containing path to reaction rules file)
 
         Returns
         -------
