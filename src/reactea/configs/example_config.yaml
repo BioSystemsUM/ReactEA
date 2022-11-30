@@ -3,13 +3,13 @@ exp_name: "###Report_NSGAIII_v4_100_35gen_3"
 case_study: "SweetReactor"
 
 init_pop_path: "data/compounds/ecoli_sink.tsv"
-init_pop_size: 100
+init_pop_size: 10
 
-max_rules_by_iter: 1000
+max_rules_by_iter: 10
 
 multi_objective: True
 batched: True
-generations: 35
+generations: 2
 algorithm: "NSGAIII"
 verbose: False
 visualize: False
