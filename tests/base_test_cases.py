@@ -17,7 +17,7 @@ class CaseStudiesBaseTestCase(ABC):
 
         config_path = os.path.join(TEST_DIR, 'configs/base_config.yaml')
         self.configs = Loaders.get_config_from_yaml(config_path)
-        self.output_folder = f"{TEST_DIR}/data/outputs/{self.configs['exp_name']}/"
+        self.output_folder = f"{TEST_DIR}/outputs/{self.configs['exp_name']}/"
 
     def tearDown(self):
         if os.path.exists(self.output_folder):
@@ -36,7 +36,7 @@ class AlgorithmsBaseTestCase(ABC):
 
         config_path = os.path.join(TEST_DIR, 'configs/base_config.yaml')
         self.configs = Loaders.get_config_from_yaml(config_path)
-        self.output_folder = os.path.join(TEST_DIR, f"outputs/{self.configs['exp_name']}/")
+        self.output_folder = f"{TEST_DIR}/outputs/{self.configs['exp_name']}/"
 
     def tearDown(self):
         if os.path.exists(self.output_folder):
