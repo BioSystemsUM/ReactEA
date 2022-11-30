@@ -42,8 +42,8 @@ class SweetReactor(CaseStudy):
         """
         f1 = PenalizedSweetness()
         f2 = MolecularWeight()
-        f3 = NumberOfLargeRings()
-        f4 = StereoisomersCounter()
+        f3 = NumberOfLargeRings(max_rings=6)
+        f4 = StereoisomersCounter(max_chiral_count=5)
         f5 = LogP()
         f6 = SimilarityToInitial(self.population_smiles)
         if self.multi_objective:
