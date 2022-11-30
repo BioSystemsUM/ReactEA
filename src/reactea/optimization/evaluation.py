@@ -1,10 +1,12 @@
+import os
+import sys
 from abc import ABC, abstractmethod
 from functools import reduce
 from typing import List, Union
 
 import numpy as np
 from joblib import Parallel, delayed
-from rdkit import DataStructs
+from rdkit import DataStructs, RDConfig
 from rdkit.Chem import MolFromSmarts, Mol, GetSymmSSSR, EnumerateStereoisomers, AllChem, MolFromSmiles
 from rdkit.Chem.Crippen import MolLogP
 from rdkit.Chem.Descriptors import MolWt
@@ -530,7 +532,7 @@ class QED(ChemicalEvaluationFunction):
 class MolecularWeight(ChemicalEvaluationFunction):
     """
     Molecular Weight evaluation function.
-    Computes the average molecular weight of molecules.
+    Computes the molecular weight of molecules.
     """
 
     def __init__(self,
@@ -613,20 +615,23 @@ class MolecularWeight(ChemicalEvaluationFunction):
 class NumberOfLargeRings(ChemicalEvaluationFunction):
     """
     Number Of Large Rings evaluation function.
-    Computes the average molecular weight of molecules.
+    Computes the large rings penalty weight of molecules.
     """
 
-    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
+    def __init__(self, max_rings: int = 6, maximize: bool = True, worst_fitness: float = 0.0):
         """
         Initializes the NumberOfLargeRings evaluation function.
 
         Parameters
         ----------
+        max_rings: int
+            maximum number of rings in the molecules.
         maximize: bool
             if the goal is to maximize (True) or minimize (False) the fitness of the evaluation function.
         worst_fitness: float
             The worst fitness possible for the evaluation function.
         """
+        self.max_rings = max_rings
         super(NumberOfLargeRings, self).__init__(maximize, worst_fitness)
 
     def _ring_size(self, mol: Mol):
@@ -648,8 +653,8 @@ class NumberOfLargeRings(ChemicalEvaluationFunction):
 
             if len(ringsSize) > 0:
                 largestRing = max(ringsSize)
-                if largestRing > 6:
-                    return 1 / np.log((largestRing-6.0)*100)
+                if largestRing > self.max_rings:
+                    return 1 / np.log((largestRing-self.max_rings)*100)
                 else:
                     return 1.0
             else:
@@ -692,7 +697,7 @@ class StereoisomersCounter(ChemicalEvaluationFunction):
     Computes the number of stereoisomers of molecules.
     """
 
-    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
+    def __init__(self, max_chiral_count: int = 5, maximize: bool = True, worst_fitness: float = 0.0):
         """
         Initializes the StereoisomersCounter evaluation function.
 
@@ -703,6 +708,7 @@ class StereoisomersCounter(ChemicalEvaluationFunction):
         worst_fitness: float
             The worst fitness possible for the evaluation function.
         """
+        self.max_chiral_count = max_chiral_count
         super(StereoisomersCounter, self).__init__(maximize, worst_fitness)
 
     def _chiral_count(self, mol: Mol):
@@ -722,7 +728,7 @@ class StereoisomersCounter(ChemicalEvaluationFunction):
         try:
             chiralCount = EnumerateStereoisomers.GetStereoisomerCount(mol,
                                                                       options=StereoEnumerationOptions(unique=True))
-            if chiralCount < 5:
+            if chiralCount < self.max_chiral_count:
                 return 1.0
             else:
                 return 1.0 / np.log(chiralCount * 100.0)
@@ -839,7 +845,7 @@ class TargetSimilarity(ChemicalEvaluationFunction):
 
     def __init__(self, target: str, maximize: bool = True, worst_fitness: float = 0.0):
         """
-        Initializes the SimilarityToInitial evaluation function.
+        Initializes the TargetSimilarity evaluation function.
 
         Parameters
         ----------
@@ -880,7 +886,7 @@ class TargetSimilarity(ChemicalEvaluationFunction):
     def get_fitness_single(self, candidate: Mol):
         """
         Returns the fitness of a single Mol object.
-        In this case it's the distance of the molecule to the target molecule.
+        In this case it's the similarity of the molecule to the target molecule.
 
         Parameters
         ----------
@@ -890,7 +896,7 @@ class TargetSimilarity(ChemicalEvaluationFunction):
         Returns
         -------
         int:
-            distance of the candidate Mol object.
+            similarity of the candidate Mol object.
         """
         return self._compute_similarity(candidate)
 
@@ -904,3 +910,77 @@ class TargetSimilarity(ChemicalEvaluationFunction):
             name of the evaluation function
         """
         return "TargetSimilarity"
+
+
+class SAS(ChemicalEvaluationFunction):
+    """
+    Synthetic accessibility score evaluation function.
+    Computes the average molecular weight of molecules.
+    """
+
+    def __init__(self,
+                 maximize: bool = True,
+                 worst_fitness: float = 0.0):
+        """
+        Initializes the MolecularWeight evaluation function.
+
+        Parameters
+        ----------
+        maximize: bool
+            if the goal is to maximize (True) or minimize (False) the fitness of the evaluation function.
+        worst_fitness: float
+            The worst fitness possible for the evaluation function.
+        """
+        super(SAS, self).__init__(maximize, worst_fitness)
+
+    def _sas_score(self, mol: Mol):
+        """
+        Computes the synthetic accessibility score of the molecule.
+
+        Parameters
+        ----------
+        mol: Mol
+            Mol object to calculate the molecular weight
+
+        Returns
+        -------
+        float:
+            synthetic accessibility score of the molecule
+        """
+        try:
+            sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
+            try:
+                import sascorer
+            except ImportError:
+                raise ImportError("'sascorer' not available.")
+            return sascorer.calculateScore(mol)
+        except Exception:
+            return self.worst_fitness
+
+    def get_fitness_single(self, candidate: Mol):
+        """
+        Returns the fitness of a single Mol object.
+        In this case it's the synthetic accessibility score of the molecule.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        float:
+            synthetic accessibility score of the candidate Mol object.
+        """
+        return self._sas_score(candidate)
+
+    def method_str(self):
+        """
+        Get name of the evaluation function.
+
+        Returns
+        -------
+        str:
+            name of the evaluation function
+        """
+        return "SAS"
