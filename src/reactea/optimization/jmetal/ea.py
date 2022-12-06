@@ -10,13 +10,13 @@ from .evaluators import ChemicalEvaluator
 from .generators import ChemicalGenerator
 from .observers import PrintObjectivesStatObserver, VisualizerObserver
 from .problem import JmetalProblem
-from reactea.utilities.constants import EAConstants, ChemConstants, SAConstants, GAConstants, NSGAIIIConstants, \
+from reactea.constants import EAConstants, ChemConstants, SAConstants, GAConstants, NSGAIIIConstants, \
     ESConstants, LSConstants, IBEAConstants
 from ..problem import ChemicalProblem
 from ...chem.compounds import Compound
 from ...chem.reaction_rules import ReactionRule
-from ...chem.standardization import MolecularStandardizer
-from ...utilities.io import Writers
+from reactea.standardizers.standardization import MolecularStandardizer
+from ...io_streams import Writers
 
 
 class ChemicalEA(AbstractEA):

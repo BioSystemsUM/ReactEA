@@ -1,17 +1,19 @@
+import os
+import sys
 from abc import ABC, abstractmethod
 from functools import reduce
 from typing import List, Union
 
 import numpy as np
 from joblib import Parallel, delayed
-from rdkit import DataStructs
+from rdkit import DataStructs, RDConfig
 from rdkit.Chem import MolFromSmarts, Mol, GetSymmSSSR, EnumerateStereoisomers, AllChem, MolFromSmiles
 from rdkit.Chem.Crippen import MolLogP
 from rdkit.Chem.Descriptors import MolWt
 from rdkit.Chem.EnumerateStereoisomers import StereoEnumerationOptions
 from rdkit.Chem.QED import qed
 
-from reactea.utilities.io import Loaders
+from reactea.io_streams import Loaders
 
 
 class ChemicalEvaluationFunction(ABC):
@@ -66,6 +68,42 @@ class ChemicalEvaluationFunction(ABC):
         -------
         float
             Fitness of the Mol object
+        """
+        raise NotImplementedError
+
+    def get_raw_scores(self, candidates: Union[Mol, List[Mol]]):
+        """
+        Get the raw score of a candidate.
+
+        Parameters
+        ----------
+        candidates: Union[Mol, List[Mol]]
+            The candidate(s) to evaluate.
+
+        Returns
+        -------
+        float
+            Raw score of the candidates.
+        """
+        if isinstance(candidates, Mol):
+            candidates = [candidates]
+        return Parallel(n_jobs=-1, backend="multiprocessing")(delayed(self.get_fitness_single)(candidate)
+                                                              for candidate in candidates)
+
+    @abstractmethod
+    def get_raw_score_single(self, candidate: Mol):
+        """
+        Get the raw score of a candidate.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to get raw score from.
+
+        Returns
+        -------
+        float
+            Raw score of the Mol object.
         """
         raise NotImplementedError
 
@@ -170,6 +208,48 @@ class AggregatedSum(ChemicalEvaluationFunction):
         res = np.transpose(evals)
         return np.dot(res, self.tradeoffs)
 
+    def get_raw_scores(self, candidates: Union[Mol, List[Mol]]):
+        """
+        Evaluates the raw scores of the candidate(s).
+
+        Parameters
+        ----------
+        candidates: Union[Mol, List[Mol]]
+            The candidate(s) to evaluate.
+
+        Returns
+        -------
+        List[float]
+            The fitness(es) of the candidate(s).
+        """
+        if "Sweetness" in self.method_str():
+            return self.get_raw_score_single(candidates)
+        if isinstance(candidates, Mol):
+            candidates = [candidates]
+        return Parallel(n_jobs=-1, backend="multiprocessing")(delayed(self.get_raw_score_single)(candidate)
+                                                              for candidate in candidates)
+
+    def get_raw_score_single(self, candidate: Mol):
+        """
+        Returns the raw score of a single Mol object.
+        In this case it's the weighted raw score of multiple evaluation functions.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        float:
+            raw score of the Mol object.
+        """
+        evals = []
+        for f in self.fevaluation:
+            evals.append(f.get_raw_score_single(candidate))
+        res = np.transpose(evals)
+        return np.dot(res, self.tradeoffs)
+
     def method_str(self):
         """
         Get the names of the evaluation functions.
@@ -245,6 +325,13 @@ class SweetnessPredictionDeepSweet(ChemicalEvaluationFunction):
         """
         return self.get_fitness(candidate)
 
+    def get_raw_score_single(self, candidate: Mol):
+        """
+        Returns the raw score of a single Mol object.
+        Same as get_fitness (alias).
+        """
+        return self.get_fitness(candidate)
+
     def method_str(self):
         """
         Get name of the evaluation function.
@@ -300,6 +387,41 @@ class PenalizedSweetness(ChemicalEvaluationFunction):
         Same as get_fitness (alias).
         """
         return self.get_fitness(candidate)
+
+    def get_raw_scores(self, candidates: Union[Mol, List[Mol]]):
+        """
+        Returns the raw scores of a list of Mol objects.
+        Sweetness prediction is penalized by the presence of groups that confer caloric value to the molecule.
+
+        Parameters
+        ----------
+        candidates: Union[Mol, List[Mol]]
+            Mol object or list of Mol objects to get the fitness from.
+
+        Returns
+        -------
+        List[float]:
+            predicted penalized sweetness probability of the candidates.
+        """
+        return np.multiply(SweetnessPredictionDeepSweet().get_raw_scores(candidates),
+                           Caloric().get_raw_scores(candidates))
+
+    def get_raw_score_single(self, candidate: Mol):
+        """
+        Returns the raw score of a single Mol object.
+        Calls get_raw_scores (alias).
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        float:
+            raw score of the Mol object.
+        """
+        return self.get_raw_scores(candidate)
 
     def method_str(self):
         """
@@ -370,6 +492,46 @@ class Caloric(ChemicalEvaluationFunction):
             caloric score of the candidate Mol object.
         """
         return self._match_score(candidate)
+
+    @staticmethod
+    def _raw_match_score(mol: Mol):
+        """
+        Internal method to compute the raw caloric score of a molecule.
+        i.e. the number of times the caloric SMARTS matches the molecule.
+
+        Parameters
+        ----------
+        mol: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        int:
+            number of times the caloric SMARTS matches the molecule.
+        """
+        try:
+            caloric_smarts = MolFromSmarts("[Or5,Or6,Or7,Or8,Or9,Or10,Or11,Or12]")
+            n_matches = len(mol.GetSubstructMatches(caloric_smarts))
+            return n_matches
+        except:
+            return np.NaN
+
+    def get_raw_score_single(self, candidate: Mol):
+        """
+        Returns the raw caloric score of a single Mol object.
+        i.e. the number of times the caloric SMARTS matches the molecule.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        float:
+            caloric score of the candidate Mol object.
+        """
+        return self._raw_match_score(candidate)
 
     def method_str(self):
         """
@@ -447,6 +609,43 @@ class LogP(ChemicalEvaluationFunction):
         """
         return self._get_logp(candidate)
 
+    @staticmethod
+    def _get_raw_logp(mol: Mol):
+        """
+        Computes the partition coefficient of a molecule.
+
+        Parameters
+        ----------
+        mol: Mol
+            Mol object to calculate the partition coefficient
+
+        Returns
+        -------
+        float
+            partition coefficient of the molecule
+        """
+        try:
+            return MolLogP(mol)
+        except:
+            return np.NaN
+
+    def get_raw_score_single(self, candidate: Mol):
+        """
+        Returns the raw score of a single Mol object.
+        In this case it's the partition coefficient of the molecule.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        float:
+            partition coefficients of the candidate Mol object.
+        """
+        return self._get_raw_logp(candidate)
+
     def method_str(self):
         """
         Get name of the evaluation function.
@@ -515,6 +714,43 @@ class QED(ChemicalEvaluationFunction):
         """
         return self._qed(candidate)
 
+    @staticmethod
+    def _raw_qed(mol: Mol):
+        """
+        Computes the drug-likeliness of a molecule.
+
+        Parameters
+        ----------
+        mol: Mol
+            Mol object to calculate the drug-likeliness
+
+        Returns
+        -------
+        float:
+            drug-likeliness score of the molecule
+        """
+        try:
+            return qed(mol)
+        except:
+            return np.NaN
+
+    def get_raw_score_single(self, candidate: Mol):
+        """
+        Returns the fitness of a single Mol object.
+        In this case it's the drug-likeliness score of the molecule.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        float:
+            drug-likeliness scores of the candidate Mol object.
+        """
+        return self._raw_qed(candidate)
+
     def method_str(self):
         """
         Get name of the evaluation function.
@@ -530,7 +766,7 @@ class QED(ChemicalEvaluationFunction):
 class MolecularWeight(ChemicalEvaluationFunction):
     """
     Molecular Weight evaluation function.
-    Computes the average molecular weight of molecules.
+    Computes the molecular weight of molecules.
     """
 
     def __init__(self,
@@ -598,6 +834,43 @@ class MolecularWeight(ChemicalEvaluationFunction):
         """
         return self._mol_weight(candidate)
 
+    @staticmethod
+    def _raw_mol_weight(mol: Mol):
+        """
+        Computes the average molecular weight of a molecule.
+
+        Parameters
+        ----------
+        mol: Mol
+            Mol object to calculate the molecular weight
+
+        Returns
+        -------
+        float:
+            molecular weight of the molecule
+        """
+        try:
+            return MolWt(mol)
+        except Exception:
+            return np.NaN
+
+    def get_raw_score_single(self, candidate: Mol):
+        """
+        Returns the fitness of a single Mol object.
+        In this case it's the molecular weight score of the molecule.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        float:
+            molecular weight score of the candidate Mol object.
+        """
+        return self._raw_mol_weight(candidate)
+
     def method_str(self):
         """
         Get name of the evaluation function.
@@ -613,20 +886,23 @@ class MolecularWeight(ChemicalEvaluationFunction):
 class NumberOfLargeRings(ChemicalEvaluationFunction):
     """
     Number Of Large Rings evaluation function.
-    Computes the average molecular weight of molecules.
+    Computes the large rings penalty weight of molecules.
     """
 
-    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
+    def __init__(self, max_rings: int = 6, maximize: bool = True, worst_fitness: float = 0.0):
         """
         Initializes the NumberOfLargeRings evaluation function.
 
         Parameters
         ----------
+        max_rings: int
+            maximum number of rings in the molecules.
         maximize: bool
             if the goal is to maximize (True) or minimize (False) the fitness of the evaluation function.
         worst_fitness: float
             The worst fitness possible for the evaluation function.
         """
+        self.max_rings = max_rings
         super(NumberOfLargeRings, self).__init__(maximize, worst_fitness)
 
     def _ring_size(self, mol: Mol):
@@ -648,8 +924,8 @@ class NumberOfLargeRings(ChemicalEvaluationFunction):
 
             if len(ringsSize) > 0:
                 largestRing = max(ringsSize)
-                if largestRing > 6:
-                    return 1 / np.log((largestRing-6.0)*100)
+                if largestRing > self.max_rings:
+                    return 1 / np.log((largestRing-self.max_rings)*100)
                 else:
                     return 1.0
             else:
@@ -674,6 +950,47 @@ class NumberOfLargeRings(ChemicalEvaluationFunction):
         """
         return self._ring_size(candidate)
 
+    @staticmethod
+    def _raw_ring_size(mol: Mol):
+        """
+        Computes the rings sizes of a molecule and penalizes based on the largest ring.
+
+        Parameters
+        ----------
+        mol: Mol
+            Mol object to calculate the largest ring score
+
+        Returns
+        -------
+        float:
+            penalized ring size score
+        """
+        try:
+            ringsSize = [len(ring) for ring in GetSymmSSSR(mol)]
+            if len(ringsSize) > 0:
+                return max(ringsSize)
+            else:
+                return 0
+        except:
+            return np.NaN
+
+    def get_raw_score_single(self, candidate: Mol):
+        """
+        Returns the fitness of a set of Mol object.
+        In this case it's the largest ring penalty of the molecule.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        float:
+            ring penalty scores of the candidate Mol object.
+        """
+        return self._raw_ring_size(candidate)
+
     def method_str(self):
         """
         Get name of the evaluation function.
@@ -692,7 +1009,7 @@ class StereoisomersCounter(ChemicalEvaluationFunction):
     Computes the number of stereoisomers of molecules.
     """
 
-    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
+    def __init__(self, max_chiral_count: int = 5, maximize: bool = True, worst_fitness: float = 0.0):
         """
         Initializes the StereoisomersCounter evaluation function.
 
@@ -703,6 +1020,7 @@ class StereoisomersCounter(ChemicalEvaluationFunction):
         worst_fitness: float
             The worst fitness possible for the evaluation function.
         """
+        self.max_chiral_count = max_chiral_count
         super(StereoisomersCounter, self).__init__(maximize, worst_fitness)
 
     def _chiral_count(self, mol: Mol):
@@ -722,7 +1040,7 @@ class StereoisomersCounter(ChemicalEvaluationFunction):
         try:
             chiralCount = EnumerateStereoisomers.GetStereoisomerCount(mol,
                                                                       options=StereoEnumerationOptions(unique=True))
-            if chiralCount < 5:
+            if chiralCount < self.max_chiral_count:
                 return 1.0
             else:
                 return 1.0 / np.log(chiralCount * 100.0)
@@ -747,6 +1065,43 @@ class StereoisomersCounter(ChemicalEvaluationFunction):
         """
         return self._chiral_count(candidate)
 
+    @staticmethod
+    def _raw_chiral_count(mol: Mol):
+        """
+        Computes the chiral count of a molecule and penalizes molecules with many stereoisomers.
+
+        Parameters
+        ----------
+        mol: Mol
+            Mol object to calculate the chiral count
+
+        Returns
+        -------
+        int
+            penalized chiral count score
+        """
+        try:
+            return EnumerateStereoisomers.GetStereoisomerCount(mol, options=StereoEnumerationOptions(unique=True))
+        except Exception:
+            return np.NaN
+
+    def get_raw_score_single(self, candidate: Mol):
+        """
+        Returns the fitness of a single Mol object.
+        In this case it's the stereoisomers count penalty of the molecule.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        int:
+            stereoisomers count penalty score of the candidate Mol object.
+        """
+        return self._raw_chiral_count(candidate)
+
     def method_str(self):
         """
         Get name of the evaluation function.
@@ -765,7 +1120,11 @@ class SimilarityToInitial(ChemicalEvaluationFunction):
     Compares current solutions with the initial population in terms of Tanimoto Similarity.
     """
 
-    def __init__(self, initial_population: List[str], maximize: bool = True, worst_fitness: float = 0.0):
+    def __init__(self,
+                 initial_population: List[str],
+                 method: str = 'max',
+                 maximize: bool = True,
+                 worst_fitness: float = 0.0):
         """
         Initializes the SimilarityToInitial evaluation function.
 
@@ -773,6 +1132,9 @@ class SimilarityToInitial(ChemicalEvaluationFunction):
         ----------
         initial_population: List[str]
             initial population of compound' smiles to compare current compound with.
+        method: str
+            method to use to compare the similarity of the current compound with the initial population.
+            Available methods are: 'max' and 'mean'.
         maximize: bool
             if the goal is to maximize (True) or minimize (False) the fitness of the evaluation function.
         worst_fitness: float
@@ -780,6 +1142,7 @@ class SimilarityToInitial(ChemicalEvaluationFunction):
         """
         super(SimilarityToInitial, self).__init__(maximize, worst_fitness)
         self.fingerprints = [AllChem.GetMorganFingerprint(MolFromSmiles(cmp), 2) for cmp in initial_population]
+        self.method = method
 
     def _compute_distance(self, mol: Mol):
         """
@@ -798,7 +1161,12 @@ class SimilarityToInitial(ChemicalEvaluationFunction):
         try:
             fp = AllChem.GetMorganFingerprint(mol, 2)
             similarities = DataStructs.BulkTanimotoSimilarity(fp, self.fingerprints)
-            return 1 - max(similarities)
+            if self.method == 'max':
+                return 1 - max(similarities)
+            elif self.method == 'mean':
+                return 1 - np.mean(similarities)
+            else:
+                raise ValueError(f"Invalid method: {self.method}")
         except Exception:
             return self.worst_fitness
 
@@ -814,10 +1182,53 @@ class SimilarityToInitial(ChemicalEvaluationFunction):
 
         Returns
         -------
-        int:
+        float:
             distance of the candidate Mol object.
         """
         return self._compute_distance(candidate)
+
+    def _compute_similarity(self, mol: Mol):
+        """
+        Computes the animoto similarity between the current molecule and the initial population.
+
+        Parameters
+        ----------
+        mol: Mol
+            Mol object to calculate the distance
+
+        Returns
+        -------
+        int:
+            similarity score
+        """
+        try:
+            fp = AllChem.GetMorganFingerprint(mol, 2)
+            similarities = DataStructs.BulkTanimotoSimilarity(fp, self.fingerprints)
+            if self.method == 'max':
+                return max(similarities)
+            elif self.method == 'mean':
+                return np.mean(similarities)
+            else:
+                raise ValueError(f"Invalid method: {self.method}")
+        except Exception:
+            return np.NaN
+
+    def get_raw_score_single(self, candidate: Mol):
+        """
+        Returns the fitness of a single Mol object.
+        In this case it's the distance of the molecule to the initial population.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        float:
+            distance of the candidate Mol object.
+        """
+        return self._compute_similarity(candidate)
 
     def method_str(self):
         """
@@ -829,3 +1240,221 @@ class SimilarityToInitial(ChemicalEvaluationFunction):
             name of the evaluation function
         """
         return "SimilarityToInitial"
+
+
+class TargetSimilarity(ChemicalEvaluationFunction):
+    """
+    Similarity to a Target evaluation function.
+    Compares current solution with a target compound in terms of Tanimoto Similarity.
+    """
+
+    def __init__(self, target: str, maximize: bool = True, worst_fitness: float = 0.0):
+        """
+        Initializes the TargetSimilarity evaluation function.
+
+        Parameters
+        ----------
+        target: str
+            target compound' smiles to compare current compound with.
+        maximize: bool
+            if the goal is to maximize (True) or minimize (False) the fitness of the evaluation function.
+        worst_fitness: float
+            The worst fitness possible for the evaluation function.
+        """
+        super(TargetSimilarity, self).__init__(maximize, worst_fitness)
+        target_mol = MolFromSmiles(target)
+        if target_mol is None:
+            raise ValueError("Invalid target smiles")
+        self.target_fingerprint = AllChem.GetMorganFingerprint(target_mol, 2)
+
+    def _compute_similarity(self, mol: Mol):
+        """
+        Computes the Tanimoto similarity between the current molecule and the target mol.
+
+        Parameters
+        ----------
+        mol: Mol
+            Mol object to calculate the distance
+
+        Returns
+        -------
+        float:
+            similarity score
+        """
+        try:
+            fp = AllChem.GetMorganFingerprint(mol, 2)
+            similarity = DataStructs.TanimotoSimilarity(fp, self.target_fingerprint)
+            return similarity
+        except Exception:
+            return self.worst_fitness
+
+    def get_fitness_single(self, candidate: Mol):
+        """
+        Returns the fitness of a single Mol object.
+        In this case it's the similarity of the molecule to the target molecule.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        int:
+            similarity of the candidate Mol object.
+        """
+        return self._compute_similarity(candidate)
+
+    def get_raw_score_single(self, candidate: Mol):
+        """
+        Returns the fitness of a single Mol object.
+        In this case it's the similarity of the molecule to the target molecule.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        int:
+            similarity of the candidate Mol object.
+        """
+        return self._compute_similarity(candidate)
+
+    def method_str(self):
+        """
+        Get name of the evaluation function.
+
+        Returns
+        -------
+        str:
+            name of the evaluation function
+        """
+        return "TargetSimilarity"
+
+
+class SAS(ChemicalEvaluationFunction):
+    """
+    Synthetic accessibility score evaluation function.
+
+    Calculation of synthetic accessibility score as described in:
+        Estimation of Synthetic Accessibility Score of Drug-like Molecules based on Molecular Complexity and Fragment
+        Contributions
+        Peter Ertl and Ansgar Schuffenhauer
+        Journal of Cheminformatics 1:8 (2009)
+        http://www.jcheminf.com/content/1/1/8
+    """
+
+    def __init__(self,
+                 maximize: bool = True,
+                 worst_fitness: float = 0.0):
+        """
+        Initializes the SAS evaluation function.
+
+        Parameters
+        ----------
+        maximize: bool
+            if the goal is to maximize (True) or minimize (False) the fitness of the evaluation function.
+        worst_fitness: float
+            The worst fitness possible for the evaluation function.
+        """
+        super(SAS, self).__init__(maximize, worst_fitness)
+
+    def _sas_score(self, mol: Mol):
+        """
+        Computes the synthetic accessibility score of the molecule.
+
+        Parameters
+        ----------
+        mol: Mol
+            Mol object to calculate the molecular weight
+
+        Returns
+        -------
+        float:
+            synthetic accessibility score of the molecule
+        """
+        try:
+            sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
+            try:
+                import sascorer
+            except ImportError:
+                raise ImportError("'sascorer' not available.")
+            score = sascorer.calculateScore(mol)
+            # value - minimum / maximum - minimum
+            normalized_score = (score - 1) / (10 - 1)
+            # 1 - normalized_score (so higher scores represent higher fitness when maximizing)
+            return 1 - normalized_score
+        except Exception:
+            return self.worst_fitness
+
+    def get_fitness_single(self, candidate: Mol):
+        """
+        Returns the fitness of a single Mol object.
+        In this case it's the synthetic accessibility score of the molecule.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        float:
+            synthetic accessibility score of the candidate Mol object.
+        """
+        return self._sas_score(candidate)
+
+    @staticmethod
+    def _raw_sas_score(mol: Mol):
+        """
+        Computes the synthetic accessibility score of the molecule.
+
+        Parameters
+        ----------
+        mol: Mol
+            Mol object to calculate the molecular weight
+
+        Returns
+        -------
+        float:
+            synthetic accessibility score of the molecule
+        """
+        try:
+            sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
+            try:
+                import sascorer
+            except ImportError:
+                raise ImportError("'sascorer' not available.")
+            return sascorer.calculateScore(mol)
+        except Exception:
+            return np.NaN
+
+    def get_raw_score_single(self, candidate: Mol):
+        """
+        Returns the fitness of a single Mol object.
+        In this case it's the synthetic accessibility score of the molecule.
+
+        Parameters
+        ----------
+        candidate: Mol
+            Mol object to evaluate.
+
+        Returns
+        -------
+        float:
+            synthetic accessibility score of the candidate Mol object.
+        """
+        return self._raw_sas_score(candidate)
+
+    def method_str(self):
+        """
+        Get name of the evaluation function.
+
+        Returns
+        -------
+        str:
+            name of the evaluation function
+        """
+        return "SAS"

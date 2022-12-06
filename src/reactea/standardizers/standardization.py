@@ -1,10 +1,13 @@
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 from rdkit.Chem import Mol, rdmolops
 from chembl_structure_pipeline import standardizer
 
-from reactea.chem import Compound
-from reactea.utilities import ChemUtils
+from reactea.chem import ChemUtils
+
+if TYPE_CHECKING:
+    from reactea.chem import Compound
 
 
 class MolecularStandardizer(ABC):
@@ -13,7 +16,7 @@ class MolecularStandardizer(ABC):
     Molecular Standardizers standardize chemical compounds represented as Compound objects.
     """
 
-    def standardize(self, mol: Compound):
+    def standardize(self, mol: "Compound"):
         """
         Standardizes a chemical compound represented as a Compound object.
         Performs canonicalization of atoms before standardization.

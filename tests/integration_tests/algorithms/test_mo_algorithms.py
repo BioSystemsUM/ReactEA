@@ -1,10 +1,10 @@
+import os
 from unittest import TestCase
 
-from _utils import initialize_population, load_initial_population_smiles
 from base_test_cases import AlgorithmsBaseTestCase
 from reactea.case_studies.compound_quality import CompoundQuality
+from reactea.io_streams import Loaders, Writers
 from reactea.optimization.jmetal.ea import ChemicalEA
-from reactea.utilities.io import Writers, Loaders
 
 
 class TestMOAlgorithms(AlgorithmsBaseTestCase, TestCase):
@@ -13,15 +13,16 @@ class TestMOAlgorithms(AlgorithmsBaseTestCase, TestCase):
         # set up algorithm
         self.configs['algorithm'] = algorithm
 
+        # set up output folder
+        self.output_folder = os.path.join(self.output_folder, algorithm)
+        self.configs['output_dir'] = self.output_folder
+
         # define number of molecules to use to only 1 in the case of RandomSearch
         if algorithm == 'RandomSearch':
             self.configs['init_pop_size'] = 1
-        # initialize population
-        init_pop = initialize_population(self.configs)
+        # initialize population and initialize population smiles
+        init_pop, init_pop_smiles = Loaders.initialize_population(self.configs)
         self.assertEqual(len(init_pop), self.configs['init_pop_size'])
-
-        # initialize population smiles
-        init_pop_smiles = load_initial_population_smiles(self.configs)
         self.assertEqual(len(init_pop_smiles), self.configs['init_pop_size'])
 
         # case study
