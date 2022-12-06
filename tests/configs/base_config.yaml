@@ -2,7 +2,7 @@ exp_name: "INTEGRATION_TESTS"
 
 case_study: "CompoundQuality"
 
-init_pop_path: "data/compounds/compounds_sample.tsv"
+init_pop_path: "tests/data/compounds/compounds_sample.tsv"
 init_pop_size: 4
 
 max_rules_by_iter: 10
@@ -14,4 +14,4 @@ algorithm: "NSGAIII"
 verbose: False
 visualize: False
 
-output_path: "data/outputs/"
+output_path: "tests/data/outputs/"
