@@ -1,3 +1,4 @@
+import os
 from unittest import TestCase
 
 from base_test_cases import AlgorithmsBaseTestCase
@@ -11,6 +12,10 @@ class TestMOAlgorithms(AlgorithmsBaseTestCase, TestCase):
     def run_algorithm(self, algorithm):
         # set up algorithm
         self.configs['algorithm'] = algorithm
+
+        # set up output folder
+        self.output_folder = os.path.join(self.output_folder, algorithm)
+        self.configs['output_dir'] = self.output_folder
 
         # define number of molecules to use to only 1 in the case of RandomSearch
         if algorithm == 'RandomSearch':
