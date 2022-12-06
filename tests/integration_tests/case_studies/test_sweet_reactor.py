@@ -1,6 +1,6 @@
+import os
 from unittest import TestCase, skip
 
-from _utils import initialize_population, load_initial_population_smiles
 from base_test_cases import CaseStudiesBaseTestCase
 from reactea.case_studies.sweeteners import SweetReactor
 from reactea.io_streams import Loaders, Writers
@@ -18,12 +18,13 @@ class TestSweetReactor(CaseStudiesBaseTestCase, TestCase):
             self.configs['multi_objective'] = False
             self.configs['algorithm'] = 'GA'
 
-        # initialize population
-        init_pop = initialize_population(self.configs)
-        self.assertEqual(len(init_pop), self.configs['init_pop_size'])
+        # set up output folder
+        self.output_folder = os.path.join(self.output_folder, self.configs['algorithm'])
+        self.configs['output_dir'] = self.output_folder
 
-        # initialize population smiles
-        init_pop_smiles = load_initial_population_smiles(self.configs)
+        # initialize population and initialize population smiles
+        init_pop, init_pop_smiles = Loaders.initialize_population(self.configs)
+        self.assertEqual(len(init_pop), self.configs['init_pop_size'])
         self.assertEqual(len(init_pop_smiles), self.configs['init_pop_size'])
 
         # case study

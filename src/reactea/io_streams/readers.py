@@ -17,7 +17,7 @@ except ImportError:
 from reactea.constants import ChemConstants
 
 
-ROOT_DIR = os.path.dirname(__file__)[:-10]
+from reactea import ROOT_DIR
 
 
 class Loaders:
@@ -40,6 +40,8 @@ class Loaders:
         str:
             file path from root
         """
+        if file_path[0] == '/':
+            file_path = file_path[1:]
         return f"{ROOT_DIR}/{file_path}"
 
     @staticmethod
@@ -57,10 +59,13 @@ class Loaders:
         dict:
             dictionary containing the configurations of the experiment
         """
-        with open(Loaders.from_root(yaml_file), 'r') as config_file:
+        with open(yaml_file, 'r') as config_file:
             config_dict = yaml.safe_load(config_file)
         config_dict['time'] = datetime.now().strftime('%m-%d_%H-%M-%S')
         config_dict['start_time'] = time.time()
+        config_dict['output_dir'] = f"{os.path.join(os.getcwd(), config_dict['output_path'])}"
+        config_dict['output_dir'] = f"{os.path.join(config_dict['output_dir'], config_dict['exp_name'])}"
+        config_dict['init_pop_path'] = f"{os.path.join(os.getcwd(), config_dict['init_pop_path'])}"
         return config_dict
 
     @staticmethod
@@ -78,7 +83,7 @@ class Loaders:
         List[Compound]:
             list of compounds to use as initial population
         """
-        cmp_df = pd.read_csv(Loaders.from_root(configs["init_pop_path"]), header=0, sep='\t')
+        cmp_df = pd.read_csv(configs['init_pop_path'], header=0, sep='\t')
         cmp_df = cmp_df.sample(configs["init_pop_size"])
         return [ChemConstants.STANDARDIZER().standardize(
             Compound(row['smiles'], row["compound_id"])) for _, row in cmp_df.iterrows()], cmp_df.smiles.values
@@ -87,11 +92,6 @@ class Loaders:
     def initialize_rules():
         """
         Loads the reaction rules.
-
-        Parameters
-        ----------
-        configs: dict
-            configurations of the experiment (containing path to reaction rules file)
 
         Returns
         -------
@@ -103,30 +103,6 @@ class Loaders:
                                sep='\t',
                                compression='bz2')
         return [ReactionRule(row['SMARTS'], row["InternalID"], row['Reactants']) for _, row in rules_df.iterrows()]
-
-    @staticmethod
-    def initialize_coreactants(configs: dict, standardize: bool = False):
-        """
-        Loads the set of coreactants
-
-        Parameters
-        ----------
-        configs: dict
-            configurations of the experiment (containing path to coreactants file)
-        standardize: bool
-            whether to standardize the coreactants
-
-        Returns
-        -------
-        List[Compound]:
-            list of compounds to use as coreactants
-        """
-        coreactants_df = pd.read_csv(Loaders.from_root(configs["coreactants_path"]), header=0, sep='\t')
-        if standardize:
-            return [ChemConstants.STANDARDIZER().standardize(
-                Compound(row['smiles'], row["compound_id"])) for _, row in coreactants_df.iterrows()]
-        else:
-            return [Compound(row['smiles'], row["compound_id"]) for _, row in coreactants_df.iterrows()]
 
     @staticmethod
     def load_deepsweet_ensemble():

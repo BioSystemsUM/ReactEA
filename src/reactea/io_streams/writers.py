@@ -5,7 +5,6 @@ import yaml
 
 import pandas as pd
 
-from reactea.io_streams import Loaders
 from reactea.optimization.solution import ChemicalSolution
 
 ROOT_DIR = os.path.dirname(__file__)[:-10]
@@ -44,7 +43,7 @@ class Writers:
             names of the evaluation functions
         """
         # save all solutions
-        destFile = Loaders.from_root(f"/outputs/{configs['exp_name']}/FINAL_{configs['time']}.csv")
+        destFile = os.path.join(configs['output_dir'], f"FINAL_{configs['time']}.csv")
         configs["final_population_path"] = destFile
         with open(destFile, 'w') as f:
             f.write("SMILES;" + feval_names + "\n")
@@ -71,8 +70,7 @@ class Writers:
         configs: dict
             configurations of the experiment
         """
-        destFile = Loaders.from_root("/outputs/" + configs["exp_name"]
-                                     + "/FINAL_TRANSFORMATIONS_{:s}.csv".format(configs["time"]))
+        destFile = os.path.join(f"{configs['output_dir']}", f"FINAL_TRANSFORMATIONS_{configs['time']}.csv")
         configs["transformations_path"] = destFile
         with open(destFile, 'w') as f:
             f.write(f"FINAL_SMILES;INTERMEDIATE_SMILES;RULE_IDS\n")
@@ -95,7 +93,8 @@ class Writers:
         configs: dict
             configurations of the experiment
         """
-        with open(Loaders.from_root(f"/outputs/{configs['exp_name']}/configs.yaml"), 'w') as outfile:
+        destFile = os.path.join(f"{configs['output_dir']}", f"configs.yaml")
+        with open(destFile, 'w') as outfile:
             yaml.dump(configs, outfile)
 
     @staticmethod
@@ -115,10 +114,9 @@ class Writers:
         rule_id: str
             reaction rule id
         """
-        file = f"/outputs/{configs['exp_name']}/ReactionMutationLogs.txt"
-        file = Loaders.from_root(file)
+        destFile = os.path.join(f"{configs['output_dir']}", f"ReactionMutationLogs.txt")
         objectives = []
         for obj in solution.objectives:
             objectives.append(str(round(obj, 3)*-1))
-        with open(file, 'a+') as log:
+        with open(destFile, 'a+') as log:
             log.write(f"{solution.variables.smiles},{mutant},{rule_id},{','.join(objectives)}\n")
