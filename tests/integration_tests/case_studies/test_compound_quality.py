@@ -1,3 +1,4 @@
+import os
 from unittest import TestCase
 
 from base_test_cases import CaseStudiesBaseTestCase
@@ -17,6 +18,10 @@ class TestCompoundQuality(CaseStudiesBaseTestCase, TestCase):
         else:
             self.configs['multi_objective'] = False
             self.configs['algorithm'] = 'GA'
+
+        # set up output folder
+        self.output_folder = os.path.join(self.output_folder, self.configs['algorithm'])
+        self.configs['output_dir'] = self.output_folder
 
         # initialize population and initialize population smiles
         init_pop, init_pop_smiles = Loaders.initialize_population(self.configs)
