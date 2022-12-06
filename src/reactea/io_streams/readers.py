@@ -17,7 +17,7 @@ except ImportError:
 from reactea.constants import ChemConstants
 
 
-ROOT_DIR = os.path.dirname(__file__)[:-10]
+from reactea import ROOT_DIR
 
 
 class Loaders:
