@@ -7,7 +7,7 @@ from typing import List, Union
 import numpy as np
 from joblib import Parallel, delayed
 from rdkit import DataStructs, RDConfig
-from rdkit.Chem import MolFromSmarts, Mol, GetSymmSSSR, EnumerateStereoisomers, AllChem, MolFromSmiles
+from rdkit.Chem import MolFromSmarts, Mol, GetSymmSSSR, EnumerateStereoisomers, AllChem, MolFromSmiles, MolToSmiles
 from rdkit.Chem.Crippen import MolLogP
 from rdkit.Chem.Descriptors import MolWt
 from rdkit.Chem.EnumerateStereoisomers import StereoEnumerationOptions
@@ -1458,3 +1458,125 @@ class SAS(ChemicalEvaluationFunction):
             name of the evaluation function
         """
         return "SAS"
+
+
+class Docking(ChemicalEvaluationFunction):
+    """
+    Docking evaluation function.
+    Uses DOCKSTRING for docking.
+    García-Ortegón, Miguel, et al. "DOCKSTRING: easy molecular docking yields better benchmarks for ligand design."
+    Journal of Chemical Information and Modeling (2021).
+
+    Available targets: ABL1, ACHE, ADAM17, ADORA2A, ADRB1, ADRB2, AKT1, AKT2, AR, BACE1, CA2, CASP3, CDK2, CSF1R,
+    CYP2C9, CYP3A4, DHFR, DPP4, DRD2, DRD3, EGFR, ESR1, ESR2, F2, F10, FGFR1, GBA, HMGCR, HSD11B1, HSP90AA1, IGF1R,
+    JAK2, KDR, KIT, LCK, MAOB, MAP2K1, MAPK14, MAPKAPK2, MET, MMP13, NOS1, NR3C1, PARP1, PDE5A, PGR, PLK1, PPARA, PPARD,
+    PPARG, PTGS2, PTK2, PTPN1, REN, ROCK1, SRC and THRB.
+    """
+
+    def __init__(self,
+                 target: str,
+                 maximize: bool = True,
+                 worst_fitness: float = 0.0):
+        """
+        Initializes the Docking evaluation function.
+
+        Parameters
+        ----------
+        target: str
+            Target to dock the ligand to.
+        maximize: bool
+            if the goal is to maximize (True) or minimize (False) the fitness of the evaluation function.
+        worst_fitness: float
+            The worst fitness possible for the evaluation function.
+        """
+        super(Docking, self).__init__(maximize, worst_fitness)
+        try:
+            from dockstring import load_target
+        except ImportError:
+            raise ImportError("'dockstring' not available (https://github.com/dockstring/dockstring).")
+        self.target = load_target(target)
+
+    def _docking_score(self, mol: Union[Mol, str]):
+        """
+        Computes the docking score of the molecule.
+
+        Parameters
+        ----------
+        mol: Union[Mol, str]
+            Mol object or SMILES string to calculate the docking score
+
+        Returns
+        -------
+        float:
+            docking score of the molecule
+        """
+        try:
+            if isinstance(mol, Mol):
+                smiles = MolToSmiles(mol)
+            else:
+                smiles = mol
+            score, _ = self.target.dock(smiles)
+            return score
+        except Exception:
+            return self.worst_fitness
+
+    def get_fitness_single(self, candidate: Union[Mol, str]):
+        """
+        Returns the fitness of a single Mol object or SMILES strings.
+        In this case it's the docking score of the molecule.
+
+        Parameters
+        ----------
+        candidate: Union[Mol, str]
+            Mol object or SMILES string to evaluate.
+
+        Returns
+        -------
+        float:
+            docking score of the candidate Mol object / SMILES string.
+        """
+        return self._docking_score(candidate)
+
+    def _raw_docking_score(self, mol: Union[Mol, str]):
+        """
+        Computes the docking score of the molecule.
+
+        Parameters
+        ----------
+        mol: Mol
+            Mol object / SMILES string to calculate the docking score
+
+        Returns
+        -------
+        float:
+            docking score of the molecule
+        """
+        return self._docking_score(mol)
+
+    def get_raw_score_single(self, candidate: Union[Mol, str]):
+        """
+        Returns the fitness of a single Mol object / SMILES string.
+        In this case it's the docking score of the molecule.
+
+        Parameters
+        ----------
+        candidate: Union[Mol, str]
+            Mol object / SMILES string to evaluate.
+
+        Returns
+        -------
+        float:
+            docking score of the candidate Mol object / SMILES string.
+        """
+        return self._raw_docking_score(candidate)
+
+    def method_str(self):
+        """
+        Get name of the evaluation function.
+
+        Returns
+        -------
+        str:
+            name of the evaluation function
+        """
+        return "Docking"
