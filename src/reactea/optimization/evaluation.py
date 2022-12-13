@@ -1475,8 +1475,8 @@ class Docking(ChemicalEvaluationFunction):
 
     def __init__(self,
                  target: str,
-                 maximize: bool = True,
-                 worst_fitness: float = 0.0):
+                 maximize: bool = False,
+                 worst_fitness: float = 50.0):
         """
         Initializes the Docking evaluation function.
 
