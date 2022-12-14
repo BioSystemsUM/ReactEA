@@ -8,12 +8,6 @@ import pandas as pd
 
 from reactea.chem import Compound, ReactionRule
 
-try:
-    from deepsweet_models import DeepSweetRF, DeepSweetDNN, DeepSweetGCN, DeepSweetSVM, DeepSweetBiLSTM
-    from ensemble import Ensemble
-except ImportError:
-    pass
-
 from reactea.constants import ChemConstants
 
 
@@ -114,6 +108,12 @@ class Loaders:
         ensemble:
             deepsweet ensemble to classify compound sweetness
         """
+        try:
+            from deepsweet_models import DeepSweetRF, DeepSweetDNN, DeepSweetGCN, DeepSweetSVM, DeepSweetBiLSTM
+            from ensemble import Ensemble
+        except ImportError:
+            raise ImportError("DeepSweet is not installed. Please install it to use this feature "
+                              "(https://github.com/BioSystemsUM/DeepSweet).")
         models_folder_path = Loaders.from_root('/evaluation_models/deepsweet_models/')
         list_of_models = [DeepSweetRF(models_folder_path, "2d", "SelectFromModelFS"),
                           DeepSweetDNN(models_folder_path, "rdk", "all"),
