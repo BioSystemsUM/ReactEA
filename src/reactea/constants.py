@@ -1,5 +1,8 @@
 from jmetal.algorithm.multiobjective.nsgaiii import UniformReferenceDirectionFactory
 from jmetal.operator import BinaryTournamentSelection
+from jmetal.util.comparator import DominanceComparator, MultiComparator
+from jmetal.util.density_estimator import CrowdingDistance
+from jmetal.util.ranking import FastNonDominatedRanking
 from jmetal.util.termination_criterion import StoppingByEvaluations
 
 from reactea.optimization.comparators import ParetoDominanceComparator
@@ -16,8 +19,6 @@ class ExperimentConstants:
     POPULATION_SIZE = 10
     RULES_PATH = '/data/reactionrules/retrorules/retrorules_forward_score.5.tsv'
     MAX_RULES_BY_ITER = 1000
-    USE_COREACTANT_INFO = False
-    COREACTANTS_PATH = ""
     MULTI_OBJECTIVE = False
     BATCHED = True
 
@@ -81,6 +82,18 @@ class NSGAIIIConstants:
     Class containing a set of NSGAIII parameters constants
     """
     REFERENCE_DIRECTIONS = UniformReferenceDirectionFactory
+    DOMINANCE_COMPARATOR = DominanceComparator
+    SELECTION = BinaryTournamentSelection(MultiComparator([FastNonDominatedRanking.get_comparator(),
+                                                           CrowdingDistance.get_comparator()]))
+
+
+class NSGAIIConstants:
+    """
+    Class containing a set of NSGAII parameters constants
+    """
+    DOMINANCE_COMPARATOR = DominanceComparator
+    SELECTION = BinaryTournamentSelection(MultiComparator([FastNonDominatedRanking.get_comparator(),
+                                                           CrowdingDistance.get_comparator()]))
 
 
 class IBEAConstants:
@@ -88,6 +101,13 @@ class IBEAConstants:
     Class containing a set of IBEA parameters constants
     """
     KAPPA = 1.0
+
+
+class SPEA2Constants:
+    """
+    Class containing a set of SPEA2 parameters constants
+    """
+    DOMINANCE_COMPARATOR = DominanceComparator
 
 
 class ChemConstants:
