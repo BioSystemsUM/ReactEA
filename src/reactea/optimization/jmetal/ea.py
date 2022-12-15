@@ -11,7 +11,7 @@ from .generators import ChemicalGenerator
 from .observers import PrintObjectivesStatObserver, VisualizerObserver
 from .problem import JmetalProblem
 from reactea.constants import EAConstants, ChemConstants, SAConstants, GAConstants, NSGAIIIConstants, \
-    ESConstants, LSConstants, IBEAConstants
+    ESConstants, LSConstants, IBEAConstants, NSGAIIConstants, SPEA2Constants
 from ..problem import ChemicalProblem
 from ...chem.compounds import Compound
 from ...chem.reaction_rules import ReactionRule
@@ -185,6 +185,8 @@ class ChemicalEA(AbstractEA):
                                                                            n_points=self.population_size - 1),
                 population_generator=self.initial_population,
                 population_evaluator=self.population_evaluator,
+                dominance_comparator=NSGAIIIConstants.DOMINANCE_COMPARATOR,
+                selection=NSGAIIIConstants.SELECTION
             )
         elif self.algorithm_name == 'NSGAII':
             algorithm = NSGAII(
@@ -193,9 +195,11 @@ class ChemicalEA(AbstractEA):
                 offspring_population_size=self.population_size,
                 mutation=mutation,
                 crossover=crossover,
+                selection=NSGAIIConstants.SELECTION,
                 termination_criterion=self.termination_criterion,
                 population_generator=self.initial_population,
-                population_evaluator=self.population_evaluator
+                population_evaluator=self.population_evaluator,
+                dominance_comparator=NSGAIIConstants.DOMINANCE_COMPARATOR
             )
         elif self.algorithm_name == "IBEA":
             algorithm = IBEA(
@@ -226,7 +230,8 @@ class ChemicalEA(AbstractEA):
                 crossover=crossover,
                 termination_criterion=self.termination_criterion,
                 population_generator=self.initial_population,
-                population_evaluator=self.population_evaluator
+                population_evaluator=self.population_evaluator,
+                dominance_comparator=SPEA2Constants.DOMINANCE_COMPARATOR
             )
         else:
             raise ValueError('Invalid multi-objective algorithm name. Choose from NSGAII, NSGAIII, SPEA2, IBEA '
