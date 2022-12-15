@@ -74,7 +74,7 @@ class LSConstants:
     """
     Class containing a set of Local Search parameters constants
     """
-    COMPARATOR = ParetoDominanceComparator
+    COMPARATOR = ParetoDominanceComparator()
 
 
 class NSGAIIIConstants:
@@ -82,7 +82,7 @@ class NSGAIIIConstants:
     Class containing a set of NSGAIII parameters constants
     """
     REFERENCE_DIRECTIONS = UniformReferenceDirectionFactory
-    DOMINANCE_COMPARATOR = DominanceComparator
+    DOMINANCE_COMPARATOR = DominanceComparator()
     SELECTION = BinaryTournamentSelection(MultiComparator([FastNonDominatedRanking.get_comparator(),
                                                            CrowdingDistance.get_comparator()]))
 
@@ -91,7 +91,7 @@ class NSGAIIConstants:
     """
     Class containing a set of NSGAII parameters constants
     """
-    DOMINANCE_COMPARATOR = DominanceComparator
+    DOMINANCE_COMPARATOR = DominanceComparator()
     SELECTION = BinaryTournamentSelection(MultiComparator([FastNonDominatedRanking.get_comparator(),
                                                            CrowdingDistance.get_comparator()]))
 
@@ -107,7 +107,7 @@ class SPEA2Constants:
     """
     Class containing a set of SPEA2 parameters constants
     """
-    DOMINANCE_COMPARATOR = DominanceComparator
+    DOMINANCE_COMPARATOR = DominanceComparator()
 
 
 class ChemConstants:
