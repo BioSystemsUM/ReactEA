@@ -16,7 +16,7 @@ def _run(configurations: dict, case, init_pop):
     algorithm = configurations["algorithm"]
 
     # set up folders
-    Writers.set_up_folders(f"outputs/{configurations['exp_name']}/")
+    Writers.set_up_folders(f"{configurations['output_path']}{configurations['exp_name']}/")
 
     # initialize reaction rules
     reaction_rules = Loaders.initialize_rules()

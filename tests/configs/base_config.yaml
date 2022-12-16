@@ -5,7 +5,7 @@ case_study: "CompoundQuality"
 init_pop_path: "tests/data/compounds/compounds_sample.tsv"
 init_pop_size: 4
 
-max_rules_by_iter: 10
+max_rules_by_iter: 2
 
 multi_objective: True
 batched: True

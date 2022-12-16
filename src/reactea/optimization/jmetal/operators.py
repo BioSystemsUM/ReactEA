@@ -64,11 +64,11 @@ class ReactorMutation(Mutation[ChemicalSolution]):
         """
         if random.random() <= self.probability:
             compound = solution.variables
+            rules = random.sample(self.reaction_rules, self.configs['max_rules_by_iter'])
             products = []
             i = 0
             while len(products) < 1 and i < self.configs["max_rules_by_iter"]:
-                i += 1
-                rule = self.reaction_rules[random.randint(0, len(self.reaction_rules) - 1)]
+                rule = rules[i]
                 reactants = rule.reactants_to_mol_list(compound)
                 products = ChemUtils.react(reactants, rule.reaction)
                 if len(products) > 20:
@@ -79,20 +79,24 @@ class ReactorMutation(Mutation[ChemicalSolution]):
                     most_similar_product = ChemUtils.most_similar_compound(compound.smiles, products)
                     most_similar_product = ChemUtils.smiles_to_isomerical_smiles(most_similar_product)
                     mutant_id = f"{compound.cmp_id}--{rule.rule_id}_"
-                    mutant = Compound(most_similar_product, mutant_id)
-                    if mutant.mol is not None:
-                        mutant = self.standardizer().standardize(mutant)
-                        if self.logger:
-                            self.logger(self.configs, solution, mutant.smiles, rule.rule_id)
-                        solution.variables = mutant
-                        if 'original_compound' not in solution.attributes.keys():
-                            solution.attributes['original_compound'] = [compound.smiles]
-                            solution.attributes['rule_id'] = [rule.rule_id]
-                        else:
-                            solution.attributes['original_compound'].append(compound.smiles)
-                            solution.attributes['rule_id'].append(rule.rule_id)
-                    else:
+                    if not isinstance(most_similar_product, str):
                         products = []
+                    else:
+                        mutant = Compound(most_similar_product, mutant_id)
+                        if mutant.mol is not None:
+                            mutant = self.standardizer().standardize(mutant)
+                            if self.logger:
+                                self.logger(self.configs, solution, mutant.smiles, rule.rule_id)
+                            solution.variables = mutant
+                            if 'original_compound' not in solution.attributes.keys():
+                                solution.attributes['original_compound'] = [compound.smiles]
+                                solution.attributes['rule_id'] = [rule.rule_id]
+                            else:
+                                solution.attributes['original_compound'].append(compound.smiles)
+                                solution.attributes['rule_id'].append(rule.rule_id)
+                        else:
+                            products = []
+                i += 1
         return solution
 
     def get_name(self):
