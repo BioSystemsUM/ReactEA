@@ -1,7 +1,7 @@
 from itertools import chain
 from typing import Union, List
 
-from rdkit import DataStructs
+from rdkit import DataStructs, Chem
 from rdkit.Chem import Mol, rdmolfiles, rdmolops, MolFromSmiles, MolToSmiles, RemoveHs
 from rdkit.Chem.Draw import MolToImage
 from rdkit.Chem.Fingerprints.FingerprintMols import FingerprintMol
@@ -138,6 +138,10 @@ class ChemUtils:
         mol = MolFromSmiles(smiles, sanitize=False)
         if mol is None:
             return False
+        try:
+            Chem.SanitizeMol(mol)
+        except:
+            return False
         if mol.GetNumAtoms() < 4:
             return False
         carbon = MolFromSmiles('C')
@@ -208,6 +212,8 @@ class ChemUtils:
             The SMILES string.
         """
         try:
-            return MolToSmiles(RemoveHs(MolFromSmiles(smiles)), isomericSmiles=True)
+            mol = MolFromSmiles(smiles)
+            RemoveHs(mol)
+            return MolToSmiles(mol, isomericSmiles=True)
         except TypeError:
             return None
