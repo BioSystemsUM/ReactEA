@@ -73,7 +73,8 @@ class ChemicalEA(AbstractEA):
             self.population_size = len(initial_population)
         else:
             self.population_size = 1
-        self.termination_criterion = EAConstants.TERMINATION_CRITERION(self.max_generations * self.population_size)
+        self.termination_criterion = EAConstants.TERMINATION_CRITERION(EAConstants.PATIENCE,
+                                                                       self.max_generations * self.population_size)
 
     def _run_so(self):
         """
