@@ -77,7 +77,6 @@ class ReactorMutation(Mutation[ChemicalSolution]):
                 if len(products) > 0:
                     # keep the most similar compound
                     most_similar_product = ChemUtils.most_similar_compound(compound.smiles, products)
-                    most_similar_product = ChemUtils.smiles_to_isomerical_smiles(most_similar_product)
                     mutant_id = f"{compound.cmp_id}--{rule.rule_id}_"
                     if not isinstance(most_similar_product, str):
                         products = []
