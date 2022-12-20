@@ -80,8 +80,11 @@ class ChEMBLStandardizer(MolecularStandardizer):
         Mol:
             Standardized RDKit Mol object.
         """
-        mol = standardizer.standardize_mol(mol)
-        mol, _ = standardizer.get_parent_mol(mol)
-        mol_frags = rdmolops.GetMolFrags(mol, asMols=True)
-        largest_mol = max(mol_frags, default=mol, key=lambda m: m.GetNumAtoms())
-        return largest_mol
+        try:
+            mol = standardizer.standardize_mol(mol)
+            mol, _ = standardizer.get_parent_mol(mol)
+            mol_frags = rdmolops.GetMolFrags(mol, asMols=True)
+            largest_mol = max(mol_frags, default=mol, key=lambda m: m.GetNumAtoms())
+            return largest_mol
+        except:
+            return mol
