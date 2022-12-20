@@ -195,25 +195,3 @@ class ChemUtils:
         sims = [ChemUtils.calc_fingerprint_similarity(smiles, s) for s in smiles_list]
         matching = sims.index(max(sims))
         return smiles_list[matching]
-
-    @staticmethod
-    def smiles_to_isomerical_smiles(smiles: str):
-        """
-        Converts a molecule to its canonical SMILES.
-
-        Parameters
-        ----------
-        smiles: str
-            The SMILES of the molecule.
-
-        Returns
-        -------
-        str
-            The SMILES string.
-        """
-        try:
-            mol = MolFromSmiles(smiles)
-            RemoveHs(mol)
-            return MolToSmiles(mol, isomericSmiles=True)
-        except TypeError:
-            return None
