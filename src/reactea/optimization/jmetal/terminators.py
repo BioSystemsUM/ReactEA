@@ -77,7 +77,12 @@ class StoppingByEvaluationsOrImprovement(TerminationCriterion):
         """
         self.evaluations = kwargs["EVALUATIONS"]
         solutions = kwargs["SOLUTIONS"]
-        mean_fit = np.mean([s.objectives for s in solutions])
+        if isinstance(solutions, list):
+            mean_fit = np.mean([s.objectives for s in solutions])
+        else:
+            mean_fit = np.mean(solutions.objectives)
+
+        mean_fit = mean_fit * -1  # minimization
         if self.value >= mean_fit:
             self.no_improvement += 1
         else:
