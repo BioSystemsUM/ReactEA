@@ -55,7 +55,7 @@ class TestReactorMutation(OperatorsBaseTestCase, TestCase):
         sol2 = rm2.execute([ChemicalSolution(Compound('Nc1ncnc2c1ncn2C1OC(COP(=O)(O)OC(=O)c2cccc(O)c2O)C(O)C1O', 'C1')),
                             ChemicalSolution(Compound('Nc1ncnc2c1ncn2C1OC(COP(=O)(O)OC(=O)c2cccc(O)c2O)C(O)C1O', 'C2'))]
                            )
-        self.assertEqual(rm2.get_name(), 'Reactor One Point Crossover')
+        self.assertEqual(rm2.get_name(), 'Reactor One Point PseudoCrossover')
         self.assertIsInstance(sol2, list)
         self.assertIsInstance(sol2[0], ChemicalSolution)
         self.assertIsInstance(sol2[1], ChemicalSolution)
