@@ -69,7 +69,7 @@ class ESConstants:
     """
     Class containing a set of Evolutionary Strategy parameters constants
     """
-    ELITIST = False
+    ELITIST = True
 
 
 class LSConstants:
