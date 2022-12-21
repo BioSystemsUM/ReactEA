@@ -45,3 +45,58 @@ class StoppingByEvaluationsOrMeanFitnessValue(TerminationCriterion):
             true if the value or number of evaluations are reached, false otherwise
         """
         return self.value >= self.expected_value or self.evaluations >= self.max_evaluations
+
+
+class StoppingByEvaluationsOrImprovement(TerminationCriterion):
+    """
+    StoppingByEvaluationsOrImprovement termination criterion.
+    Stops EA if maximum number of evaluations is met or there is no improvement for N generations.
+    """
+
+    def __init__(self, patience: int, max_evaluations: int):
+        """
+        Initializes a StoppingByEvaluationsOrFitnessValue stopping criterion.
+
+        Parameters
+        ----------
+        patience: int
+            maximum number of generations without improvement
+        max_evaluations: int
+            maximum number of evaluations
+        """
+        super(StoppingByEvaluationsOrImprovement, self).__init__()
+        self.patience = patience
+        self.max_evaluations = max_evaluations
+        self.value = 0.0
+        self.no_improvement = 0
+        self.evaluations = 0
+
+    def update(self, *args, **kwargs):
+        """
+        Updates the number current number of iterations and no improvement generations value.
+        """
+        self.evaluations = kwargs["EVALUATIONS"]
+        solutions = kwargs["SOLUTIONS"]
+        if isinstance(solutions, list):
+            mean_fit = np.mean([s.objectives for s in solutions])
+        else:
+            mean_fit = np.mean(solutions.objectives)
+
+        mean_fit = mean_fit * -1  # minimization
+        if self.value >= mean_fit:
+            self.no_improvement += 1
+        else:
+            self.value = mean_fit
+            self.no_improvement = 0
+
+    @property
+    def is_met(self):
+        """
+        Checks if maximum number of evaluations or fitness value are reached.
+
+        Returns
+        -------
+        bool
+            true if the value or number of evaluations are reached, false otherwise
+        """
+        return self.no_improvement > self.patience or self.evaluations >= self.max_evaluations

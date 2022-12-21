@@ -3,10 +3,10 @@ from jmetal.operator import BinaryTournamentSelection
 from jmetal.util.comparator import DominanceComparator, MultiComparator
 from jmetal.util.density_estimator import CrowdingDistance
 from jmetal.util.ranking import FastNonDominatedRanking
-from jmetal.util.termination_criterion import StoppingByEvaluations
 
 from reactea.optimization.comparators import ParetoDominanceComparator
 from reactea.optimization.jmetal.operators import ReactorPseudoCrossover, ReactorMutation
+from reactea.optimization.jmetal.terminators import StoppingByEvaluationsOrImprovement
 from reactea.standardizers import ChEMBLStandardizer
 
 
@@ -36,7 +36,9 @@ class EAConstants:
     # Visualizer
     VISUALIZER = False
     # Termination Criterion
-    TERMINATION_CRITERION = StoppingByEvaluations
+    TERMINATION_CRITERION = StoppingByEvaluationsOrImprovement
+    # Termination Criterion Patience
+    PATIENCE = 5
     # Mutation
     MUTATION = ReactorMutation
     # Mutation Probability

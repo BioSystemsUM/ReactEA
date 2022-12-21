@@ -73,7 +73,8 @@ class ChemicalEA(AbstractEA):
             self.population_size = len(initial_population)
         else:
             self.population_size = 1
-        self.termination_criterion = EAConstants.TERMINATION_CRITERION(self.max_generations * self.population_size)
+        self.termination_criterion = EAConstants.TERMINATION_CRITERION(EAConstants.PATIENCE,
+                                                                       self.max_generations * self.population_size)
 
     def _run_so(self):
         """
@@ -136,7 +137,8 @@ class ChemicalEA(AbstractEA):
             print("Running Local Search!")
             if len(self.initial_population.initial_population) != 1:
                 raise ValueError('For running LS, only one initial compound must be provided!')
-            self.termination_criterion = EAConstants.TERMINATION_CRITERION(self.max_generations)
+            self.termination_criterion = EAConstants.TERMINATION_CRITERION(EAConstants.PATIENCE,
+                                                                           self.max_generations)
             algorithm = LocalSearch(problem=self.ea_problem,
                                     mutation=mutation,
                                     termination_criterion=self.termination_criterion,
