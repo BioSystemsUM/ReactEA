@@ -25,16 +25,14 @@ class TestReactorMutation(OperatorsBaseTestCase, TestCase):
                                      configs=self.configs,
                                      logger=None)
 
-        self.assertEqual(rm1.get_name(), 'Reactor One Point Crossover')
-        self.assertEqual(rm1.get_number_of_parents(), 2)
-        self.assertEqual(rm1.get_number_of_children(), 2)
+        self.assertEqual(rm1.get_name(), 'Reactor One Point PseudoCrossover')
+        self.assertEqual(rm1.get_number_of_parents(), 1)
+        self.assertEqual(rm1.get_number_of_children(), 1)
 
-        sol1 = rm1.execute([ChemicalSolution(Compound('Nc1ncnc2c1ncn2C1OC(COP(=O)(O)OC(=O)c2cccc(O)c2O)C(O)C1O', 'C1')),
-                            ChemicalSolution(Compound('Nc1ncnc2c1ncn2C1OC(COP(=O)(O)OC(=O)c2cccc(O)c2O)C(O)C1O', 'C2'))]
+        sol1 = rm1.execute([ChemicalSolution(Compound('Nc1ncnc2c1ncn2C1OC(COP(=O)(O)OC(=O)c2cccc(O)c2O)C(O)C1O', 'C1'))]
                            )
         self.assertIsInstance(sol1, list)
         self.assertIsInstance(sol1[0], ChemicalSolution)
-        self.assertIsInstance(sol1[1], ChemicalSolution)
 
         rrs2 = [ReactionRule('[#6:1]1=[#6:2]-[#7:3]-[#6:4]=[#6:5]-[#6:6]-1.[#6;$([#6&R]1-&@[#6&R]-&@[#6&R]-&@[#6&R]-&@'
                              '[#6&R]-&@[#6&R]-&@1);!$([#6&R]1-&@[#6&R]-&@[#6&R]-&@[#6&R]-&@[#6&R]-&@[#6&R]-&@1-&!@[#6&!'
@@ -52,10 +50,8 @@ class TestReactorMutation(OperatorsBaseTestCase, TestCase):
                                      standardizer=standardizer,
                                      configs=self.configs,
                                      logger=Writers.update_operators_logs)
-        sol2 = rm2.execute([ChemicalSolution(Compound('Nc1ncnc2c1ncn2C1OC(COP(=O)(O)OC(=O)c2cccc(O)c2O)C(O)C1O', 'C1')),
-                            ChemicalSolution(Compound('Nc1ncnc2c1ncn2C1OC(COP(=O)(O)OC(=O)c2cccc(O)c2O)C(O)C1O', 'C2'))]
+        sol2 = rm2.execute([ChemicalSolution(Compound('Nc1ncnc2c1ncn2C1OC(COP(=O)(O)OC(=O)c2cccc(O)c2O)C(O)C1O', 'C2'))]
                            )
-        self.assertEqual(rm2.get_name(), 'Reactor One Point Crossover')
+        self.assertEqual(rm2.get_name(), 'Reactor One Point PseudoCrossover')
         self.assertIsInstance(sol2, list)
         self.assertIsInstance(sol2[0], ChemicalSolution)
-        self.assertIsInstance(sol2[1], ChemicalSolution)

@@ -50,30 +50,6 @@ class ReactorGeneticAlgorithm(GeneticAlgorithm):
 
         return unique_population
 
-    def reproduction(self, mating_population: List[ChemicalSolution]) -> List[ChemicalSolution]:
-        number_of_parents_to_combine = self.crossover_operator.get_number_of_parents()
-
-        if len(mating_population) % number_of_parents_to_combine != 0:
-            pop_size = self.offspring_population_size - 1
-        else:
-            pop_size = self.offspring_population_size
-
-        offspring_population = []
-        for i in range(0, pop_size, number_of_parents_to_combine):
-            parents = []
-            for j in range(number_of_parents_to_combine):
-                parents.append(mating_population[i + j])
-
-            offspring = self.crossover_operator.execute(parents)
-
-            for solution in offspring:
-                self.mutation_operator.execute(solution)
-                offspring_population.append(solution)
-                if len(offspring_population) >= pop_size:
-                    break
-
-        return offspring_population
-
     def get_result(self):
         """
         Get the EA results.

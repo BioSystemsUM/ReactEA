@@ -145,38 +145,31 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
         self.configs = configs
         self.logger = logger
 
-    def execute(self, parents: List[ChemicalSolution]):
+    def execute(self, parent: List[ChemicalSolution]):
         """
-        Executes the operator by trying to apply a set os reaction rules to both parents to produce
+        Executes the operator by trying to apply a set os reaction rules to the parent to produce
         the offspring.
 
         Parameters
         ----------
-        parents: List[ChemicalSolution]
-            parent solutions to mutate
+        parent: List[ChemicalSolution]
+            parent solution to mutate
         Returns
         -------
         List[ChemicalSolution]
-            mutated offspring solutions
+            mutated offspring solution
         """
-        if len(parents) != 2:
-            raise Exception('The number of parents is not two: {}'.format(len(parents)))
-        offspring = [copy.deepcopy(parents[0]), copy.deepcopy(parents[1])]
+        if len(parent) != self.get_number_of_parents():
+            raise Exception('The number of parents is not two: {}'.format(len(parent)))
+        offspring = [copy.deepcopy(parent[0])]
 
         if random.random() <= self.probability:
-            stepbro = ReactorMutation(self.probability,
-                                      self.reaction_rules,
-                                      self.standardizer,
-                                      self.configs,
-                                      self.logger).execute(offspring[0])
-
-            stepsis = ReactorMutation(self.probability,
-                                      self.reaction_rules,
-                                      self.standardizer,
-                                      self.configs,
-                                      self.logger).execute(offspring[1])
-            offspring[0] = stepbro
-            offspring[1] = stepsis
+            m_offspring = ReactorMutation(self.probability,
+                                          self.reaction_rules,
+                                          self.standardizer,
+                                          self.configs,
+                                          self.logger).execute(offspring[0])
+            offspring[0] = m_offspring
         return offspring
 
     def get_number_of_parents(self) -> int:
@@ -188,7 +181,7 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
         int
             number of parent compounds
         """
-        return 2
+        return 1
 
     def get_number_of_children(self) -> int:
         """
@@ -199,7 +192,7 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
         int
             number of children compounds
         """
-        return 2
+        return 1
 
     def get_name(self):
         """
@@ -210,4 +203,4 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
         str:
             name of the operator.
         """
-        return 'Reactor One Point Crossover'
+        return 'Reactor One Point PseudoCrossover'
