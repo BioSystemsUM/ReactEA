@@ -2,10 +2,11 @@ from typing import List
 
 from jmetal.algorithm.multiobjective import NSGAII, SPEA2, IBEA, RandomSearch
 from jmetal.algorithm.multiobjective.nsgaiii import NSGAIII
-from jmetal.algorithm.singleobjective import SimulatedAnnealing, EvolutionStrategy, LocalSearch
+from jmetal.algorithm.singleobjective import SimulatedAnnealing, LocalSearch
 
 from reactea.optimization.ea import AbstractEA
 from .algorithms import ReactorGeneticAlgorithm as GeneticAlgorithm
+from .algorithms import ReactorEvolutionStrategy as EvolutionStrategy
 from .evaluators import ChemicalEvaluator
 from .generators import ChemicalGenerator
 from .observers import PrintObjectivesStatObserver, VisualizerObserver
