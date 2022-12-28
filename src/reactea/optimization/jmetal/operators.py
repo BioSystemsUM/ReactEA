@@ -23,7 +23,8 @@ class ReactorMutation(Mutation[ChemicalSolution]):
                  reaction_rules: List[ReactionRule],
                  standardizer: Union[MolecularStandardizer, None],
                  configs: dict,
-                 logger: Union[callable, None] = None):
+                 logger: Union[callable, None] = None,
+                 tolerance: float = 0.25):
         """
         Initializes a ReactorMutation operator.
 
@@ -39,12 +40,15 @@ class ReactorMutation(Mutation[ChemicalSolution]):
             configurations of the experiment
         logger: Union[callable, None]
             function to save all intermediate transformations (accepted and not accepted)
+        tolerance: float
+            compounds between max_similarity and max_similarity - tolerance are considered to be picked as mutant.
         """
         super(ReactorMutation, self).__init__(probability=probability)
         self.reaction_rules = reaction_rules
         self.standardizer = standardizer
         self.configs = configs
         self.logger = logger
+        self.tolerance = tolerance
 
     def execute(self, solution: ChemicalSolution):
         """
@@ -76,7 +80,7 @@ class ReactorMutation(Mutation[ChemicalSolution]):
                 products = [pd for pd in products if ChemUtils.valid_product(pd)]
                 if len(products) > 0:
                     # keep the most similar compound
-                    most_similar_product = ChemUtils.most_similar_compound(compound.smiles, products)
+                    most_similar_product = ChemUtils.most_similar_compound(compound.smiles, products, self.tolerance)
                     mutant_id = f"{compound.cmp_id}--{rule.rule_id}_"
                     if not isinstance(most_similar_product, str):
                         products = []
@@ -122,7 +126,8 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
                  reaction_rules: List[ReactionRule],
                  standardizer: Union[MolecularStandardizer, None],
                  configs: dict,
-                 logger: Union[callable, None] = None):
+                 logger: Union[callable, None] = None,
+                 tolerance: float = 0.25):
         """
         Initializes a ReactorPseudoCrossover operator.
 
@@ -138,12 +143,15 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
             configurations of the experiment
         logger: Union[callable, None]
             function to save all intermediate transformations (accepted and not accepted)
+        tolerance: float
+            compounds between max_similarity and max_similarity - tolerance are considered to be picked as mutant.
         """
         super(ReactorPseudoCrossover, self).__init__(probability=probability)
         self.reaction_rules = reaction_rules
         self.standardizer = standardizer
         self.configs = configs
         self.logger = logger
+        self.tolerance = tolerance
 
     def execute(self, parent: List[ChemicalSolution]):
         """
@@ -168,7 +176,8 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
                                           self.reaction_rules,
                                           self.standardizer,
                                           self.configs,
-                                          self.logger).execute(offspring[0])
+                                          self.logger,
+                                          self.tolerance).execute(offspring[0])
             offspring[0] = m_offspring
         return offspring
 

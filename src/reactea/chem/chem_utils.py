@@ -1,6 +1,8 @@
+import random
 from itertools import chain
 from typing import Union, List
 
+import numpy as np
 from rdkit import DataStructs, Chem
 from rdkit.Chem import Mol, rdmolfiles, rdmolops, MolFromSmiles, MolToSmiles, RemoveHs
 from rdkit.Chem.Draw import MolToImage
@@ -174,7 +176,7 @@ class ChemUtils:
         return 0.0
 
     @staticmethod
-    def most_similar_compound(smiles: str, smiles_list: List[str]):
+    def most_similar_compound(smiles: str, smiles_list: List[str], tolerance: float = 0.25):
         """
         Finds the most similar compound in a list of compounds.
 
@@ -184,6 +186,8 @@ class ChemUtils:
             The smiles of the compound to find the most similar compound for.
         smiles_list: List[str]
             The list of compounds to find the most similar compound in.
+        tolerance: float
+            Compounds between max_similarity and max_similarity - tolerance are considered to be picked.
 
         Returns
         -------
@@ -193,5 +197,5 @@ class ChemUtils:
         if len(smiles_list) == 1:
             return smiles_list[0]
         sims = [ChemUtils.calc_fingerprint_similarity(smiles, s) for s in smiles_list]
-        matching = sims.index(max(sims))
-        return smiles_list[matching]
+        idx = [i for i, x in enumerate(sims) if x >= max(sims) - tolerance]
+        return smiles_list[random.choice(idx)]

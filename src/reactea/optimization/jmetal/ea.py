@@ -90,13 +90,15 @@ class ChemicalEA(AbstractEA):
                                         self.reaction_rules,
                                         self.standardizer,
                                         self.configs,
-                                        self.logger)
+                                        self.logger,
+                                        EAConstants.TOLERANCE)
         try:
             crossover = EAConstants.CROSSOVER(EAConstants.CROSSOVER_PROBABILITY,
                                               self.reaction_rules,
                                               self.standardizer,
                                               self.configs,
-                                              self.logger
+                                              self.logger,
+                                              EAConstants.TOLERANCE
                                               )
         except TypeError:
             crossover = EAConstants.CROSSOVER()
@@ -166,13 +168,15 @@ class ChemicalEA(AbstractEA):
                                         self.reaction_rules,
                                         self.standardizer,
                                         self.configs,
-                                        self.logger)
+                                        self.logger,
+                                        EAConstants.TOLERANCE)
         try :
             crossover = EAConstants.CROSSOVER(EAConstants.CROSSOVER_PROBABILITY,
                                               self.reaction_rules,
                                               self.standardizer,
                                               self.configs,
-                                              self.logger
+                                              self.logger,
+                                              EAConstants.TOLERANCE
                                               )
         except TypeError:
             crossover = EAConstants.CROSSOVER()
