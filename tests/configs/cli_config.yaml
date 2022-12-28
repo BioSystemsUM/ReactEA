@@ -6,6 +6,7 @@ init_pop_path: "data/compounds/compounds_sample.tsv"
 init_pop_size: 4
 
 max_rules_by_iter: 10
+tolerance: 0.15
 
 multi_objective: True
 batched: True
