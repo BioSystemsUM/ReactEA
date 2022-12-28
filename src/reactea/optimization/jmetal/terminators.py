@@ -2,6 +2,21 @@ import numpy as np
 from jmetal.util.termination_criterion import TerminationCriterion
 
 
+class StoppingByEvaluations(TerminationCriterion):
+
+    def __init__(self, max_evaluations: int):
+        super(StoppingByEvaluations, self).__init__()
+        self.max_evaluations = max_evaluations
+        self.evaluations = 0
+
+    def update(self, *args, **kwargs):
+        self.evaluations += 1
+
+    @property
+    def is_met(self):
+        return self.evaluations >= self.max_evaluations
+
+
 class StoppingByEvaluationsOrMeanFitnessValue(TerminationCriterion):
     """
     StoppingByEvaluationsOrFitnessValue termination criterion.
@@ -75,7 +90,7 @@ class StoppingByEvaluationsOrImprovement(TerminationCriterion):
         """
         Updates the number current number of iterations and no improvement generations value.
         """
-        self.evaluations = kwargs["EVALUATIONS"]
+        self.evaluations += 1
         solutions = kwargs["SOLUTIONS"]
         if isinstance(solutions, list):
             mean_fit = np.mean([s.objectives for s in solutions])
