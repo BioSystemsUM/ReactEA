@@ -43,6 +43,8 @@ class EAConstants:
     MUTATION = ReactorMutation
     # Mutation Probability
     MUTATION_PROBABILITY = 1.0
+    # Tolerance for the Mutation Similarity
+    TOLERANCE = 0.25
     # Crossover
     CROSSOVER = ReactorPseudoCrossover
     # Crossover probability
