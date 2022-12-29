@@ -101,3 +101,14 @@ class ReactorEvolutionStrategy(EvolutionStrategy):
             unique_population.extend(population_pool[:self.mu - len(unique_population)])
 
         return unique_population
+
+    def get_result(self):
+        """
+        Get the EA results.
+
+        Returns
+        -------
+        List[Solutions]:
+            list of the EA solutions.
+        """
+        return self.solutions
