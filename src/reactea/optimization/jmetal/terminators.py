@@ -90,7 +90,6 @@ class StoppingByEvaluationsOrImprovement(TerminationCriterion):
         """
         Updates the number current number of iterations and no improvement generations value.
         """
-        self.evaluations += 1
         solutions = kwargs["SOLUTIONS"]
         if isinstance(solutions, list):
             mean_fit = np.mean([s.objectives for s in solutions])
@@ -107,6 +106,7 @@ class StoppingByEvaluationsOrImprovement(TerminationCriterion):
         else:
             self.value = mean_fit
             self.no_improvement = 0
+        self.evaluations += 1
 
     @property
     def is_met(self):
