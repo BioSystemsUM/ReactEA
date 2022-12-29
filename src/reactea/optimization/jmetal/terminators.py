@@ -98,6 +98,10 @@ class StoppingByEvaluationsOrImprovement(TerminationCriterion):
             mean_fit = np.mean(solutions.objectives)
 
         mean_fit = mean_fit * -1  # minimization
+
+        if self.evaluations == 0:
+            self.value = mean_fit
+
         if self.value >= mean_fit:
             self.no_improvement += 1
         else:
