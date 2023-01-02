@@ -74,8 +74,34 @@ class ChemicalEA(AbstractEA):
             self.population_size = len(initial_population)
         else:
             self.population_size = 1
-        self.termination_criterion = EAConstants.TERMINATION_CRITERION(EAConstants.PATIENCE,
+        self.init_constants()
+        self.termination_criterion = EAConstants.TERMINATION_CRITERION(configs['patience'],
                                                                        self.max_generations)
+
+    def init_constants(self):
+        if 'mutation_probability' not in self.configs:
+            self.configs['mutation_probability'] = EAConstants.MUTATION_PROBABILITY
+        if 'crossover_probability' not in self.configs:
+            self.configs['crossover_probability'] = EAConstants.CROSSOVER_PROBABILITY
+        if 'patience' not in self.configs:
+            self.configs['patience'] = EAConstants.PATIENCE
+        if 'tolerance' not in self.configs:
+            self.configs['tolerance'] = EAConstants.TOLERANCE
+
+        if self.configs['algorithm'] == 'SA':
+            if 'temperature' not in self.configs:
+                self.configs['temperature'] = SAConstants.TEMPERATURE
+            if 'minimum_temperature' not in self.configs:
+                self.configs['minimum_temperature'] = SAConstants.MINIMUM_TEMPERATURE
+            if 'alpha' not in self.configs:
+                self.configs['alpha'] = SAConstants.ALPHA
+        elif self.configs['algorithm'] == 'ES':
+            if 'elitist' not in self.configs:
+                self.configs['elitist'] = ESConstants.ELITIST
+        elif self.configs['algorithm'] == 'IBEA':
+            if 'kappa' not in self.configs:
+                self.configs['kappa'] = IBEAConstants.KAPPA
+
 
     def _run_so(self):
         """
@@ -86,14 +112,12 @@ class ChemicalEA(AbstractEA):
         List[ChemicalSolution]:
             final Chemical solutions
         """
-        mutation = EAConstants.MUTATION(EAConstants.MUTATION_PROBABILITY,
-                                        self.reaction_rules,
+        mutation = EAConstants.MUTATION(self.reaction_rules,
                                         self.standardizer,
                                         self.configs,
                                         self.logger)
         try:
-            crossover = EAConstants.CROSSOVER(EAConstants.CROSSOVER_PROBABILITY,
-                                              self.reaction_rules,
+            crossover = EAConstants.CROSSOVER(self.reaction_rules,
                                               self.standardizer,
                                               self.configs,
                                               self.logger,
@@ -109,9 +133,9 @@ class ChemicalEA(AbstractEA):
                                            termination_criterion=self.termination_criterion,
                                            solution_generator=self.initial_population
                                            )
-            algorithm.temperature = SAConstants.TEMPERATURE
-            algorithm.minimum_temperature = SAConstants.MINIMUM_TEMPERATURE
-            algorithm.alpha = SAConstants.ALPHA
+            algorithm.temperature = self.configs['temperature']
+            algorithm.minimum_temperature = self.configs['minimum_temperature']
+            algorithm.alpha = self.configs['alpha']
         elif self.algorithm_name == 'GA':
             print("Running Genetic Algorithm!")
             algorithm = GeneticAlgorithm(problem=self.ea_problem,
@@ -129,7 +153,7 @@ class ChemicalEA(AbstractEA):
             algorithm = EvolutionStrategy(problem=self.ea_problem,
                                           mu=int(self.population_size),
                                           lambda_=self.population_size,
-                                          elitist=ESConstants.ELITIST,
+                                          elitist=self.configs['elitist'],
                                           mutation=mutation,
                                           termination_criterion=self.termination_criterion,
                                           population_generator=self.initial_population,
@@ -160,14 +184,12 @@ class ChemicalEA(AbstractEA):
         List[ChemicalSolution]:
             final Chemical solutions
         """
-        mutation = EAConstants.MUTATION(EAConstants.MUTATION_PROBABILITY,
-                                        self.reaction_rules,
+        mutation = EAConstants.MUTATION(self.reaction_rules,
                                         self.standardizer,
                                         self.configs,
                                         self.logger)
         try :
-            crossover = EAConstants.CROSSOVER(EAConstants.CROSSOVER_PROBABILITY,
-                                              self.reaction_rules,
+            crossover = EAConstants.CROSSOVER(self.reaction_rules,
                                               self.standardizer,
                                               self.configs,
                                               self.logger)
@@ -208,7 +230,7 @@ class ChemicalEA(AbstractEA):
                 offspring_population_size=self.population_size,
                 mutation=mutation,
                 crossover=crossover,
-                kappa=IBEAConstants.KAPPA,
+                kappa=self.configs['kappa'],
                 termination_criterion=self.termination_criterion,
                 population_generator=self.initial_population,
                 population_evaluator=self.population_evaluator
