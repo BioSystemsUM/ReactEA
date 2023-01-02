@@ -6,7 +6,7 @@ from jmetal.util.ranking import FastNonDominatedRanking
 
 from reactea.optimization.comparators import ParetoDominanceComparator
 from reactea.optimization.jmetal.operators import ReactorPseudoCrossover, ReactorMutation
-from reactea.optimization.jmetal.terminators import StoppingByEvaluationsOrImprovement
+from reactea.optimization.jmetal.terminators import StoppingByEvaluationsOrImprovement, StoppingByEvaluations
 from reactea.standardizers import ChEMBLStandardizer
 
 
@@ -55,6 +55,7 @@ class SAConstants:
     """
     Class containing a set of Simulated Annealing parameters constants
     """
+    TERMINATION_CRITERION = StoppingByEvaluations
     TEMPERATURE = 1.0
     MINIMUM_TEMPERATURE = 0.000001
     ALPHA = 0.95
