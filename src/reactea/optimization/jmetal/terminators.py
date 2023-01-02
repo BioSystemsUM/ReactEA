@@ -91,21 +91,24 @@ class StoppingByEvaluationsOrImprovement(TerminationCriterion):
         Updates the number current number of iterations and no improvement generations value.
         """
         solutions = kwargs["SOLUTIONS"]
-        if isinstance(solutions, list):
-            mean_fit = np.mean([s.objectives for s in solutions])
-        else:
-            mean_fit = np.mean(solutions.objectives)
 
-        mean_fit = mean_fit * -1  # minimization
+        def average_by_position(lists):
+            # Zip the lists together, transpose them, and map the mean function over them
+            return list(map(lambda x: sum(x) / len(x), zip(*lists)))
+
+        if isinstance(solutions, list):
+            mean_fit = average_by_position([s.objectives for s in solutions])
+        else:
+            mean_fit = [np.mean(solutions.objectives)]
 
         if self.evaluations == 0:
             self.value = mean_fit
 
-        if self.value >= mean_fit:
-            self.no_improvement += 1
-        else:
+        if any(x < y for x, y in zip(mean_fit, self.value)):
             self.value = mean_fit
             self.no_improvement = 0
+        else:
+            self.no_improvement += 1
         self.evaluations += 1
 
     @property
