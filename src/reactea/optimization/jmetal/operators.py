@@ -19,7 +19,6 @@ class ReactorMutation(Mutation[ChemicalSolution]):
     """
 
     def __init__(self,
-                 probability: float,
                  reaction_rules: List[ReactionRule],
                  standardizer: Union[MolecularStandardizer, None],
                  configs: dict,
@@ -29,8 +28,6 @@ class ReactorMutation(Mutation[ChemicalSolution]):
 
         Parameters
         ----------
-        probability: float
-            probability of mutation to occur
         reaction_rules: List[ReactionRule]
             pool or reaction rules to use
         standardizer: Union[MolecularStandardizer, None]
@@ -41,7 +38,7 @@ class ReactorMutation(Mutation[ChemicalSolution]):
             function to save all intermediate transformations (accepted and not accepted)
         tolerance: float
         """
-        super(ReactorMutation, self).__init__(probability=probability)
+        super(ReactorMutation, self).__init__(probability=configs['mutation_probability'])
         self.reaction_rules = reaction_rules
         self.standardizer = standardizer
         self.configs = configs
@@ -120,7 +117,6 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
     """
 
     def __init__(self,
-                 probability: float,
                  reaction_rules: List[ReactionRule],
                  standardizer: Union[MolecularStandardizer, None],
                  configs: dict,
@@ -130,8 +126,6 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
 
         Parameters
         ----------
-        probability: float
-            probability of mutation to occur
         reaction_rules: List[ReactionRule]
             pool or reaction rules to use
         standardizer: Union[MolecularStandardizer, None]
@@ -141,7 +135,7 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
         logger: Union[callable, None]
             function to save all intermediate transformations (accepted and not accepted)
         """
-        super(ReactorPseudoCrossover, self).__init__(probability=probability)
+        super(ReactorPseudoCrossover, self).__init__(probability=configs['crossover_probability'])
         self.reaction_rules = reaction_rules
         self.standardizer = standardizer
         self.configs = configs
@@ -166,8 +160,7 @@ class ReactorPseudoCrossover(Crossover[ChemicalSolution, ChemicalSolution]):
         offspring = [copy.deepcopy(parent[0])]
 
         if random.random() <= self.probability:
-            m_offspring = ReactorMutation(self.probability,
-                                          self.reaction_rules,
+            m_offspring = ReactorMutation(self.reaction_rules,
                                           self.standardizer,
                                           self.configs,
                                           self.logger).execute(offspring[0])

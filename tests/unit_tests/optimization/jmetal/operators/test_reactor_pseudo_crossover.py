@@ -19,8 +19,7 @@ class TestReactorMutation(OperatorsBaseTestCase, TestCase):
                    'R2',
                    'O;Any')]
 
-        rm1 = ReactorPseudoCrossover(probability=1.0,
-                                     reaction_rules=rrs,
+        rm1 = ReactorPseudoCrossover(reaction_rules=rrs,
                                      standardizer=None,
                                      configs=self.configs,
                                      logger=None)
@@ -45,8 +44,7 @@ class TestReactorMutation(OperatorsBaseTestCase, TestCase):
                              'R2',
                              'NC(=O)C1=CN([C@@H]2O[C@H](COP(=O)(O)OP(=O)(O)OC[C@H]3O[C@@H](n4cnc5c(N)ncnc54)[C@H](OP(=O)(O)O)[C@@H]3O)[C@@H](O)[C@H]2O)C=CC1;Any')]
         standardizer = ChEMBLStandardizer()
-        rm2 = ReactorPseudoCrossover(probability=1.0,
-                                     reaction_rules=rrs2,
+        rm2 = ReactorPseudoCrossover(reaction_rules=rrs2,
                                      standardizer=standardizer,
                                      configs=self.configs,
                                      logger=Writers.update_operators_logs)

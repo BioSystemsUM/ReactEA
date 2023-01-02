@@ -8,6 +8,9 @@ init_pop_size: 4
 max_rules_by_iter: 2
 tolerance: 0.15
 
+mutation_probability: 1.0
+crossover_probability: 1.0
+
 multi_objective: True
 batched: True
 generations: 2
