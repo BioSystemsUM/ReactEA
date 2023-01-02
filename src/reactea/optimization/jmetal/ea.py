@@ -102,7 +102,6 @@ class ChemicalEA(AbstractEA):
             if 'kappa' not in self.configs:
                 self.configs['kappa'] = IBEAConstants.KAPPA
 
-
     def _run_so(self):
         """
         Runs a single-objective optimization.
@@ -130,7 +129,7 @@ class ChemicalEA(AbstractEA):
                 raise ValueError('For running SA, only one initial compound must be provided!')
             algorithm = SimulatedAnnealing(problem=self.ea_problem,
                                            mutation=mutation,
-                                           termination_criterion=self.termination_criterion,
+                                           termination_criterion=SAConstants.TERMINATION_CRITERION(self.max_generations),
                                            solution_generator=self.initial_population
                                            )
             algorithm.temperature = self.configs['temperature']
