@@ -14,7 +14,6 @@ class OperatorsBaseTestCase(ABC):
         # Mute RDKit logs
         RDLogger.DisableLog("rdApp.*")
 
-        data_folder = os.path.join(TEST_DIR, 'data')
         config_path = os.path.join(TEST_DIR, 'configs/base_config.yaml')
         self.configs = Loaders.get_config_from_yaml(config_path)
         self.output_folder = f"{TEST_DIR}/outputs/{self.configs['exp_name']}/"
