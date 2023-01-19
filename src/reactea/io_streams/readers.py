@@ -11,9 +11,6 @@ from reactea.chem import Compound, ReactionRule
 from reactea.constants import ChemConstants
 
 
-from reactea import ROOT_DIR
-
-
 class Loaders:
     """
     Class containing a set of input utilities
@@ -34,6 +31,8 @@ class Loaders:
         str:
             file path from root
         """
+        from reactea import ROOT_DIR
+
         if file_path[0] == '/':
             file_path = file_path[1:]
         return f"{ROOT_DIR}/{file_path}"
