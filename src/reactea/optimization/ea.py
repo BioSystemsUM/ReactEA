@@ -15,7 +15,7 @@ class AbstractEA(ABC):
     def __init__(self,
                  problem: Problem,
                  initial_population: List[Compound],
-                 max_generations: int = EAConstants.MAX_GENERATIONS,
+                 max_generations: int = 10,
                  visualizer: bool = False):
         """
         Initializes a EA.

@@ -11,12 +11,13 @@ from .evaluators import ChemicalEvaluator
 from .generators import ChemicalGenerator
 from .observers import PrintObjectivesStatObserver, VisualizerObserver
 from .problem import JmetalProblem
-from reactea.constants import EAConstants, ChemConstants, SAConstants, GAConstants, NSGAIIIConstants, \
-    ESConstants, LSConstants, IBEAConstants, NSGAIIConstants, SPEA2Constants
+from reactea.constants import EAConstants, ChemConstants, GAConstants, NSGAIIIConstants, \
+    LSConstants, NSGAIIConstants, SPEA2Constants
+from .terminators import StoppingByEvaluationsOrImprovement, StoppingByEvaluations
 from ..problem import ChemicalProblem
 from ...chem.compounds import Compound
 from ...chem.reaction_rules import ReactionRule
-from reactea.standardizers.standardization import MolecularStandardizer
+from reactea.chem.standardization import MolecularStandardizer
 from ...io_streams import Writers
 
 
@@ -27,13 +28,13 @@ class ChemicalEA(AbstractEA):
     """
 
     def __init__(self,
+                 algorithm: str,
                  problem: ChemicalProblem,
                  initial_population: List[Compound],
                  reaction_rules: List[ReactionRule],
                  standardizer: MolecularStandardizer = ChemConstants.STANDARDIZER,
-                 max_generations: int = EAConstants.MAX_GENERATIONS,
-                 visualizer: bool = EAConstants.VISUALIZER,
-                 algorithm: str = EAConstants.ALGORITHM,
+                 max_generations: int = 10,
+                 visualizer: bool = False,
                  configs: dict = None,
                  logger: Writers = Writers.update_operators_logs
                  ):
@@ -42,6 +43,8 @@ class ChemicalEA(AbstractEA):
 
         Parameters
         ----------
+        algorithm: str
+            EA algorithm to use
         problem: ChemicalProblem
             Chemical problem to solve
         initial_population: List[Compound]
@@ -54,8 +57,6 @@ class ChemicalEA(AbstractEA):
             maximum number of generations
         visualizer: bool
             use visualization of the solutions (true) or not (false)
-        algorithm: str
-            EA algorithm to use
         configs: dict
             configurations of the experiment
         logger: Writers
@@ -74,33 +75,34 @@ class ChemicalEA(AbstractEA):
             self.population_size = len(initial_population)
         else:
             self.population_size = 1
+        if "patience" in configs:
+            self.termination_criterion = StoppingByEvaluationsOrImprovement(configs['patience'],
+                                                                            self.max_generations)
+        else:
+            self.termination_criterion = StoppingByEvaluations(self.max_generations)
         self.init_constants()
-        self.termination_criterion = EAConstants.TERMINATION_CRITERION(configs['patience'],
-                                                                       self.max_generations)
 
     def init_constants(self):
         if 'mutation_probability' not in self.configs:
-            self.configs['mutation_probability'] = EAConstants.MUTATION_PROBABILITY
+            self.configs['mutation_probability'] = 1.0
         if 'crossover_probability' not in self.configs:
-            self.configs['crossover_probability'] = EAConstants.CROSSOVER_PROBABILITY
-        if 'patience' not in self.configs:
-            self.configs['patience'] = EAConstants.PATIENCE
+            self.configs['crossover_probability'] = 1.0
         if 'tolerance' not in self.configs:
-            self.configs['tolerance'] = EAConstants.TOLERANCE
+            self.configs['tolerance'] = 0.1
 
         if self.configs['algorithm'] == 'SA':
             if 'temperature' not in self.configs:
-                self.configs['temperature'] = SAConstants.TEMPERATURE
+                self.configs['temperature'] = 1.0
             if 'minimum_temperature' not in self.configs:
-                self.configs['minimum_temperature'] = SAConstants.MINIMUM_TEMPERATURE
+                self.configs['minimum_temperature'] = 0.000001
             if 'alpha' not in self.configs:
-                self.configs['alpha'] = SAConstants.ALPHA
+                self.configs['alpha'] = 0.95
         elif self.configs['algorithm'] == 'ES':
             if 'elitist' not in self.configs:
-                self.configs['elitist'] = ESConstants.ELITIST
+                self.configs['elitist'] = True
         elif self.configs['algorithm'] == 'IBEA':
             if 'kappa' not in self.configs:
-                self.configs['kappa'] = IBEAConstants.KAPPA
+                self.configs['kappa'] = 1.0
 
     def _run_so(self):
         """
@@ -129,7 +131,7 @@ class ChemicalEA(AbstractEA):
                 raise ValueError('For running SA, only one initial compound must be provided!')
             algorithm = SimulatedAnnealing(problem=self.ea_problem,
                                            mutation=mutation,
-                                           termination_criterion=SAConstants.TERMINATION_CRITERION(self.max_generations),
+                                           termination_criterion=self.termination_criterion,
                                            solution_generator=self.initial_population
                                            )
             algorithm.temperature = self.configs['temperature']
@@ -187,7 +189,7 @@ class ChemicalEA(AbstractEA):
                                         self.standardizer,
                                         self.configs,
                                         self.logger)
-        try :
+        try:
             crossover = EAConstants.CROSSOVER(self.reaction_rules,
                                               self.standardizer,
                                               self.configs,
