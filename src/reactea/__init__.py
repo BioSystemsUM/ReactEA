@@ -1,5 +1,6 @@
 import os
 import warnings
+from typing import Union
 
 from rdkit import RDLogger
 
@@ -11,12 +12,20 @@ from reactea.wrappers import case_study_wrapper, evaluation_functions_wrapper
 ROOT_DIR = os.path.dirname(__file__)
 
 
-def run_reactea(configs_path: str, case_study: CaseStudy, ignore_rdkit_logs: bool = True, ignore_warnings: bool = True):
+def run_reactea(configs_path: Union[str, dict],
+                case_study: CaseStudy,
+                ignore_rdkit_logs: bool = True,
+                ignore_warnings: bool = True):
     if ignore_rdkit_logs:
         RDLogger.DisableLog("rdApp.*")
 
-    config_path = configs_path
-    configs = Loaders.get_config_from_yaml(config_path)
+    if ignore_warnings:
+        warnings.filterwarnings("ignore")
+
+    if isinstance(configs_path, str) and os.path.exists(configs_path):
+        configs = Loaders.get_config_from_yaml(configs_path)
+    else:
+        configs = configs_path
 
     # set up output folder
     output_folder = os.path.join(configs['output_dir'], configs['algorithm'])
@@ -33,9 +42,6 @@ def run_reactea(configs_path: str, case_study: CaseStudy, ignore_rdkit_logs: boo
 
     # set up folders
     Writers.set_up_folders(output_folder)
-
-    if ignore_warnings:
-        warnings.filterwarnings("ignore")
 
     # initialize objectives
     problem = objective()
