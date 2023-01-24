@@ -77,9 +77,15 @@ class Loaders:
             list of compounds to use as initial population
         """
         cmp_df = pd.read_csv(configs['init_pop_path'], header=0, sep='\t')
-        cmp_df = cmp_df.sample(configs["init_pop_size"])
-        return [ChemConstants.STANDARDIZER().standardize(
-            Compound(row['smiles'], row["compound_id"])) for _, row in cmp_df.iterrows()], cmp_df.smiles.values
+        if "compound_id" not in cmp_df.columns:
+            cmp_df["compound_id"] = cmp_df.index
+        if "init_pop_size" in configs:
+            cmp_df = cmp_df.sample(configs["init_pop_size"])
+        if "standardize" in configs and configs["standardize"]:
+            return [ChemConstants.STANDARDIZER().standardize(
+                Compound(row['smiles'], row["compound_id"])) for _, row in cmp_df.iterrows()], cmp_df.smiles.values
+        else:
+            return [Compound(row['smiles'], row["compound_id"]) for _, row in cmp_df.iterrows()], cmp_df.smiles.values
 
     @staticmethod
     def initialize_rules():
