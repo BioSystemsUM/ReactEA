@@ -3,7 +3,7 @@ from unittest import TestCase
 from reactea.chem.compounds import Compound
 from reactea.chem.reaction_rules import ReactionRule
 from reactea.io_streams import Writers
-from reactea.standardizers.standardization import ChEMBLStandardizer
+from reactea.chem.standardization import ChEMBLStandardizer
 from reactea.optimization.jmetal.operators import ReactorPseudoCrossover
 from reactea.optimization.solution import ChemicalSolution
 

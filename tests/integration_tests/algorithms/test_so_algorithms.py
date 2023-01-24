@@ -43,9 +43,8 @@ class TestSOAlgorithms(AlgorithmsBaseTestCase, TestCase):
         problem = objective()
 
         # Initialize EA
-        ea = ChemicalEA(problem, initial_population=init_pop, reaction_rules=reaction_rules,
-                        max_generations=self.configs['generations'],
-                        visualizer=False, algorithm=self.configs['algorithm'], configs=self.configs)
+        ea = ChemicalEA(self.configs['algorithm'], problem, initial_population=init_pop, reaction_rules=reaction_rules,
+                        max_generations=self.configs['generations'], visualizer=False, configs=self.configs)
 
         # Run EA
         final_pop = ea.run()
