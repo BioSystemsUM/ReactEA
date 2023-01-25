@@ -2,8 +2,6 @@ from typing import Union
 
 from rdkit.Chem import MolFromSmiles, MolToSmiles, Mol
 
-from reactea.chem import ChemUtils
-
 
 class Compound:
     """
@@ -25,6 +23,7 @@ class Compound:
             whether to canonicalize the SMILES string.
         """
         if canonicalize:
+            from reactea.chem import ChemUtils
             self._smiles = ChemUtils.canonicalize_smiles(smiles, canonicalize)
         else:
             self._smiles = smiles

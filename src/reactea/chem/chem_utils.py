@@ -2,9 +2,8 @@ import random
 from itertools import chain
 from typing import Union, List
 
-import numpy as np
 from rdkit import DataStructs, Chem
-from rdkit.Chem import Mol, rdmolfiles, rdmolops, MolFromSmiles, MolToSmiles, RemoveHs
+from rdkit.Chem import Mol, rdmolfiles, rdmolops, MolFromSmiles, MolToSmiles
 from rdkit.Chem.Draw import MolToImage
 from rdkit.Chem.Fingerprints.FingerprintMols import FingerprintMol
 from rdkit.Chem.rdChemReactions import ChemicalReaction
