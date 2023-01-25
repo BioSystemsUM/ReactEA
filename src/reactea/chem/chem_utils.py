@@ -199,3 +199,25 @@ class ChemUtils:
         sims = [ChemUtils.calc_fingerprint_similarity(smiles, s) for s in smiles_list]
         idx = [i for i, x in enumerate(sims) if x >= max(sims) - tolerance]
         return smiles_list[random.choice(idx)]
+
+    @staticmethod
+    def canonicalize_smiles(smiles: str, include_stereocenters=True):
+        """
+        Returns the canonical SMILES string.
+
+        Parameters
+        ----------
+        smiles: str
+            SMILES string
+        include_stereocenters: bool
+            whether to keep the stereochemical information in the canonical SMILES string.
+
+        Returns
+        -------
+        str:
+            canonical SMILES string
+        """
+        mol = MolFromSmiles(smiles)
+        if mol is None:
+            return smiles
+        return MolToSmiles(mol, isomericSmiles=include_stereocenters)

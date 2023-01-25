@@ -2,6 +2,8 @@ from typing import Union
 
 from rdkit.Chem import MolFromSmiles, MolToSmiles, Mol
 
+from reactea.chem import ChemUtils
+
 
 class Compound:
     """
@@ -9,7 +11,7 @@ class Compound:
     Each Compound is characterized by an id, SMILES string and Mol object.
     """
 
-    def __init__(self, smiles: str, cmp_id: Union[str, int]):
+    def __init__(self, smiles: str, cmp_id: Union[str, int], canonicalize: bool = True):
         """
         Initializes the Compound.
 
@@ -19,8 +21,13 @@ class Compound:
             compound SMILES string
         cmp_id: Union[str, int]
             compound id
+        canonicalize: bool
+            whether to canonicalize the SMILES string.
         """
-        self._smiles = smiles
+        if canonicalize:
+            self._smiles = ChemUtils.canonicalize_smiles(smiles, canonicalize)
+        else:
+            self._smiles = smiles
         self._cmp_id = cmp_id
         self._mol = self._to_mol()
 
