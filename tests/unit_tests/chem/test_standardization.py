@@ -2,8 +2,7 @@ from unittest import TestCase
 
 from rdkit.Chem import Mol
 
-from reactea.chem import Compound
-from reactea.standardizers import ChEMBLStandardizer
+from reactea.chem import Compound, ChEMBLStandardizer
 
 
 class TestChEMBLStandardizer(TestCase):

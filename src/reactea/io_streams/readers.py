@@ -11,9 +11,6 @@ from reactea.chem import Compound, ReactionRule
 from reactea.constants import ChemConstants
 
 
-from reactea import ROOT_DIR
-
-
 class Loaders:
     """
     Class containing a set of input utilities
@@ -34,6 +31,8 @@ class Loaders:
         str:
             file path from root
         """
+        from reactea import ROOT_DIR
+
         if file_path[0] == '/':
             file_path = file_path[1:]
         return f"{ROOT_DIR}/{file_path}"
@@ -78,9 +77,15 @@ class Loaders:
             list of compounds to use as initial population
         """
         cmp_df = pd.read_csv(configs['init_pop_path'], header=0, sep='\t')
-        cmp_df = cmp_df.sample(configs["init_pop_size"])
-        return [ChemConstants.STANDARDIZER().standardize(
-            Compound(row['smiles'], row["compound_id"])) for _, row in cmp_df.iterrows()], cmp_df.smiles.values
+        if "compound_id" not in cmp_df.columns:
+            cmp_df["compound_id"] = cmp_df.index
+        if "init_pop_size" in configs:
+            cmp_df = cmp_df.sample(configs["init_pop_size"])
+        if "standardize" in configs and configs["standardize"]:
+            return [ChemConstants.STANDARDIZER().standardize(
+                Compound(row['smiles'], row["compound_id"])) for _, row in cmp_df.iterrows()], cmp_df.smiles.values
+        else:
+            return [Compound(row['smiles'], row["compound_id"]) for _, row in cmp_df.iterrows()], cmp_df.smiles.values
 
     @staticmethod
     def initialize_rules():

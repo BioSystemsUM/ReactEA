@@ -6,7 +6,7 @@ from jmetal.core.operator import Mutation, Crossover
 
 from reactea.chem.compounds import Compound
 from reactea.chem.reaction_rules import ReactionRule
-from reactea.standardizers.standardization import MolecularStandardizer
+from reactea.chem.standardization import MolecularStandardizer
 from reactea.optimization.solution import ChemicalSolution
 from reactea.chem.chem_utils import ChemUtils
 
