@@ -59,6 +59,10 @@ class TestSOAlgorithms(AlgorithmsBaseTestCase, TestCase):
         Writers.save_configs(self.configs)
 
     def test_algorithms(self):
+        self.run_algorithm('NSGAIII')
+        self.run_algorithm('NSGAII')
+        self.run_algorithm('SPEA2')
+        self.run_algorithm('IBEA')
         self.run_algorithm('SA')
         self.run_algorithm('GA')
         self.run_algorithm('ES')
