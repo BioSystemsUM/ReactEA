@@ -167,8 +167,60 @@ class ChemicalEA(AbstractEA):
                                     mutation=mutation,
                                     termination_criterion=self.termination_criterion,
                                     comparator=LSConstants.COMPARATOR)
+        elif self.algorithm_name == 'NSGAIII':
+            algorithm = NSGAIII(
+                problem=self.ea_problem,
+                population_size=self.population_size,
+                mutation=mutation,
+                crossover=crossover,
+                termination_criterion=self.termination_criterion,
+                reference_directions=NSGAIIIConstants.REFERENCE_DIRECTIONS(self.ea_problem.number_of_objectives,
+                                                                           n_points=self.population_size - 1),
+                population_generator=self.initial_population,
+                population_evaluator=self.population_evaluator,
+                dominance_comparator=NSGAIIIConstants.DOMINANCE_COMPARATOR,
+                selection=NSGAIIIConstants.SELECTION
+            )
+        elif self.algorithm_name == 'NSGAII':
+            algorithm = NSGAII(
+                problem=self.ea_problem,
+                population_size=self.population_size,
+                offspring_population_size=self.population_size,
+                mutation=mutation,
+                crossover=crossover,
+                selection=NSGAIIConstants.SELECTION,
+                termination_criterion=self.termination_criterion,
+                population_generator=self.initial_population,
+                population_evaluator=self.population_evaluator,
+                dominance_comparator=NSGAIIConstants.DOMINANCE_COMPARATOR
+            )
+        elif self.algorithm_name == "IBEA":
+            algorithm = IBEA(
+                problem=self.ea_problem,
+                population_size=self.population_size,
+                offspring_population_size=self.population_size,
+                mutation=mutation,
+                crossover=crossover,
+                kappa=self.configs['kappa'],
+                termination_criterion=self.termination_criterion,
+                population_generator=self.initial_population,
+                population_evaluator=self.population_evaluator
+            )
+        elif self.algorithm_name == "SPEA2":
+            algorithm = SPEA2(
+                problem=self.ea_problem,
+                population_size=self.population_size,
+                offspring_population_size=self.population_size,
+                mutation=mutation,
+                crossover=crossover,
+                termination_criterion=self.termination_criterion,
+                population_generator=self.initial_population,
+                population_evaluator=self.population_evaluator,
+                dominance_comparator=SPEA2Constants.DOMINANCE_COMPARATOR
+            )
         else:
-            raise ValueError('Invalid single-objective algorithm name. Choose from SA, GA, ES and LS!')
+            raise ValueError('Invalid single-objective algorithm name. Choose from NSGAIII, NSGAII, SPEA2, IBEA, SA, '
+                             'GA, ES and LS!')
 
         algorithm.observable.register(observer=PrintObjectivesStatObserver())
         algorithm.run()
