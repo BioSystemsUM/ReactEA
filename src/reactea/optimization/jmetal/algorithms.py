@@ -2,6 +2,7 @@ from copy import deepcopy
 from typing import List
 
 import cytoolz
+from jmetal.algorithm.multiobjective.nsgaiii import NSGAIII
 from jmetal.algorithm.singleobjective import GeneticAlgorithm, EvolutionStrategy
 from jmetal.util.constraint_handling import overall_constraint_violation_degree
 
@@ -101,6 +102,30 @@ class ReactorEvolutionStrategy(EvolutionStrategy):
             unique_population.extend(population_pool[:self.mu - len(unique_population)])
 
         return unique_population
+
+    def get_result(self):
+        """
+        Get the EA results.
+
+        Returns
+        -------
+        List[Solutions]:
+            list of the EA solutions.
+        """
+        return self.solutions
+
+
+class ReactorNSGAIII(NSGAIII):
+
+    def __init__(self, **kwarg):
+        """
+        Initializes a ReactorNSGAIII object.
+        Parameters
+        ----------
+        kwarg
+            kwargs to use (see NSGAIII arguments)
+        """
+        super(ReactorNSGAIII, self).__init__(**kwarg)
 
     def get_result(self):
         """
