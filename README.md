@@ -191,4 +191,4 @@ Manuscript under preparation.
 
 ## Licensing
 
-Reactea is under [GPL-3.0 license](https://raw.githubusercontent.com/BioSystemsUM/ReactEA/main/LICENSE?token=GHSAT0AAAAAABRR6Q6KOOQLKSYY3CL2BU66YXJHEXA).
+Reactea is under [GPL-3.0 license](LICENSE).
