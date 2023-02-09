@@ -47,9 +47,13 @@ def run_reactea(configs_path: Union[str, dict],
     problem = objective()
 
     # Initialize EA
-    ea = ChemicalEA(problem, initial_population=init_pop, reaction_rules=reaction_rules,
+    ea = ChemicalEA(configs['algorithm'],
+                    problem,
+                    initial_population=init_pop,
+                    reaction_rules=reaction_rules,
                     max_generations=configs['generations'],
-                    visualizer=False, algorithm=configs['algorithm'], configs=configs)
+                    visualizer=False,
+                    configs=configs)
 
     # Run EA
     final_pop = ea.run()
