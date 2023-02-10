@@ -162,9 +162,10 @@ similar compound (`best_similarity`) and `best_similarity - tolerance`.
 ```python
 from reactea import run_reactea
 
+case_study_rings = minimize_rings_maximize_qed_mo()
 # provide path to configuration file and case study
 run_reactea(configs_path = 'config.yaml', 
-            case_study = minimize_rings_maximize_qed_mo)
+            case_study = case_study_rings)
 ```
 
 <!--
