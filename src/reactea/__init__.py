@@ -35,7 +35,6 @@ def run_reactea(configs_path: Union[str, dict],
     init_pop, init_pop_smiles = Loaders.initialize_population(configs)
 
     # set up objective
-    case_study = case_study()
     objective = case_study.objective
 
     # initialize reaction rules
