@@ -168,6 +168,7 @@ class ChemicalEA(AbstractEA):
                                     termination_criterion=self.termination_criterion,
                                     comparator=LSConstants.COMPARATOR)
         elif self.algorithm_name == 'NSGAIII':
+            print(f"Running NSGAIII!")
             algorithm = NSGAIII(
                 problem=self.ea_problem,
                 population_size=self.population_size,
@@ -182,6 +183,7 @@ class ChemicalEA(AbstractEA):
                 selection=NSGAIIIConstants.SELECTION
             )
         elif self.algorithm_name == 'NSGAII':
+            print(f"Running NSGAII!")
             algorithm = NSGAII(
                 problem=self.ea_problem,
                 population_size=self.population_size,
@@ -195,6 +197,7 @@ class ChemicalEA(AbstractEA):
                 dominance_comparator=NSGAIIConstants.DOMINANCE_COMPARATOR
             )
         elif self.algorithm_name == "IBEA":
+            print(f"Running IBEA!")
             algorithm = IBEA(
                 problem=self.ea_problem,
                 population_size=self.population_size,
@@ -207,6 +210,7 @@ class ChemicalEA(AbstractEA):
                 population_evaluator=self.population_evaluator
             )
         elif self.algorithm_name == "SPEA2":
+            print(f"Running SPEA2!")
             algorithm = SPEA2(
                 problem=self.ea_problem,
                 population_size=self.population_size,
