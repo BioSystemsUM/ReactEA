@@ -188,7 +188,7 @@ a Ciência e a Tecnologia.
 
 ## Citing ReactEA
 
-Manuscript under preparation.
+Accepted at [GECC0 2023](https://gecco-2023.sigevo.org/HomePage). Publication will be available soon! 
 
 ## Licensing
 
