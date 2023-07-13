@@ -188,7 +188,24 @@ a Ciência e a Tecnologia.
 
 ## Citing ReactEA
 
-Accepted at [GECC0 2023](https://gecco-2023.sigevo.org/HomePage). Publication will be available soon! 
+Accepted at [GECC0 2023](https://gecco-2023.sigevo.org/HomePage).
+
+Publication: [https://dl.acm.org/doi/10.1145/3583131.3590413](https://dl.acm.org/doi/10.1145/3583131.3590413)
+
+Bibtex entry:
+
+```markdown
+@inproceedings{Correia2023,
+  doi = {10.1145/3583131.3590413},
+  url = {https://doi.org/10.1145/3583131.3590413},
+  year = {2023},
+  month = jul,
+  publisher = {{ACM}},
+  author = {Jo{\~{a}}o Correia and V{\'{\i}}tor Pereira and Miguel Rocha},
+  title = {Combining Evolutionary Algorithms with Reaction Rules Towards Focused Molecular Design},
+  booktitle = {Proceedings of the Genetic and Evolutionary Computation Conference}
+}
+``` 
 
 ## Licensing
 
