@@ -190,7 +190,9 @@ a Ciência e a Tecnologia.
 
 Accepted at [GECC0 2023](https://gecco-2023.sigevo.org/HomePage).
 
-Publication: [https://dl.acm.org/doi/10.1145/3583131.3590413](https://dl.acm.org/doi/10.1145/3583131.3590413)
+Publication:
+
+João Correia, Vítor Pereira, and Miguel Rocha. 2023. Combining Evolutionary Algorithms with Reaction Rules Towards Focused Molecular Design. In Proceedings of the Genetic and Evolutionary Computation Conference (GECCO '23). Association for Computing Machinery, New York, NY, USA, 900–909. https://doi.org/10.1145/3583131.3590413
 
 Bibtex entry:
 
