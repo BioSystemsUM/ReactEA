@@ -39,7 +39,7 @@ the [jMetalPy framework](https://github.com/jMetal/jMetalPy).
 
 ### Pip
 
-Install DeepMol via pip or conda:
+Install DeepMol via pip:
 
 ```bash
 pip install git+https://github.com/BioSystemsUM/ReactEA.git
