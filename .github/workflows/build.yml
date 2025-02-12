@@ -1,0 +1,29 @@
+name: Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Create Release
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Get version from setup.cfg
+        id: get-version
+        run: echo "::set-output name=version::$(awk -F "=" '/^version/ {print $2}' setup.cfg | tr -d '[:space:]')"
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: v${{ steps.get-version.outputs.version }}
+          release_name: Release v${{ steps.get-version.outputs.version }}
+          draft: false
+          # prerelease: ${{ contains(github.ref, '-beta') || contains(github.ref, '-alpha') || contains(github.ref, '-rc') }}
+          prerelease: false

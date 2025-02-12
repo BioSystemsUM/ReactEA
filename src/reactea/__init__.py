@@ -9,6 +9,8 @@ from reactea.io_streams import Loaders, Writers
 from reactea.optimization.jmetal.ea import ChemicalEA
 from reactea.wrappers import case_study_wrapper, evaluation_functions_wrapper
 
+__version__ = '1.0.0'
+
 
 def run_reactea(configs_path: Union[str, dict],
                 case_study: CaseStudy,
