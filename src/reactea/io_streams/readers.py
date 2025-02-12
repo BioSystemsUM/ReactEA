@@ -41,6 +41,7 @@ class Loaders:
 
         output_path = Path(config_dict['output_path']).resolve()
         config_dict['output_dir'] = output_path / config_dict['exp_name']
+        config_dict['output_path'] = output_path
 
         init_pop_path = Path(config_dict['init_pop_path']).resolve()
         config_dict['init_pop_path'] = init_pop_path
