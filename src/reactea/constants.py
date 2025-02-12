@@ -7,7 +7,7 @@ from jmetal.util.ranking import FastNonDominatedRanking
 from reactea.chem import ChEMBLStandardizer
 from reactea.optimization.comparators import ParetoDominanceComparator
 from reactea.optimization.jmetal.operators import ReactorPseudoCrossover, ReactorMutation
-from reactea.optimization.jmetal.terminators import StoppingByEvaluationsOrImprovement, StoppingByEvaluations
+from reactea.optimization.jmetal.terminators import StoppingByEvaluations
 
 
 class ExperimentConstants:

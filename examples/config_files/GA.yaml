@@ -1,7 +1,7 @@
 exp_name: "GA_EXAMPLE_CONFIG"
 
-init_pop_path: ".../.../path_to_seed_compounds.tsv"
-init_pop_size: 100
+init_pop_path: "data/seed_compounds.csv"
+init_pop_size: 11
 standardize: True
 
 max_rules_by_iter: 22949
@@ -10,4 +10,4 @@ tolerance: 0.1
 generations: 100
 algorithm: "GA"
 
-output_path: ".../output_dir_path/"
+output_path: "output_dir_path/"

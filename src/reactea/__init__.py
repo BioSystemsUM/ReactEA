@@ -1,5 +1,5 @@
-import os
 import warnings
+from pathlib import Path
 from typing import Union
 
 from rdkit import RDLogger
@@ -10,8 +10,6 @@ from reactea.optimization.jmetal.ea import ChemicalEA
 from reactea.wrappers import case_study_wrapper, evaluation_functions_wrapper
 
 __version__ = '1.0.0'
-
-ROOT_DIR = os.path.dirname(__file__)
 
 
 def run_reactea(configs_path: Union[str, dict],
@@ -24,13 +22,16 @@ def run_reactea(configs_path: Union[str, dict],
     if ignore_warnings:
         warnings.filterwarnings("ignore")
 
-    if isinstance(configs_path, str) and os.path.exists(configs_path):
+    configs_path = Path(configs_path)
+    if configs_path.exists():
         configs = Loaders.get_config_from_yaml(configs_path)
-    else:
+    elif isinstance(configs_path, dict):
         configs = configs_path
+    else:
+        raise FileNotFoundError(f"Config file {configs_path} not found.")
 
     # set up output folder
-    output_folder = os.path.join(configs['output_dir'], configs['algorithm'])
+    output_folder = Path(configs['output_dir']) / configs['algorithm']
     configs['output_dir'] = output_folder
 
     # initialize population and initialize population smiles

@@ -1,7 +1,7 @@
 import os
 from unittest import TestCase
 
-from base_test_cases import CaseStudiesBaseTestCase
+from tests.base_test_cases import CaseStudiesBaseTestCase
 from reactea.case_studies.compound_quality import CompoundQuality
 from reactea.io_streams import Loaders, Writers
 
@@ -20,7 +20,7 @@ class TestCompoundQuality(CaseStudiesBaseTestCase, TestCase):
             self.configs['algorithm'] = 'GA'
 
         # set up output folder
-        self.output_folder = os.path.join(self.output_folder, self.configs['algorithm'])
+        self.output_folder = self.output_folder / self.configs['algorithm']
         self.configs['output_dir'] = self.output_folder
 
         # initialize population and initialize population smiles

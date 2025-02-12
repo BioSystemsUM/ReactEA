@@ -1,4 +1,3 @@
-import os
 import time
 from datetime import datetime
 
@@ -9,8 +8,6 @@ from reactea.chem import Compound
 from reactea.constants import ChemConstants
 from reactea.io_streams import Loaders, Writers
 from reactea.optimization.jmetal.ea import ChemicalEA
-
-DATA_FILES = os.path.dirname(__file__)
 
 
 def setup_configuration_file(args):

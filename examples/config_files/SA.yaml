@@ -1,6 +1,6 @@
 exp_name: "SA_EXAMPLE_CONFIG"
 
-init_pop_path: ".../.../path_to_seed_compounds.tsv"
+init_pop_path: "data/seed_compounds.csv"
 init_pop_size: 100
 standardize: True
 
@@ -13,4 +13,4 @@ temperature: 1.0
 minimum_temperature: 0.000001
 alpha: 0.95
 
-output_path: ".../output_dir_path/"
+output_path: "output_dir_path/"
