@@ -1,6 +1,6 @@
-import os
 import time
 from datetime import datetime
+from pathlib import Path
 
 import yaml
 
@@ -10,6 +10,9 @@ from reactea.chem import Compound, ReactionRule
 
 from reactea.constants import ChemConstants
 
+DATA_FILES = Path(__file__).resolve().parent.parent / 'data'
+DEEPSWEET_MOLDES = Path(__file__).parent.parent
+
 
 class Loaders:
     """
@@ -17,34 +20,13 @@ class Loaders:
     """
 
     @staticmethod
-    def from_root(file_path: str):
-        """
-        Gets path of file from root.
-
-        Parameters
-        ----------
-        file_path: str
-            file path
-
-        Returns
-        -------
-        str:
-            file path from root
-        """
-        from reactea import ROOT_DIR
-
-        if file_path[0] == '/':
-            file_path = file_path[1:]
-        return f"{ROOT_DIR}/{file_path}"
-
-    @staticmethod
-    def get_config_from_yaml(yaml_file: str):
+    def get_config_from_yaml(yaml_file: Path):
         """
         Reads the configuration file.
 
         Parameters
         ----------
-        yaml_file: str
+        yaml_file: Path
             path to yaml file
 
         Returns
@@ -56,9 +38,12 @@ class Loaders:
             config_dict = yaml.safe_load(config_file)
         config_dict['time'] = datetime.now().strftime('%m-%d_%H-%M-%S')
         config_dict['start_time'] = time.time()
-        config_dict['output_dir'] = f"{os.path.join(os.getcwd(), config_dict['output_path'])}"
-        config_dict['output_dir'] = f"{os.path.join(config_dict['output_dir'], config_dict['exp_name'])}"
-        config_dict['init_pop_path'] = f"{os.path.join(os.getcwd(), config_dict['init_pop_path'])}"
+
+        output_path = Path(config_dict['output_path']).resolve()
+        config_dict['output_dir'] = output_path / config_dict['exp_name']
+
+        init_pop_path = Path(config_dict['init_pop_path']).resolve()
+        config_dict['init_pop_path'] = init_pop_path
         return config_dict
 
     @staticmethod
@@ -97,7 +82,9 @@ class Loaders:
         List[ReactionRule]:
             list of reaction rules to use
         """
-        rules_df = pd.read_csv(Loaders.from_root('/data/reactionrules/reaction_rules_reactea.tsv.bz2'),
+
+        path = DATA_FILES / 'reactionrules' / 'reaction_rules_reactea.tsv.bz2'
+        rules_df = pd.read_csv(path,
                                header=0,
                                sep='\t',
                                compression='bz2')
@@ -119,7 +106,7 @@ class Loaders:
         except ImportError:
             raise ImportError("DeepSweet is not installed. Please install it to use this feature "
                               "(https://github.com/BioSystemsUM/DeepSweet).")
-        models_folder_path = Loaders.from_root('/evaluation_models/deepsweet_models/')
+        models_folder_path = DEEPSWEET_MOLDES / 'evaluation_models' / 'deepsweet_models'
         list_of_models = [DeepSweetRF(models_folder_path, "2d", "SelectFromModelFS"),
                           DeepSweetDNN(models_folder_path, "rdk", "all"),
                           # it is necessary to insert the gpu number because it is a torch model and the device needs

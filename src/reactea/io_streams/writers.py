@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 from typing import List
 
 import yaml
@@ -7,8 +7,6 @@ import pandas as pd
 
 from reactea.optimization.solution import ChemicalSolution
 
-ROOT_DIR = os.path.dirname(__file__)[:-10]
-
 
 class Writers:
     """
@@ -16,7 +14,7 @@ class Writers:
     """
 
     @staticmethod
-    def set_up_folders(path: str):
+    def set_up_folders(path: Path):
         """
         Creates folder to output results.
 
@@ -25,8 +23,7 @@ class Writers:
         path: str
             path to folder to create
         """
-        if not os.path.exists(path):
-            os.makedirs(path)
+        path.mkdir(parents=True, exist_ok=True)
 
     @staticmethod
     def save_final_pop(final_pop: List[ChemicalSolution], configs: dict, feval_names: str):
@@ -43,9 +40,9 @@ class Writers:
             names of the evaluation functions
         """
         # save all solutions
-        destFile = os.path.join(configs['output_dir'], f"FINAL_{configs['time']}.csv")
+        destFile = configs['output_dir'] / f"FINAL_{configs['time']}.csv"
         configs["final_population_path"] = destFile
-        with open(destFile, 'w') as f:
+        with destFile.open('w') as f:
             f.write("SMILES;" + feval_names + "\n")
             for i, solution in enumerate(final_pop):
                 f.write(str(solution.variables.smiles) + ";" +
@@ -54,8 +51,9 @@ class Writers:
         # save unique solutions
         df = pd.read_csv(destFile, sep=';', header=0)
         df = df.drop_duplicates()
-        df.to_csv(destFile[:-4] + '_UNIQUE_SOLUTIONS.csv', index=False)
-        configs["final_population_unique_solutions_path"] = destFile[:-4] + '_UNIQUE_SOLUTIONS.csv'
+        unique_solutions_path = destFile.stem + '_UNIQUE_SOLUTIONS.csv'
+        df.to_csv(destFile.parent / unique_solutions_path, index=False)
+        configs["final_population_unique_solutions_path"] = destFile.parent / unique_solutions_path
 
     @staticmethod
     def save_intermediate_transformations(pop: List[ChemicalSolution], configs: dict):
@@ -70,9 +68,9 @@ class Writers:
         configs: dict
             configurations of the experiment
         """
-        destFile = os.path.join(f"{configs['output_dir']}", f"FINAL_TRANSFORMATIONS_{configs['time']}.csv")
+        destFile = Path(configs['output_dir']) / f"FINAL_TRANSFORMATIONS_{configs['time']}.csv"
         configs["transformations_path"] = destFile
-        with open(destFile, 'w') as f:
+        with destFile.open('w') as f:
             f.write(f"FINAL_SMILES;INTERMEDIATE_SMILES;RULE_IDS\n")
 
             for sol in pop:
@@ -93,8 +91,8 @@ class Writers:
         configs: dict
             configurations of the experiment
         """
-        destFile = os.path.join(f"{configs['output_dir']}", f"configs.yaml")
-        with open(destFile, 'w') as outfile:
+        destFile = configs['output_dir'] / 'configs.yaml'
+        with destFile.open('w') as outfile:
             yaml.dump(configs, outfile)
 
     @staticmethod
@@ -114,9 +112,7 @@ class Writers:
         rule_id: str
             reaction rule id
         """
-        destFile = os.path.join(f"{configs['output_dir']}", f"ReactionMutationLogs.txt")
-        objectives = []
-        for obj in solution.objectives:
-            objectives.append(str(round(obj, 3)*-1))
-        with open(destFile, 'a+') as log:
+        destFile = configs['output_dir'] / 'ReactionMutationLogs.txt'
+        objectives = [str(round(obj, 3) * -1) for obj in solution.objectives]
+        with destFile.open('a+') as log:
             log.write(f"{solution.variables.smiles},{mutant},{rule_id},{','.join(objectives)}\n")
