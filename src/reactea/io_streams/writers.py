@@ -23,6 +23,8 @@ class Writers:
         path: str
             path to folder to create
         """
+        if isinstance(path, str):
+            path = Path(path)
         path.mkdir(parents=True, exist_ok=True)
 
     @staticmethod
