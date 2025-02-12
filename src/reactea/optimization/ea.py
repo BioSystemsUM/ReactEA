@@ -3,7 +3,6 @@ from typing import List
 
 from reactea.chem.compounds import Compound
 from reactea.optimization.problem import Problem
-from reactea.constants import EAConstants
 
 
 class AbstractEA(ABC):
