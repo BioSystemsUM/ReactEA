@@ -1,10 +1,14 @@
 name: Publish to PyPI.org
 on:
-  release:
-    types: [published]
-  workflow_dispatch:  # Add this to allow manual triggering
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
+  workflow_dispatch:  # Allows manual triggering
+
 jobs:
   pypi:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       id-token: write
