@@ -190,9 +190,14 @@ class PlotResults:
 
         # Applying transparency
         # (https://stackoverflow.com/questions/4379978/python-pil-how-to-make-area-transparent-in-png)
-        for transparent_zone in [(0, 0, l - epsilon, h), (0, 0, w, u - epsilon), (r + epsilon, 0, w, h),
-                                 (0, b + epsilon, w, h)]:
+        for transparent_zone in [
+            (0, 0, max(0, l - epsilon), h),
+            (0, 0, w, max(0, u - epsilon)),
+            (min(w, r + epsilon), 0, w, h),
+            (0, min(h, b + epsilon), w, h)
+        ]:
             draw = ImageDraw.Draw(mask)
+            print(transparent_zone)
             draw.rectangle(transparent_zone, fill=0)
             img.putalpha(mask)
 

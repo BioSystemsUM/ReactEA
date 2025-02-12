@@ -1,6 +1,6 @@
 exp_name: "SPEA2_EXAMPLE_CONFIG"
 
-init_pop_path: ".../.../path_to_seed_compounds.tsv"
+init_pop_path: "data/seed_compounds.csv"
 init_pop_size: 100
 standardize: True
 
@@ -10,4 +10,4 @@ tolerance: 0.1
 generations: 100
 algorithm: "SPEA2"
 
-output_path: ".../output_dir_path/"
+output_path: "output_dir_path/"

@@ -1,10 +1,11 @@
-import os
 from unittest import TestCase
 
-from base_test_cases import AlgorithmsBaseTestCase
+
 from reactea.case_studies.compound_quality import CompoundQuality
 from reactea.io_streams import Loaders, Writers
 from reactea.optimization.jmetal.ea import ChemicalEA
+
+from tests.base_test_cases import AlgorithmsBaseTestCase
 
 
 class TestMOAlgorithms(AlgorithmsBaseTestCase, TestCase):
@@ -14,7 +15,7 @@ class TestMOAlgorithms(AlgorithmsBaseTestCase, TestCase):
         self.configs['algorithm'] = algorithm
 
         # set up output folder
-        self.output_folder = os.path.join(self.output_folder, algorithm)
+        self.output_folder = self.output_folder / algorithm
         self.configs['output_dir'] = self.output_folder
 
         # define number of molecules to use to only 1 in the case of RandomSearch
