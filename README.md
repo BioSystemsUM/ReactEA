@@ -39,10 +39,10 @@ the [jMetalPy framework](https://github.com/jMetal/jMetalPy).
 
 ### Pip
 
-Install DeepMol via pip:
+Install ReactEA via pip:
 
 ```bash
-pip install git+https://github.com/BioSystemsUM/ReactEA.git
+pip install reactea
 ```
 
 ### From GitHub
