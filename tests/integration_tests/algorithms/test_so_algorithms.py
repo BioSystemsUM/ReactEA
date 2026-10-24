@@ -15,7 +15,7 @@ class TestSOAlgorithms(AlgorithmsBaseTestCase, TestCase):
         self.configs['multi_objective'] = False
 
         # set up output folder
-        self.output_folder = self.output_folder / algorithm
+        self.output_folder = self.output_root / self.configs['exp_name'] / algorithm
         self.configs['output_dir'] = self.output_folder
 
         # define number of molecules to use to only 1 in the case of RandomSearch
