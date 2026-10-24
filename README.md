@@ -135,6 +135,15 @@ minimize_rings_maximize_qed_mo = case_study_wrapper([n_rigs_feval, qed_feval],
                                                     multi_objective=True, 
                                                     name='minimize_rings_maximize_qed_mo')
 ```
+
+Evaluation functions run serially by default. For expensive ones (e.g. docking), evaluate the population in
+parallel with `n_jobs` (`-1` uses all cores):
+
+```python
+expensive_feval = evaluation_functions_wrapper(my_expensive_function, maximize=True, worst_fitness=0.0,
+                                               name='expensive', n_jobs=-1)
+```
+
 - Provide the configuration file (see configuration files in [config_files](examples/config_files/) for more details).
 
 Example:

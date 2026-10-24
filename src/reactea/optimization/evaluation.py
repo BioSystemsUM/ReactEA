@@ -26,7 +26,7 @@ class ChemicalEvaluationFunction(ABC):
     Child classes must implement the get_fitness and method_str methods.
     """
 
-    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0):
+    def __init__(self, maximize: bool = True, worst_fitness: float = 0.0, n_jobs: int = 1):
         """
         Initializes the Chemical Evaluation Function class.
 
@@ -36,9 +36,13 @@ class ChemicalEvaluationFunction(ABC):
             If it is a maximization problem.
         worst_fitness: float
             The worst fitness that can given to a solution.
+        n_jobs: int
+            Number of processes used to evaluate the candidates (-1 uses all cores).
+            Parallel evaluation only pays off for expensive evaluation functions (e.g. docking).
         """
         self.maximize = maximize
         self.worst_fitness = worst_fitness
+        self.n_jobs = n_jobs
 
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """
@@ -56,8 +60,8 @@ class ChemicalEvaluationFunction(ABC):
         """
         if isinstance(candidates, Mol):
             candidates = [candidates]
-        return Parallel(n_jobs=-1, backend="multiprocessing")(delayed(self.get_fitness_single)(candidate)
-                                                              for candidate in candidates)
+        return Parallel(n_jobs=self.n_jobs, backend="loky")(delayed(self.get_fitness_single)(candidate)
+                                                            for candidate in candidates)
 
     @abstractmethod
     def get_fitness_single(self, candidate: Mol):
@@ -105,7 +109,8 @@ class AggregatedSum(ChemicalEvaluationFunction):
                  fevaluation: List[ChemicalEvaluationFunction],
                  tradeoffs: List[float] = None,
                  maximize: bool = True,
-                 worst_fitness: str = 'mean'):
+                 worst_fitness: str = 'mean',
+                 n_jobs: int = 1):
         """
         Initializes a AggregatedSum Evaluation Function.
 
@@ -120,6 +125,8 @@ class AggregatedSum(ChemicalEvaluationFunction):
         worst_fitness: str
             Function to compute the worst fitness from the passed ChemicalEvaluationFunctions
             (choose from mean, max, min).
+        n_jobs: int
+            Number of processes used to evaluate the candidates (-1 uses all cores).
         """
         if worst_fitness == 'mean':
             self.worst_fitness = np.mean([f.worst_fitness for f in fevaluation])
@@ -127,7 +134,7 @@ class AggregatedSum(ChemicalEvaluationFunction):
             self.worst_fitness = np.max([f.worst_fitness for f in fevaluation])
         else:
             self.worst_fitness = np.min([f.worst_fitness for f in fevaluation])
-        super(AggregatedSum, self).__init__(maximize, self.worst_fitness)
+        super(AggregatedSum, self).__init__(maximize, self.worst_fitness, n_jobs)
         self.fevaluation = fevaluation
         if tradeoffs and len(tradeoffs) == len(fevaluation):
             self.tradeoffs = tradeoffs
@@ -152,8 +159,8 @@ class AggregatedSum(ChemicalEvaluationFunction):
             return self.get_fitness_single(candidates)
         if isinstance(candidates, Mol):
             candidates = [candidates]
-        return Parallel(n_jobs=-1, backend="multiprocessing")(delayed(self.get_fitness_single)(candidate)
-                                                              for candidate in candidates)
+        return Parallel(n_jobs=self.n_jobs, backend="loky")(delayed(self.get_fitness_single)(candidate)
+                                                            for candidate in candidates)
 
     def get_fitness_single(self, candidate: Mol):
         """
@@ -1055,7 +1062,8 @@ class Docking(ChemicalEvaluationFunction):
     def __init__(self,
                  target: str,
                  maximize: bool = False,
-                 worst_fitness: float = 50.0):
+                 worst_fitness: float = 50.0,
+                 n_jobs: int = 1):
         """
         Initializes the Docking evaluation function.
 
@@ -1067,8 +1075,10 @@ class Docking(ChemicalEvaluationFunction):
             if the goal is to maximize (True) or minimize (False) the fitness of the evaluation function.
         worst_fitness: float
             The worst fitness possible for the evaluation function.
+        n_jobs: int
+            Number of processes used to dock the candidates (-1 uses all cores).
         """
-        super(Docking, self).__init__(maximize, worst_fitness)
+        super(Docking, self).__init__(maximize, worst_fitness, n_jobs)
         try:
             from dockstring import load_target
         except ImportError:
