@@ -36,6 +36,23 @@ class Loaders:
         """
         with open(yaml_file, 'r') as config_file:
             config_dict = yaml.safe_load(config_file)
+        return Loaders.process_configs(config_dict)
+
+    @staticmethod
+    def process_configs(config_dict: dict):
+        """
+        Completes the configurations of the experiment (time stamps and resolved paths).
+
+        Parameters
+        ----------
+        config_dict: dict
+            dictionary containing the configurations of the experiment
+
+        Returns
+        -------
+        dict:
+            dictionary containing the processed configurations of the experiment
+        """
         config_dict['time'] = datetime.now().strftime('%m-%d_%H-%M-%S')
         config_dict['start_time'] = time.time()
 

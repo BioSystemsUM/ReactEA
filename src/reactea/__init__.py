@@ -22,11 +22,10 @@ def run_reactea(configs_path: Union[str, dict],
     if ignore_warnings:
         warnings.filterwarnings("ignore")
 
-    configs_path = Path(configs_path)
-    if configs_path.exists():
-        configs = Loaders.get_config_from_yaml(configs_path)
-    elif isinstance(configs_path, dict):
-        configs = configs_path
+    if isinstance(configs_path, dict):
+        configs = Loaders.process_configs(dict(configs_path))
+    elif Path(configs_path).exists():
+        configs = Loaders.get_config_from_yaml(Path(configs_path))
     else:
         raise FileNotFoundError(f"Config file {configs_path} not found.")
 
