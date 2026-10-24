@@ -1,12 +1,13 @@
 from typing import List
 
-from jmetal.algorithm.multiobjective import NSGAII, SPEA2, IBEA, RandomSearch
+from jmetal.algorithm.multiobjective import NSGAII, SPEA2, RandomSearch
 from jmetal.algorithm.singleobjective import SimulatedAnnealing, LocalSearch
 
 from reactea.optimization.ea import AbstractEA
 from .algorithms import ReactorGeneticAlgorithm as GeneticAlgorithm
 from .algorithms import ReactorEvolutionStrategy as EvolutionStrategy
 from .algorithms import ReactorNSGAIII as NSGAIII
+from .algorithms import ReactorIBEA as IBEA
 from .evaluators import ChemicalEvaluator
 from .generators import ChemicalGenerator
 from .observers import PrintObjectivesStatObserver, VisualizerObserver
@@ -175,7 +176,7 @@ class ChemicalEA(AbstractEA):
                 mutation=mutation,
                 crossover=crossover,
                 termination_criterion=self.termination_criterion,
-                reference_directions=NSGAIIIConstants.REFERENCE_DIRECTIONS(self.ea_problem.number_of_objectives,
+                reference_directions=NSGAIIIConstants.REFERENCE_DIRECTIONS(self.ea_problem.number_of_objectives(),
                                                                            n_points=self.population_size - 1),
                 population_generator=self.initial_population,
                 population_evaluator=self.population_evaluator,
@@ -260,7 +261,7 @@ class ChemicalEA(AbstractEA):
                 mutation=mutation,
                 crossover=crossover,
                 termination_criterion=self.termination_criterion,
-                reference_directions=NSGAIIIConstants.REFERENCE_DIRECTIONS(self.ea_problem.number_of_objectives,
+                reference_directions=NSGAIIIConstants.REFERENCE_DIRECTIONS(self.ea_problem.number_of_objectives(),
                                                                            n_points=self.population_size - 1),
                 population_generator=self.initial_population,
                 population_evaluator=self.population_evaluator,

@@ -2,8 +2,11 @@ from copy import deepcopy
 from typing import List
 
 import cytoolz
+import numpy as np
+from jmetal.algorithm.multiobjective import IBEA
 from jmetal.algorithm.multiobjective.nsgaiii import NSGAIII
 from jmetal.algorithm.singleobjective import GeneticAlgorithm, EvolutionStrategy
+from jmetal.core.quality_indicator import EpsilonIndicator
 from jmetal.util.constraint_handling import overall_constraint_violation_degree
 
 from reactea.optimization.solution import ChemicalSolution
@@ -53,7 +56,7 @@ class ReactorGeneticAlgorithm(GeneticAlgorithm):
 
         return unique_population
 
-    def get_result(self):
+    def result(self):
         """
         Get the EA results.
 
@@ -103,7 +106,7 @@ class ReactorEvolutionStrategy(EvolutionStrategy):
 
         return unique_population
 
-    def get_result(self):
+    def result(self):
         """
         Get the EA results.
 
@@ -127,7 +130,7 @@ class ReactorNSGAIII(NSGAIII):
         """
         super(ReactorNSGAIII, self).__init__(**kwarg)
 
-    def get_result(self):
+    def result(self):
         """
         Get the EA results.
 
@@ -137,3 +140,81 @@ class ReactorNSGAIII(NSGAIII):
             list of the EA solutions.
         """
         return self.solutions
+
+
+class ReactorIBEA(IBEA):
+
+    def __init__(self, **kwarg):
+        """
+        Initializes a ReactorIBEA object.
+        Parameters
+        ----------
+        kwarg
+            kwargs to use (see IBEA arguments)
+        """
+        super(ReactorIBEA, self).__init__(**kwarg)
+
+    def compute_fitness_values(self, population: List[ChemicalSolution], kappa: float) -> List[ChemicalSolution]:
+        """
+        Computes the IBEA fitness of each solution.
+        Overridden because jmetalpy's EpsilonIndicator expects numpy arrays instead of lists.
+
+        Parameters
+        ----------
+        population: List[ChemicalSolution]
+            list of solutions
+        kappa: float
+            fitness scaling factor
+
+        Returns
+        -------
+        List[ChemicalSolution]:
+            solutions with the 'fitness' attribute updated
+        """
+        for i in range(len(population)):
+            population[i].attributes["fitness"] = 0
+
+            for j in range(len(population)):
+                if j != i:
+                    epsilon = EpsilonIndicator(np.array([population[i].objectives]))
+                    population[i].attributes["fitness"] += -np.exp(
+                        -epsilon.compute(np.array([population[j].objectives])) / kappa
+                    )
+        return population
+
+    def replacement(self, population: List[ChemicalSolution],
+                    offspring_population: List[ChemicalSolution]) -> List[ChemicalSolution]:
+        """
+        Environmental selection of IBEA.
+        Overridden because jmetalpy's EpsilonIndicator expects numpy arrays instead of lists.
+
+        Parameters
+        ----------
+        population: List[ChemicalSolution]
+            current population
+        offspring_population: List[ChemicalSolution]
+            offspring population
+
+        Returns
+        -------
+        List[ChemicalSolution]:
+            the new population
+        """
+        join_population = population + offspring_population
+        join_population_size = len(join_population)
+        join_population = self.compute_fitness_values(join_population, self.kappa)
+
+        while join_population_size > self.population_size:
+            current_fitnesses = [individual.attributes["fitness"] for individual in join_population]
+            index_worst = current_fitnesses.index(min(current_fitnesses))
+
+            for i in range(join_population_size):
+                epsilon = EpsilonIndicator(np.array([join_population[i].objectives]))
+                join_population[i].attributes["fitness"] += np.exp(
+                    -epsilon.compute(np.array([join_population[index_worst].objectives])) / self.kappa
+                )
+
+            join_population.pop(index_worst)
+            join_population_size = join_population_size - 1
+
+        return join_population

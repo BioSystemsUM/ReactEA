@@ -67,6 +67,30 @@ class ChemicalSolution(Solution, ChemicalSolutionInterface):
         self.attributes = {}
         self._is_maximize = is_maximization
 
+    @property
+    def variables(self) -> Compound:
+        """
+        Get the compound of the solution.
+
+        Returns
+        -------
+        Compound:
+            compound of the solution.
+        """
+        return self._variables
+
+    @variables.setter
+    def variables(self, compound: Compound):
+        """
+        Set the compound of the solution.
+
+        Parameters
+        ----------
+        compound: Compound
+            compound of the solution.
+        """
+        self._variables = compound
+
     def get_fitness(self):
         """
         Get list of the solution objectives' fitness.
