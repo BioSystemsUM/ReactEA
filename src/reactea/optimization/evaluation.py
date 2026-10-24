@@ -7,13 +7,17 @@ from typing import List, Union
 import numpy as np
 from joblib import Parallel, delayed
 from rdkit import DataStructs, RDConfig
-from rdkit.Chem import MolFromSmarts, Mol, GetSymmSSSR, EnumerateStereoisomers, AllChem, MolFromSmiles, MolToSmiles
+from rdkit.Chem import MolFromSmarts, Mol, GetSymmSSSR, EnumerateStereoisomers, MolFromSmiles, MolToSmiles
+from rdkit.Chem import rdFingerprintGenerator
 from rdkit.Chem.Crippen import MolLogP
 from rdkit.Chem.Descriptors import MolWt
 from rdkit.Chem.EnumerateStereoisomers import StereoEnumerationOptions
 from rdkit.Chem.QED import qed
 
 from reactea.io_streams import Loaders
+
+# equivalent to the deprecated AllChem.GetMorganFingerprint(mol, 2)
+MORGAN_GENERATOR = rdFingerprintGenerator.GetMorganGenerator(radius=2)
 
 
 class ChemicalEvaluationFunction(ABC):
@@ -792,7 +796,7 @@ class SimilarityToInitial(ChemicalEvaluationFunction):
             The worst fitness possible for the evaluation function.
         """
         super(SimilarityToInitial, self).__init__(maximize, worst_fitness)
-        self.fingerprints = [AllChem.GetMorganFingerprint(MolFromSmiles(cmp), 2) for cmp in initial_population]
+        self.fingerprints = [MORGAN_GENERATOR.GetSparseCountFingerprint(MolFromSmiles(cmp)) for cmp in initial_population]
         self.method = method
 
     def _compute_distance(self, mol: Mol):
@@ -810,7 +814,7 @@ class SimilarityToInitial(ChemicalEvaluationFunction):
             distance score
         """
         try:
-            fp = AllChem.GetMorganFingerprint(mol, 2)
+            fp = MORGAN_GENERATOR.GetSparseCountFingerprint(mol)
             similarities = DataStructs.BulkTanimotoSimilarity(fp, self.fingerprints)
             if self.method == 'max':
                 return 1 - max(similarities)
@@ -853,7 +857,7 @@ class SimilarityToInitial(ChemicalEvaluationFunction):
             similarity score
         """
         try:
-            fp = AllChem.GetMorganFingerprint(mol, 2)
+            fp = MORGAN_GENERATOR.GetSparseCountFingerprint(mol)
             similarities = DataStructs.BulkTanimotoSimilarity(fp, self.fingerprints)
             if self.method == 'max':
                 return max(similarities)
@@ -862,7 +866,7 @@ class SimilarityToInitial(ChemicalEvaluationFunction):
             else:
                 raise ValueError(f"Invalid method: {self.method}")
         except Exception:
-            return np.NaN
+            return np.nan
 
     def method_str(self):
         """
@@ -899,7 +903,7 @@ class TargetSimilarity(ChemicalEvaluationFunction):
         target_mol = MolFromSmiles(target)
         if target_mol is None:
             raise ValueError("Invalid target smiles")
-        self.target_fingerprint = AllChem.GetMorganFingerprint(target_mol, 2)
+        self.target_fingerprint = MORGAN_GENERATOR.GetSparseCountFingerprint(target_mol)
 
     def _compute_similarity(self, mol: Mol):
         """
@@ -916,7 +920,7 @@ class TargetSimilarity(ChemicalEvaluationFunction):
             similarity score
         """
         try:
-            fp = AllChem.GetMorganFingerprint(mol, 2)
+            fp = MORGAN_GENERATOR.GetSparseCountFingerprint(mol)
             similarity = DataStructs.TanimotoSimilarity(fp, self.target_fingerprint)
             return similarity
         except Exception:
