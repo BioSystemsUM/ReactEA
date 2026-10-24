@@ -88,8 +88,9 @@ class Loaders:
         rules_df = pd.read_csv(path,
                                header=0,
                                sep='\t',
-                               compression='bz2')
-        return [ReactionRule(row['SMARTS'], row["InternalID"], row['Reactants']) for _, row in rules_df.iterrows()]
+                               compression='bz2',
+                               usecols=['InternalID', 'SMARTS', 'Reactants'])
+        return [ReactionRule(row.SMARTS, row.InternalID, row.Reactants) for row in rules_df.itertuples(index=False)]
 
     @staticmethod
     def load_deepsweet_ensemble():
