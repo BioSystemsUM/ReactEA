@@ -25,7 +25,7 @@ class JmetalProblem(Problem[ChemicalSolution]):
         super(JmetalProblem, self).__init__()
         self.problem = problem
         self.initial_pop = initial_pop
-        self.number_of_objectives = len(self.problem.fevaluation)
+        self._number_of_objectives = len(self.problem.fevaluation)
         self.obj_directions = []
         self.obj_labels = []
         for f in self.problem.fevaluation:
@@ -45,7 +45,7 @@ class JmetalProblem(Problem[ChemicalSolution]):
             random solution
         """
         new_solution = ChemicalSolution(self.initial_pop[random.randint(0, len(self.initial_pop)-1)],
-                                        [0.0]*self.number_of_objectives)
+                                        [0.0]*self.number_of_objectives())
         return new_solution
 
     def _evaluate_batch(self, solutions: List[ChemicalSolution]):
@@ -112,7 +112,40 @@ class JmetalProblem(Problem[ChemicalSolution]):
         """
         return self._evaluate_batch(solutions) if isinstance(solutions, list) else self._evaluate_single(solutions)
 
-    def get_name(self) -> str:
+    def number_of_variables(self) -> int:
+        """
+        Number of variables of the problem (a single compound).
+
+        Returns
+        -------
+        int:
+            number of variables.
+        """
+        return 1
+
+    def number_of_objectives(self) -> int:
+        """
+        Number of objectives of the problem.
+
+        Returns
+        -------
+        int:
+            number of objectives.
+        """
+        return self._number_of_objectives
+
+    def number_of_constraints(self) -> int:
+        """
+        Number of constraints of the problem.
+
+        Returns
+        -------
+        int:
+            number of constraints.
+        """
+        return 0
+
+    def name(self) -> str:
         """
         Get the name of the problem class.
 
@@ -122,3 +155,14 @@ class JmetalProblem(Problem[ChemicalSolution]):
             name of the Chemical Problem.
         """
         return self.problem.get_name()
+
+    def get_name(self) -> str:
+        """
+        Get the name of the problem class.
+
+        Returns
+        -------
+        str:
+            name of the Chemical Problem.
+        """
+        return self.name()

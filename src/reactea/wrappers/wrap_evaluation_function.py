@@ -8,8 +8,8 @@ class EvaluationFunctionWrapper(ChemicalEvaluationFunction):
     Wrapper for the evaluation function to be used in the optimization process in ReactEA.
     """
 
-    def __init__(self, evaluation_function, maximize, worst_fitness, name):
-        super().__init__(maximize, worst_fitness)
+    def __init__(self, evaluation_function, maximize, worst_fitness, name, n_jobs=1):
+        super().__init__(maximize, worst_fitness, n_jobs)
         self.evaluation_function = evaluation_function
         self.name = name
 
@@ -42,7 +42,8 @@ class EvaluationFunctionWrapper(ChemicalEvaluationFunction):
 def evaluation_functions_wrapper(function: callable,
                                  maximize: bool,
                                  worst_fitness: float,
-                                 name: str):
+                                 name: str,
+                                 n_jobs: int = 1):
     """
     Wraps a function to be used as an evaluation function for the optimization process.
 
@@ -56,10 +57,13 @@ def evaluation_functions_wrapper(function: callable,
         The worst fitness value that the function can return.
     name: str
         The name of the function.
+    n_jobs: int
+        Number of processes used to evaluate the candidates (-1 uses all cores).
+        Only worth it for expensive functions.
 
     Returns
     -------
     EvaluationFunctionWrapper
         The wrapped function.
     """
-    return EvaluationFunctionWrapper(function, maximize, worst_fitness, name)
+    return EvaluationFunctionWrapper(function, maximize, worst_fitness, name, n_jobs)

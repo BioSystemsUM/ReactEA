@@ -1,7 +1,7 @@
 from jmetal.algorithm.multiobjective.nsgaiii import UniformReferenceDirectionFactory
-from jmetal.operator import BinaryTournamentSelection
+from jmetal.operator.selection import BinaryTournamentSelection
 from jmetal.util.comparator import DominanceComparator, MultiComparator
-from jmetal.util.density_estimator import CrowdingDistance
+from jmetal.util.density_estimator import CrowdingDistanceDensityEstimator
 from jmetal.util.ranking import FastNonDominatedRanking
 
 from reactea.chem import ChEMBLStandardizer
@@ -56,7 +56,7 @@ class NSGAIIIConstants:
     REFERENCE_DIRECTIONS = UniformReferenceDirectionFactory
     DOMINANCE_COMPARATOR = DominanceComparator()
     SELECTION = BinaryTournamentSelection(MultiComparator([FastNonDominatedRanking.get_comparator(),
-                                                           CrowdingDistance.get_comparator()]))
+                                                           CrowdingDistanceDensityEstimator.get_comparator()]))
 
 
 class NSGAIIConstants:
@@ -65,7 +65,7 @@ class NSGAIIConstants:
     """
     DOMINANCE_COMPARATOR = DominanceComparator()
     SELECTION = BinaryTournamentSelection(MultiComparator([FastNonDominatedRanking.get_comparator(),
-                                                           CrowdingDistance.get_comparator()]))
+                                                           CrowdingDistanceDensityEstimator.get_comparator()]))
 
 
 class SPEA2Constants:

@@ -5,7 +5,6 @@ from typing import Union, List
 from rdkit import DataStructs, Chem
 from rdkit.Chem import Mol, rdmolfiles, rdmolops, MolFromSmiles, MolToSmiles
 from rdkit.Chem.Draw import MolToImage
-from rdkit.Chem.Fingerprints.FingerprintMols import FingerprintMol
 from rdkit.Chem.rdChemReactions import ChemicalReaction
 
 
@@ -151,6 +150,24 @@ class ChemUtils:
         return True
 
     @staticmethod
+    def _rdkit_fingerprint(mol: Mol):
+        """
+        Computes the RDKit fingerprint of a molecule.
+        Same arguments as the default of the deprecated rdkit.Chem.Fingerprints.FingerprintMols.FingerprintMol.
+
+        Parameters
+        ----------
+        mol: Mol
+            The molecule.
+        Returns
+        -------
+        ExplicitBitVect
+            The fingerprint of the molecule.
+        """
+        return Chem.RDKFingerprint(mol, minPath=1, maxPath=7, fpSize=2048, nBitsPerHash=2, useHs=False,
+                                   tgtDensity=0.3, minSize=64)
+
+    @staticmethod
     def calc_fingerprint_similarity(smiles1: str, smiles2: str):
         """
         Calculates the similarity between two molecules based on fingerprints.
@@ -169,8 +186,8 @@ class ChemUtils:
         mol1 = MolFromSmiles(smiles1)
         mol2 = MolFromSmiles(smiles2)
         if mol1 and mol2:
-            fp1 = FingerprintMol(mol1)
-            fp2 = FingerprintMol(mol2)
+            fp1 = ChemUtils._rdkit_fingerprint(mol1)
+            fp2 = ChemUtils._rdkit_fingerprint(mol2)
             return DataStructs.FingerprintSimilarity(fp1, fp2)
         return 0.0
 

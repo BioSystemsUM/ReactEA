@@ -31,7 +31,9 @@ class ReactionRule:
             self._reactants = 'Any'
         else:
             self._reactants = reactants
-        self._reaction = self._to_reaction()
+        # the ChemicalReaction is built lazily (on first access) to avoid compiling thousands of unused rules
+        self._reaction = None
+        self._reaction_built = False
 
     @property
     def smarts(self):
@@ -58,7 +60,8 @@ class ReactionRule:
 
         """
         self._smarts = new_smarts
-        self._reaction = self._to_reaction()
+        self._reaction = None
+        self._reaction_built = False
 
     @property
     def rule_id(self):
@@ -94,6 +97,9 @@ class ReactionRule:
         ChemicalReaction:
             Reaction Rule' RDKit ChemicalReaction object.
         """
+        if not self._reaction_built:
+            self._reaction = self._to_reaction()
+            self._reaction_built = True
         return self._reaction
 
     @reaction.setter
@@ -108,6 +114,7 @@ class ReactionRule:
             New Reaction Rule' ChemicalReaction object.
         """
         self._reaction = new_reaction
+        self._reaction_built = True
         self._smarts = self._to_smarts()
 
     @property

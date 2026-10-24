@@ -36,6 +36,23 @@ class Loaders:
         """
         with open(yaml_file, 'r') as config_file:
             config_dict = yaml.safe_load(config_file)
+        return Loaders.process_configs(config_dict)
+
+    @staticmethod
+    def process_configs(config_dict: dict):
+        """
+        Completes the configurations of the experiment (time stamps and resolved paths).
+
+        Parameters
+        ----------
+        config_dict: dict
+            dictionary containing the configurations of the experiment
+
+        Returns
+        -------
+        dict:
+            dictionary containing the processed configurations of the experiment
+        """
         config_dict['time'] = datetime.now().strftime('%m-%d_%H-%M-%S')
         config_dict['start_time'] = time.time()
 
@@ -88,8 +105,9 @@ class Loaders:
         rules_df = pd.read_csv(path,
                                header=0,
                                sep='\t',
-                               compression='bz2')
-        return [ReactionRule(row['SMARTS'], row["InternalID"], row['Reactants']) for _, row in rules_df.iterrows()]
+                               compression='bz2',
+                               usecols=['InternalID', 'SMARTS', 'Reactants'])
+        return [ReactionRule(row.SMARTS, row.InternalID, row.Reactants) for row in rules_df.itertuples(index=False)]
 
     @staticmethod
     def load_deepsweet_ensemble():

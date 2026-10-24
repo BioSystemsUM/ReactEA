@@ -8,7 +8,8 @@ from tests import TEST_DIR
 class ReactEACLITestCase(TestCase):
 
     def setUp(self):
-        self.output_folder = os.path.join(TEST_DIR, 'data/output/')
+        # matches output_path in base_config.yaml (resolved from the repository root)
+        self.output_folder = os.path.join(TEST_DIR, 'data/outputs/')
         self.config_file = os.path.join(TEST_DIR, 'configs/base_config.yaml')
 
     def tearDown(self):

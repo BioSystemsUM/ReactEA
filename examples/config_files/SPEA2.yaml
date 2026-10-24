@@ -1,7 +1,7 @@
 exp_name: "SPEA2_EXAMPLE_CONFIG"
 
 init_pop_path: "data/seed_compounds.csv"
-init_pop_size: 100
+init_pop_size: 11
 standardize: True
 
 max_rules_by_iter: 22949
