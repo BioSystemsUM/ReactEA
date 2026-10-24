@@ -12,7 +12,8 @@ the [jMetalPy framework](https://github.com/jMetal/jMetalPy).
 - [Requirements](#requirements)
 - [Installation](#installation)
     - [Pip](#pip)
-    - [From Github](#from-github)
+    - [From GitHub](#from-github)
+- [Development](#development)
 - [Getting Started](#getting-started)
     - [Using ReactEA](#using-reactea)
 <!-- - [About Us](#about-us) -->
@@ -22,18 +23,10 @@ the [jMetalPy framework](https://github.com/jMetal/jMetalPy).
 
 ## Requirements
 
-- rdkit-pypi==2022.03.1
-- numpy==1.21.5
-- pandas==1.3.5
-- cytoolz==0.11.2
-- jmetalpy
-- PyYAML==6.0
-- matplotlib==3.5.1
-- chembl_structure_pipeline
-- joblib==1.1.0
-- networkx==2.6.3
-- click==8.1.3
-  
+- Python >= 3.11
+
+The dependencies (RDKit, jMetalPy, NumPy, pandas, ChEMBL Structure Pipeline, ...) are declared in
+[pyproject.toml](pyproject.toml) and installed automatically.
 
 ## Installation
 
@@ -45,19 +38,42 @@ Install ReactEA via pip:
 pip install reactea
 ```
 
+or add it to a [uv](https://docs.astral.sh/uv/) project:
+
+```bash
+uv add reactea
+```
+
 ### From GitHub
 
-Alternatively, install dependencies and ReactEA manually.
+Alternatively, install ReactEA from source. The project is managed with [uv](https://docs.astral.sh/uv/)
+(see the [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/)).
 
 1. Clone the repository:
 ```bash
 git clone https://github.com/BioSystemsUM/ReactEA.git
+cd ReactEA
 ```
 
-3. Install dependencies:
+2. Create the virtual environment (`.venv`) and install ReactEA with the pinned dependencies from `uv.lock`:
 ```bash
-python setup.py install
+uv sync
 ```
+uv downloads a compatible Python if needed. To choose a specific version use, e.g., `uv sync --python 3.13`.
+
+Without uv, `pip install .` also works.
+
+## Development
+
+`uv sync` also installs the development tools (pytest, flake8, mypy).
+
+```bash
+uv run pytest            # run the tests
+uv run flake8 src tests  # lint
+```
+
+To add or upgrade a dependency use `uv add <package>` or `uv lock --upgrade-package <package>`,
+and commit the updated `uv.lock`.
 
 ## Getting Started
 
@@ -162,7 +178,7 @@ similar compound (`best_similarity`) and `best_similarity - tolerance`.
 ```python
 from reactea import run_reactea
 
-case_study_rings = minimize_rings_maximize_qed_mo()
+case_study_rings = minimize_rings_maximize_qed_mo
 # provide path to configuration file and case study
 run_reactea(configs_path = 'config.yaml', 
             case_study = case_study_rings)
