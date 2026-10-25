@@ -290,7 +290,10 @@ class PenalizedSweetness(ChemicalEvaluationFunction):
             The worst fitness possible for the evaluation function.
         """
         super(PenalizedSweetness, self).__init__(maximize, worst_fitness)
-        self.ensemble = Loaders.load_deepsweet_ensemble()
+        # the DeepSweet models are loaded only once (loading them is slow)
+        self.sweetness = SweetnessPredictionDeepSweet()
+        self.caloric = Caloric()
+        self.ensemble = self.sweetness.ensemble
 
     def get_fitness(self, candidates: Union[Mol, List[Mol]]):
         """
@@ -307,7 +310,7 @@ class PenalizedSweetness(ChemicalEvaluationFunction):
         List[float]:
             predicted penalized sweetness probability of the candidates.
         """
-        return np.multiply(SweetnessPredictionDeepSweet().get_fitness(candidates), Caloric().get_fitness(candidates))
+        return np.multiply(self.sweetness.get_fitness(candidates), self.caloric.get_fitness(candidates))
 
     def get_fitness_single(self, candidate: Mol):
         """

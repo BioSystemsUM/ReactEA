@@ -55,7 +55,7 @@ def run_reactea(configs_path: Union[str, dict],
                     initial_population=init_pop,
                     reaction_rules=reaction_rules,
                     max_generations=configs['generations'],
-                    visualizer=False,
+                    visualizer=configs.get('visualize', False),
                     configs=configs)
 
     # Run EA

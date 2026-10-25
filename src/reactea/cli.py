@@ -50,7 +50,7 @@ def reactea_cli(config_file):
     configs = Loaders.get_config_from_yaml(config_file.name)
 
     # shutdown RDKit logs
-    if not configs['verbose']:
+    if not configs.get('verbose', False):
         # Mute RDKit logs
         RDLogger.DisableLog("rdApp.*")
 
@@ -70,7 +70,7 @@ def reactea_cli(config_file):
     # get some EA parameters
     generations = configs["generations"]
     algorithm = configs["algorithm"]
-    visualize = configs["visualize"]
+    visualize = configs.get("visualize", False)
 
     # set up folders
     Writers.set_up_folders(configs['output_dir'])

@@ -3,9 +3,10 @@ from typing import List
 
 import cytoolz
 import numpy as np
-from jmetal.algorithm.multiobjective import IBEA
+from jmetal.algorithm.multiobjective import IBEA, RandomSearch
 from jmetal.algorithm.multiobjective.nsgaiii import NSGAIII
 from jmetal.algorithm.singleobjective import GeneticAlgorithm, EvolutionStrategy
+from jmetal.core.operator import Mutation
 from jmetal.core.quality_indicator import EpsilonIndicator
 from jmetal.util.constraint_handling import overall_constraint_violation_degree
 
@@ -218,3 +219,39 @@ class ReactorIBEA(IBEA):
             join_population_size = join_population_size - 1
 
         return join_population
+
+
+class ReactorRandomSearch(RandomSearch):
+    """
+    Class representing a Reactor Random Search.
+    Performs a random walk: at each step a random reaction rule is applied to the previous compound (without
+    selection). The non-dominated compounds found are kept in an archive.
+    """
+
+    def __init__(self, mutation: Mutation, **kwarg):
+        """
+        Initializes a ReactorRandomSearch object.
+        Parameters
+        ----------
+        mutation: Mutation
+            mutation operator used to transform the compounds
+        kwarg
+            kwargs to use (see RandomSearch arguments)
+        """
+        super(ReactorRandomSearch, self).__init__(**kwarg)
+        self.mutation = mutation
+        self.current = None
+
+    def evaluate(self, solution_list: List[ChemicalSolution]) -> List[ChemicalSolution]:
+        solution_list = super(ReactorRandomSearch, self).evaluate(solution_list)
+        self.current = solution_list[0]
+        self.archive.add(self.current)
+        return solution_list
+
+    def step(self) -> None:
+        # the archived solutions are not changed by the mutation
+        new_solution = self.mutation.execute(deepcopy(self.current))
+        self.problem.evaluate(new_solution)
+        self.archive.add(new_solution)
+        self.current = new_solution
+        self.solutions = self.result()
