@@ -2,6 +2,7 @@ from typing import List
 
 from jmetal.algorithm.multiobjective import NSGAII, SPEA2
 from jmetal.algorithm.singleobjective import SimulatedAnnealing, LocalSearch
+from jmetal.util.termination_criterion import TerminationCriterion
 
 from reactea.optimization.ea import AbstractEA
 from .algorithms import ReactorGeneticAlgorithm as GeneticAlgorithm
@@ -15,7 +16,7 @@ from .observers import PrintObjectivesStatObserver, VisualizerObserver
 from .problem import JmetalProblem
 from reactea.constants import EAConstants, ChemConstants, GAConstants, NSGAIIIConstants, \
     LSConstants, NSGAIIConstants, SPEA2Constants
-from .terminators import StoppingByEvaluationsOrImprovement, StoppingByEvaluations
+from .terminators import StoppingByEvaluationsOrImprovement, StoppingByEvaluations, ReactEATerminationCriterion
 from ..problem import ChemicalProblem
 from ...chem.compounds import Compound
 from ...chem.reaction_rules import ReactionRule
@@ -38,7 +39,8 @@ class ChemicalEA(AbstractEA):
                  max_generations: int = 10,
                  visualizer: bool = False,
                  configs: dict = None,
-                 logger: Writers = Writers.update_operators_logs
+                 logger: Writers = Writers.update_operators_logs,
+                 termination_criterion: TerminationCriterion = None
                  ):
         """
         Initializes the EA object.
@@ -63,6 +65,8 @@ class ChemicalEA(AbstractEA):
             configurations of the experiment
         logger: Writers
             writer to use for the operators logs
+        termination_criterion: TerminationCriterion
+            criterion to stop the EA (if None, it is defined by the configurations: `patience` and `generations`)
         """
         super(ChemicalEA, self).__init__(problem, initial_population, max_generations, visualizer)
         self.algorithm_name = algorithm
@@ -77,7 +81,13 @@ class ChemicalEA(AbstractEA):
             self.population_size = len(initial_population)
         else:
             self.population_size = 1
-        if "patience" in configs:
+        if termination_criterion is not None:
+            self.termination_criterion = termination_criterion
+            # criteria without a maximum number of generations use the one of the configurations
+            if isinstance(termination_criterion, ReactEATerminationCriterion) and \
+                    termination_criterion.max_generations is None:
+                termination_criterion.max_generations = self.max_generations
+        elif "patience" in configs:
             self.termination_criterion = StoppingByEvaluationsOrImprovement(configs['patience'],
                                                                             self.max_generations)
         else:

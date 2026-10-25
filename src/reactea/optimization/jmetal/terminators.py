@@ -1,124 +1,209 @@
+from abc import ABC, abstractmethod
+from typing import List, Optional
+
 import numpy as np
+from jmetal.core.problem import Problem
 from jmetal.util.termination_criterion import TerminationCriterion
 
 
-class StoppingByEvaluations(TerminationCriterion):
-
-    def __init__(self, max_evaluations: int):
-        super(StoppingByEvaluations, self).__init__()
-        self.max_evaluations = max_evaluations
-        self.evaluations = 0
-
-    def update(self, *args, **kwargs):
-        self.evaluations += 1
-
-    @property
-    def is_met(self):
-        return self.evaluations >= self.max_evaluations
-
-
-class StoppingByEvaluationsOrMeanFitnessValue(TerminationCriterion):
+class ReactEATerminationCriterion(TerminationCriterion, ABC):
     """
-    StoppingByEvaluationsOrFitnessValue termination criterion.
-    Stops EA if maximum number of evaluations is met or if the mean of the objectives reaches a value.
+    Base class of the ReactEA termination criteria.
+    Stops the EA after `max_generations` generations or when the `stop` method returns True.
+
+    Child classes only need to implement the `stop` method, which receives the scores of the current solutions
+    (as returned by the evaluation functions, both for maximized and minimized objectives) at each generation.
     """
 
-    def __init__(self, expected_value: float, max_evaluations: int):
+    def __init__(self, max_generations: Optional[int] = None):
         """
-        Initializes a StoppingByEvaluationsOrFitnessValue stopping criterion.
+        Initializes the termination criterion.
 
         Parameters
         ----------
-        expected_value: float
-            maximum fitness value to reach
-        max_evaluations: int
-            maximum number of evaluations
+        max_generations: Optional[int]
+            maximum number of generations (if None, the number of generations of the configuration is used)
         """
-        super(StoppingByEvaluationsOrMeanFitnessValue, self).__init__()
-        self.expected_value = expected_value
-        self.max_evaluations = max_evaluations
-        self.value = 0.0
-        self.evaluations = 0
+        super(ReactEATerminationCriterion, self).__init__()
+        self.max_generations = max_generations
+        self.generations = 0
+        self.stopped = False
+
+    @staticmethod
+    def solution_scores(solution, maximize: List[bool]) -> List[float]:
+        """
+        Gets the scores of a solution as returned by the evaluation functions.
+
+        Parameters
+        ----------
+        solution: ChemicalSolution
+            evaluated solution
+        maximize: List[bool]
+            whether each objective is maximized (True) or minimized (False)
+
+        Returns
+        -------
+        List[float]:
+            scores of the solution
+        """
+        if 'scores' in solution.attributes:
+            return list(solution.attributes['scores'])
+        # jmetalpy only minimizes, so the objectives of maximized functions are negated
+        return [-o if m else o for o, m in zip(solution.objectives, maximize)]
 
     def update(self, *args, **kwargs):
         """
-        Updates the number current number of iterations and fitness value.
+        Updates the termination criterion at each generation.
+
+        Parameters
+        ----------
+        args:
+            args to use
+        kwargs:
+            kwargs to use (SOLUTIONS and PROBLEM are used)
         """
-        self.evaluations = kwargs["EVALUATIONS"]
-        solutions = kwargs["SOLUTIONS"]
-        mean_fit = np.mean([s.objectives for s in solutions])
-        self.value = mean_fit
+        solutions = kwargs['SOLUTIONS']
+        # single-solution algorithms (SA and LS) pass a single solution
+        if not isinstance(solutions, list):
+            solutions = [solutions]
+        maximize = [direction == Problem.MAXIMIZE for direction in kwargs['PROBLEM'].obj_directions]
+        scores = [self.solution_scores(solution, maximize) for solution in solutions]
+        self.generations += 1
+        self.stopped = bool(self.stop(scores, maximize))
+
+    @abstractmethod
+    def stop(self, scores: List[List[float]], maximize: List[bool]) -> bool:
+        """
+        Checks if the EA must stop (called at each generation).
+
+        Parameters
+        ----------
+        scores: List[List[float]]
+            scores of each solution of the current population (one value per objective)
+        maximize: List[bool]
+            whether each objective is maximized (True) or minimized (False)
+
+        Returns
+        -------
+        bool:
+            True to stop the EA, False to continue
+        """
+        raise NotImplementedError
 
     @property
     def is_met(self):
         """
-        Checks if maximum number of evaluations or fitness value are reached.
+        Checks if the maximum number of generations was reached or if the `stop` method returned True.
 
         Returns
         -------
         bool
-            true if the value or number of evaluations are reached, false otherwise
+            true if the EA must stop, false otherwise
         """
-        return self.value >= self.expected_value or self.evaluations >= self.max_evaluations
+        max_reached = self.max_generations is not None and self.generations >= self.max_generations
+        return self.stopped or max_reached
 
 
-class StoppingByEvaluationsOrImprovement(TerminationCriterion):
+class StoppingByEvaluations(ReactEATerminationCriterion):
+    """
+    StoppingByEvaluations termination criterion.
+    Stops the EA when the maximum number of generations is reached.
+    """
+
+    def stop(self, scores: List[List[float]], maximize: List[bool]) -> bool:
+        return False
+
+
+class StoppingByEvaluationsOrImprovement(ReactEATerminationCriterion):
     """
     StoppingByEvaluationsOrImprovement termination criterion.
-    Stops EA if maximum number of evaluations is met or there is no improvement for N generations.
+    Stops the EA if the maximum number of generations is reached or if the mean score of the population does not
+    improve (in any objective) for `patience` generations.
     """
 
-    def __init__(self, patience: int, max_evaluations: int):
+    def __init__(self, patience: int, max_generations: Optional[int] = None):
         """
-        Initializes a StoppingByEvaluationsOrFitnessValue stopping criterion.
+        Initializes a StoppingByEvaluationsOrImprovement termination criterion.
 
         Parameters
         ----------
         patience: int
             maximum number of generations without improvement
-        max_evaluations: int
-            maximum number of evaluations
+        max_generations: Optional[int]
+            maximum number of generations
         """
-        super(StoppingByEvaluationsOrImprovement, self).__init__()
+        super(StoppingByEvaluationsOrImprovement, self).__init__(max_generations)
         self.patience = patience
-        self.max_evaluations = max_evaluations
-        self.value = 0.0
+        self.best_mean = None
         self.no_improvement = 0
-        self.evaluations = 0
 
-    def update(self, *args, **kwargs):
-        """
-        Updates the number current number of iterations and no improvement generations value.
-        """
-        solutions = kwargs["SOLUTIONS"]
-
-        def average_by_position(lists):
-            # Zip the lists together, transpose them, and map the mean function over them
-            return list(map(lambda x: sum(x) / len(x), zip(*lists)))
-
-        if isinstance(solutions, list):
-            mean_fit = average_by_position([s.objectives for s in solutions])
-        else:
-            mean_fit = [np.mean(solutions.objectives)]
-
-        if self.evaluations == 0:
-            self.value = mean_fit
-
-        if any(x < y for x, y in zip(mean_fit, self.value)):
-            self.value = mean_fit
+    def stop(self, scores: List[List[float]], maximize: List[bool]) -> bool:
+        mean = np.mean(scores, axis=0)
+        if self.best_mean is None:
+            self.best_mean = mean
+            return False
+        improved = [m > b if is_max else m < b for m, b, is_max in zip(mean, self.best_mean, maximize)]
+        if any(improved):
+            self.best_mean = np.where(maximize, np.maximum(mean, self.best_mean), np.minimum(mean, self.best_mean))
             self.no_improvement = 0
         else:
             self.no_improvement += 1
-        self.evaluations += 1
+        return self.no_improvement > self.patience
 
-    @property
-    def is_met(self):
-        """
-        Checks if maximum number of evaluations or fitness value are reached.
 
-        Returns
-        -------
-        bool
-            true if the value or number of evaluations are reached, false otherwise
+class StoppingByEvaluationsOrMeanFitnessValue(ReactEATerminationCriterion):
+    """
+    StoppingByEvaluationsOrMeanFitnessValue termination criterion.
+    Stops the EA if the maximum number of generations is reached or if the mean score of the population reaches a
+    value in every objective (at least the value for maximized objectives, at most for minimized ones).
+    """
+
+    def __init__(self, expected_value: float, max_generations: Optional[int] = None):
         """
-        return self.no_improvement > self.patience or self.evaluations >= self.max_evaluations
+        Initializes a StoppingByEvaluationsOrMeanFitnessValue termination criterion.
+
+        Parameters
+        ----------
+        expected_value: float
+            mean score to reach
+        max_generations: Optional[int]
+            maximum number of generations
+        """
+        super(StoppingByEvaluationsOrMeanFitnessValue, self).__init__(max_generations)
+        self.expected_value = expected_value
+
+    def stop(self, scores: List[List[float]], maximize: List[bool]) -> bool:
+        mean = np.mean(scores, axis=0)
+        return all(m >= self.expected_value if is_max else m <= self.expected_value
+                   for m, is_max in zip(mean, maximize))
+
+
+class StoppingByScore(ReactEATerminationCriterion):
+    """
+    StoppingByScore termination criterion.
+    Stops the EA if the maximum number of generations is reached or if a solution reaches a score in an objective
+    (at least the value for maximized objectives, at most for minimized ones).
+    """
+
+    def __init__(self, value: float, objective: int = 0, max_generations: Optional[int] = None):
+        """
+        Initializes a StoppingByScore termination criterion.
+
+        Parameters
+        ----------
+        value: float
+            score to reach
+        objective: int
+            index of the objective (in the order of the case study's evaluation functions)
+        max_generations: Optional[int]
+            maximum number of generations
+        """
+        super(StoppingByScore, self).__init__(max_generations)
+        self.value = value
+        self.objective = objective
+
+    def stop(self, scores: List[List[float]], maximize: List[bool]) -> bool:
+        objective_scores = [s[self.objective] for s in scores]
+        if maximize[self.objective]:
+            return max(objective_scores) >= self.value
+        return min(objective_scores) <= self.value

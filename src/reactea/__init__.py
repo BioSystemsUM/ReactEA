@@ -2,6 +2,7 @@ import warnings
 from pathlib import Path
 from typing import Union
 
+from jmetal.util.termination_criterion import TerminationCriterion
 from rdkit import RDLogger
 
 from reactea.case_studies import CaseStudy
@@ -16,7 +17,8 @@ __version__ = '2.0.0'
 def run_reactea(configs_path: Union[str, dict],
                 case_study: CaseStudy,
                 ignore_rdkit_logs: bool = True,
-                ignore_warnings: bool = True):
+                ignore_warnings: bool = True,
+                termination_criterion: TerminationCriterion = None):
     """
     Runs ReactEA: optimizes the seed compounds for the case study and saves the results.
 
@@ -28,6 +30,9 @@ def run_reactea(configs_path: Union[str, dict],
         path to the configuration file (yaml) or dictionary with the configurations
     case_study: CaseStudy
         case study (evaluation functions) to optimize
+    termination_criterion: TerminationCriterion
+        criterion to stop the EA (if None, it is defined by the configurations: `patience` and `generations`).
+        A criterion keeps the state of a run, so a new one must be created for each run.
     ignore_rdkit_logs: bool
         mute the RDKit logs (True) or not (False)
     ignore_warnings: bool
@@ -72,7 +77,8 @@ def run_reactea(configs_path: Union[str, dict],
                     reaction_rules=reaction_rules,
                     max_generations=configs['generations'],
                     visualizer=configs.get('visualize', False),
-                    configs=configs)
+                    configs=configs,
+                    termination_criterion=termination_criterion)
 
     # Run EA
     final_pop = ea.run()

@@ -72,46 +72,52 @@ class DrugLikeAndSynthesizable(CaseStudy):
 By default, a run stops after `generations` generations, or earlier if `patience` is set and the solutions stop
 improving (see [Configuration](configuration.md)).
 
-Other criteria subclass jMetalPy's `TerminationCriterion` and implement `update` (called at each generation with
-the current solutions) and `is_met`. To use one, build the {class}`~reactea.ChemicalEA` directly:
+Other criteria are passed to {func}`~reactea.run_reactea` with `termination_criterion`.
+ReactEA has these built-in criteria (in {mod}`reactea.optimization.jmetal.terminators`):
+
+| Criterion | Stops when |
+|---|---|
+| `StoppingByEvaluations(max_generations)` | the maximum number of generations is reached |
+| `StoppingByEvaluationsOrImprovement(patience)` | the mean score does not improve, in any objective, for `patience` generations |
+| `StoppingByEvaluationsOrMeanFitnessValue(expected_value)` | the mean score reaches `expected_value` in every objective |
+| `StoppingByScore(value, objective=0)` | a solution reaches `value` in an objective |
 
 ```python
-from jmetal.util.termination_criterion import TerminationCriterion
+from reactea import run_reactea
+from reactea.optimization.jmetal.terminators import StoppingByScore
 
-from reactea import ChemicalEA, Loaders, Writers
+# stop when a solution reaches a QED of 0.9 (the first objective), or after `generations` generations
+run_reactea('config.yaml', DrugLikeAndSynthesizable(), termination_criterion=StoppingByScore(0.9, objective=0))
+```
 
+All criteria also stop after a maximum number of generations: `max_generations` if given, otherwise `generations`
+from the configuration. A criterion keeps the state of a run (e.g. the number of generations), so create a new one
+for each run.
 
-class StopWhenQEDReached(TerminationCriterion):
-    """Stops when a solution reaches a QED score (the first objective) or after max_generations."""
+### Writing your own
 
-    def __init__(self, qed: float, max_generations: int):
-        super().__init__()
-        self.qed = qed
-        self.max_generations = max_generations
-        self.generations = 0
-        self.best = 0.0
+Subclass {class}`~reactea.optimization.jmetal.terminators.ReactEATerminationCriterion` and implement `stop`. It is
+called at each generation with the scores of the current solutions (one list per solution, one value per objective,
+as returned by the evaluation functions) and whether each objective is maximized, and returns True to stop the run.
+Counting the generations and the maximum number of generations are handled by the base class:
 
-    def update(self, *args, **kwargs):
-        self.generations += 1
-        # jMetalPy minimizes, so maximized objectives are negated
-        self.best = max(-s.objectives[0] for s in kwargs['SOLUTIONS'])
-
-    @property
-    def is_met(self):
-        return self.best >= self.qed or self.generations >= self.max_generations
+```python
+from reactea import run_reactea
+from reactea.optimization.jmetal.terminators import ReactEATerminationCriterion
 
 
-configs = Loaders.get_config_from_yaml('config.yaml')
-configs['output_dir'] = configs['output_dir'] / configs['algorithm']
-Writers.set_up_folders(configs['output_dir'])
-init_pop, init_pop_smiles = Loaders.initialize_population(configs)
+class StopWhenEnoughGoodSolutions(ReactEATerminationCriterion):
+    """Stops when n solutions reach a minimum score in every (maximized) objective."""
 
-case_study = DrugLikeAndSynthesizable()
-ea = ChemicalEA(configs['algorithm'], case_study.objective(), initial_population=init_pop,
-                reaction_rules=Loaders.initialize_rules(), max_generations=configs['generations'], configs=configs)
-ea.termination_criterion = StopWhenQEDReached(0.9, configs['generations'])
-final_population = ea.run()
+    def __init__(self, n: int, min_score: float, max_generations: int = None):
+        super().__init__(max_generations)
+        self.n = n
+        self.min_score = min_score
 
-Writers.save_final_pop(final_population, configs, case_study.feval_names())
-Writers.save_intermediate_transformations(final_population, configs)
+    def stop(self, scores, maximize):
+        good = [s for s in scores if all(value >= self.min_score for value in s)]
+        return len(good) >= self.n
+
+
+run_reactea('config.yaml', DrugLikeAndSynthesizable(), termination_criterion=StopWhenEnoughGoodSolutions(3, 0.8))
 ```

@@ -21,7 +21,7 @@ The configuration can be a YAML file or a dictionary (both can be passed to {fun
 | `init_pop_size` | all seeds | number of seed compounds randomly sampled from `init_pop_path` |
 | `standardize` | `False` | standardize the seed compounds ([ChEMBL Structure Pipeline](https://github.com/chembl/ChEMBL_Structure_Pipeline)) |
 | `save_routes` | `False` | draw the route of each improved solution (SVG files in the `routes` folder) |
-| `patience` | off | stop if the mean fitness does not improve for this number of generations |
+| `patience` | off | stop if the mean score does not improve, in any objective, for this number of generations (other criteria: see [Termination criteria](customization.md#termination-criteria)) |
 | `mutation_probability` | `1.0` | probability of applying the mutation operator |
 | `crossover_probability` | `1.0` | probability of applying the crossover operator |
 | `visualize` | `False` | show the Pareto front approximation in a live plot (multi-objective only) |

@@ -2,6 +2,17 @@
 
 ## 2.0.1 (unreleased)
 
+- New `termination_criterion` argument in `run_reactea` and `ChemicalEA` to stop the run with any criterion.
+- New `ReactEATerminationCriterion` base class: a new criterion only implements `stop(scores, maximize)`, with the
+  scores as returned by the evaluation functions; generations and the maximum number of generations are handled by
+  the base class.
+- New `StoppingByScore` criterion: stops when a solution reaches a score.
+- The built-in criteria use the base class. Their `max_evaluations` argument is renamed `max_generations` and is
+  optional (`generations` from the configuration is used if not given).
+  `StoppingByEvaluationsOrMeanFitnessValue` compared jMetalPy's internal objectives instead of the scores, so it
+  never stopped for maximized objectives and stopped in the wrong direction for minimized ones; it also counted
+  evaluations instead of generations. `StoppingByEvaluationsOrImprovement` counted the first generation as one
+  without improvement.
 - `FINAL_<time>_UNIQUE_SOLUTIONS.csv` now uses `;` as separator, like `FINAL_<time>.csv` (it used `,`).
 - Documentation on Read the Docs.
 
