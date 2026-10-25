@@ -20,6 +20,18 @@ class TestWriters(TestCase):
         # the configs in memory are not changed
         self.assertIsInstance(configs['output_dir'], Path)
 
+    def test_save_final_pop(self):
+        solutions = [ChemicalSolution(Compound(smiles, i), [-0.4, 2.0])
+                     for i, smiles in enumerate(['CCO', 'CCO', 'CCCO'])]
+        with tempfile.TemporaryDirectory() as output_dir:
+            configs = {'output_dir': Path(output_dir), 'time': 'T'}
+            Writers.save_final_pop(solutions, configs, 'qed;n_rings')
+            final = (Path(output_dir) / 'FINAL_T.csv').read_text()
+            unique = (Path(output_dir) / 'FINAL_T_UNIQUE_SOLUTIONS.csv').read_text()
+        self.assertEqual(final, 'SMILES;qed;n_rings\nCCO;0.4;-2.0\nCCO;0.4;-2.0\nCCCO;0.4;-2.0\n')
+        # same separator as the final population file
+        self.assertEqual(unique, 'SMILES;qed;n_rings\nCCO;0.4;-2.0\nCCCO;0.4;-2.0\n')
+
     def test_update_operators_logs(self):
         # a maximized (qed) and a minimized (n_rings) objective: jmetalpy stores the first one negated
         solution = ChemicalSolution(Compound('CCO', 'id0'), [-0.4, 2.0])

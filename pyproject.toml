@@ -43,6 +43,11 @@ dev = [
     "mypy>=1.10",
     "flake8>=7",
 ]
+docs = [
+    "sphinx>=8",
+    "myst-parser>=4",
+    "furo>=2024.8",
+]
 
 [build-system]
 requires = ["setuptools>=77"]

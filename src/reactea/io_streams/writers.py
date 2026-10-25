@@ -55,7 +55,7 @@ class Writers:
         df = pd.read_csv(destFile, sep=';', header=0)
         df = df.drop_duplicates()
         unique_solutions_path = destFile.stem + '_UNIQUE_SOLUTIONS.csv'
-        df.to_csv(destFile.parent / unique_solutions_path, index=False)
+        df.to_csv(destFile.parent / unique_solutions_path, sep=';', index=False)
         configs["final_population_unique_solutions_path"] = destFile.parent / unique_solutions_path
 
     @staticmethod
