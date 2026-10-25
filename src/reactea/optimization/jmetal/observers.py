@@ -1,6 +1,7 @@
 import copy
 from typing import List, TypeVar
 
+import matplotlib
 import numpy as np
 from jmetal.core.observer import Observer
 from jmetal.core.solution import Solution
@@ -9,6 +10,12 @@ from jmetal.lab.visualization import StreamingPlot
 from reactea.optimization.solution import non_dominated_population
 
 S = TypeVar('S')
+
+# jmetalpy's StreamingPlot uses matplotlib.rcsetup.interactive_bk, which was removed in matplotlib 3.11
+if not hasattr(matplotlib.rcsetup, 'interactive_bk'):
+    from matplotlib.backends import BackendFilter, backend_registry
+
+    matplotlib.rcsetup.interactive_bk = backend_registry.list_builtin(BackendFilter.INTERACTIVE)
 
 
 class VisualizerObserver(Observer):
