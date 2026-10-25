@@ -85,6 +85,9 @@ class ChemicalEA(AbstractEA):
         self.init_constants()
 
     def init_constants(self):
+        """
+        Sets the default values of the optional configurations (operators and algorithm parameters).
+        """
         if 'mutation_probability' not in self.configs:
             self.configs['mutation_probability'] = 1.0
         if 'crossover_probability' not in self.configs:

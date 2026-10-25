@@ -17,6 +17,22 @@ def run_reactea(configs_path: Union[str, dict],
                 case_study: CaseStudy,
                 ignore_rdkit_logs: bool = True,
                 ignore_warnings: bool = True):
+    """
+    Runs ReactEA: optimizes the seed compounds for the case study and saves the results.
+
+    The results are saved in `<output_path>/<exp_name>/<algorithm>/`.
+
+    Parameters
+    ----------
+    configs_path: Union[str, dict]
+        path to the configuration file (yaml) or dictionary with the configurations
+    case_study: CaseStudy
+        case study (evaluation functions) to optimize
+    ignore_rdkit_logs: bool
+        mute the RDKit logs (True) or not (False)
+    ignore_warnings: bool
+        ignore the Python warnings (True) or not (False)
+    """
     if ignore_rdkit_logs:
         RDLogger.DisableLog("rdApp.*")
 
