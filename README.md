@@ -16,6 +16,7 @@ the [jMetalPy framework](https://github.com/jMetal/jMetalPy).
 - [Development](#development)
 - [Getting Started](#getting-started)
     - [Using ReactEA](#using-reactea)
+    - [Results](#results)
     - [Plotting the transformation routes](#plotting-the-transformation-routes)
 <!-- - [About Us](#about-us) -->
 - [Citing ReactEA](#citing-reactea)
@@ -98,7 +99,7 @@ def number_of_rings(mol):
     n_rings = len(ri.AtomRings())
     return n_rings
 
-n_rigs_feval = evaluation_functions_wrapper(number_of_rings, 
+n_rings_feval = evaluation_functions_wrapper(number_of_rings, 
                                             maximize=False, 
                                             worst_fitness=100, 
                                             name='n_rings')
@@ -118,21 +119,21 @@ from reactea import case_study_wrapper
 
 # SINGLE OBJECTIVE CASE STUDY
 # case study to optimize a single objective `f1` (minimize number of rings in a molecule)
-minimize_rings = case_study_wrapper(n_rigs_feval, 
+minimize_rings = case_study_wrapper(n_rings_feval, 
                                     multi_objective=False, 
                                     name='minimize_rings')
 
 # SINGLE-OBJECTIVE CASE STUDY WITH MULTIPLE EVALUATION FUNCTIONS
 # case study to optimize a single objective but with multiple evaluation functions `f1` and `f2` (minimize number of rings in a molecule and maximize qed)
 # the number of evaluation functions must be the same as the number of values in weights and the sum of the weights must be 1
-minimize_rings_maximize_qed = case_study_wrapper([n_rigs_feval, qed_feval], 
+minimize_rings_maximize_qed = case_study_wrapper([n_rings_feval, qed_feval], 
                                                  multi_objective=False, 
                                                  name='minimize_rings_maximize_qed', 
                                                  weights=[0.3, 0.7])
 
 # MULTI-OBJECTIVE CASE STUDY
 # case study to optimize multiple objectives simultaneous
-minimize_rings_maximize_qed_mo = case_study_wrapper([n_rigs_feval, qed_feval], 
+minimize_rings_maximize_qed_mo = case_study_wrapper([n_rings_feval, qed_feval], 
                                                     multi_objective=True, 
                                                     name='minimize_rings_maximize_qed_mo')
 ```
@@ -162,14 +163,14 @@ init_pop_size: 100
 # whether to standardize the seed compounds (if not provided, the seed compounds will not be standardized)
 standardize: True
 
-# Maximum number of reaction rules to try in each generation (maximum is 22949)
+# Maximum number of (random) reaction rules tried in each mutation until one produces a valid product (maximum is 22949)
 max_rules_by_iter: 22949
 # **Mutant selected will be randomly chosen from the compounds with similarity between `best_similarity` and `best_similarity - tolerance`
 tolerance: 0.1
 
 # Number of generations to run the algorithm
 generations: 100
-# EA to use (NSGAIII, NSGAII, SPEA2, IBEA, GA, LS, ES and SA)
+# EA to use (see below)
 algorithm: "NSGAIII"
 
 # Path to output folder
@@ -177,6 +178,33 @@ output_path: ".../output_dir_path/"
 
 # Whether to draw the transformation route of each improved solution (SVG files in the `routes` folder of the output)
 save_routes: True
+```
+
+Algorithms:
+
+- Single-objective case studies: `GA`, `ES`, `SA` and `LS`, as well as the multi-objective algorithms below.
+- Multi-objective case studies: `NSGAII`, `NSGAIII`, `SPEA2`, `IBEA` and `RandomSearch`.
+- `SA`, `LS` and `RandomSearch` start from a single compound (`init_pop_size: 1`).
+
+Optional parameters (defaults in parentheses):
+
+```yaml
+# stop if the mean fitness does not improve for this number of generations (off)
+patience: 10
+# probability of applying the mutation and crossover operators (1.0)
+mutation_probability: 1.0
+crossover_probability: 1.0
+# show the Pareto front approximation in a live plot, multi-objective only (False)
+visualize: False
+
+# SA: initial and minimum temperature and cooling rate (1.0, 0.000001, 0.95)
+temperature: 1.0
+minimum_temperature: 0.000001
+alpha: 0.95
+# ES: keep the parents in the next generation (True)
+elitist: True
+# IBEA: fitness scaling factor (1.0)
+kappa: 1.0
 ```
 
 Note: ** When generating reaction products (offspring) from the molecules from the previous generation (parents), 
@@ -196,6 +224,23 @@ case_study_rings = minimize_rings_maximize_qed_mo
 run_reactea(configs_path = 'config.yaml', 
             case_study = case_study_rings)
 ```
+
+`configs_path` can also be a dictionary with the configurations.
+
+### Results
+
+The results are saved in `<output_path>/<exp_name>/<algorithm>/`:
+
+| File | Content |
+|---|---|
+| `FINAL_<time>.csv` | final population: SMILES and the score of each objective |
+| `FINAL_<time>_UNIQUE_SOLUTIONS.csv` | the same, without repeated solutions |
+| `FINAL_TRANSFORMATIONS_<time>.csv` | route of each solution: intermediate compounds and reaction rule ids |
+| `ReactionMutationLogs.txt` | every transformation applied during the run (parent, product, rule id and the parent's scores) |
+| `configs.yaml` | configurations used in the run |
+| `routes/` | drawings of the transformation routes (if `save_routes: True`) |
+
+Scores are saved as returned by the evaluation functions, both for maximized and minimized objectives.
 
 ### Plotting the transformation routes
 
@@ -239,7 +284,7 @@ a Ciência e a Tecnologia.
 
 ## Citing ReactEA
 
-Accepted at [GECC0 2023](https://gecco-2023.sigevo.org/HomePage).
+Accepted at [GECCO 2023](https://gecco-2023.sigevo.org/HomePage).
 
 Publication:
 
