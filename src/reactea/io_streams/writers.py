@@ -47,8 +47,9 @@ class Writers:
         with destFile.open('w') as f:
             f.write("SMILES;" + feval_names + "\n")
             for i, solution in enumerate(final_pop):
-                f.write(str(solution.variables.smiles) + ";" +
-                        ";".join([str(round(x, 3)*-1) for x in solution.objectives]) + "\n")
+                # objectives are negated for maximization (jmetalpy only minimizes), the raw scores are not
+                scores = solution.attributes.get('scores', [-x for x in solution.objectives])
+                f.write(str(solution.variables.smiles) + ";" + ";".join([str(round(x, 3)) for x in scores]) + "\n")
 
         # save unique solutions
         df = pd.read_csv(destFile, sep=';', header=0)

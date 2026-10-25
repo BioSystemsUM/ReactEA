@@ -61,6 +61,9 @@ class CaseStudyWrapper(CaseStudy):
         Returns the names of the evaluation functions used in this Case Study.
         """
         if isinstance(self.evaluation_functions, list):
+            if not self.multi_objective:
+                # single objective: the functions are aggregated into one weighted sum (one column)
+                return ' + '.join([f'{w}*{f.method_str()}' for w, f in zip(self.weights, self.evaluation_functions)])
             return ';'.join([f.method_str() for f in self.evaluation_functions])
         else:
             return self.evaluation_functions.method_str()
