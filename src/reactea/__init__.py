@@ -7,9 +7,10 @@ from rdkit import RDLogger
 from reactea.case_studies import CaseStudy
 from reactea.io_streams import Loaders, Writers
 from reactea.optimization.jmetal.ea import ChemicalEA
+from reactea.visualization import load_routes, save_routes
 from reactea.wrappers import case_study_wrapper, evaluation_functions_wrapper
 
-__version__ = '1.0.0'
+__version__ = '2.0.0'
 
 
 def run_reactea(configs_path: Union[str, dict],
@@ -54,7 +55,7 @@ def run_reactea(configs_path: Union[str, dict],
                     initial_population=init_pop,
                     reaction_rules=reaction_rules,
                     max_generations=configs['generations'],
-                    visualizer=False,
+                    visualizer=configs.get('visualize', False),
                     configs=configs)
 
     # Run EA
@@ -67,3 +68,7 @@ def run_reactea(configs_path: Union[str, dict],
 
     # save configs
     Writers.save_configs(configs)
+
+    # draw the transformation routes
+    if configs.get('save_routes', False):
+        save_routes(load_routes(configs['transformations_path']), Path(configs['output_dir']) / 'routes')

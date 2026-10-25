@@ -1,6 +1,6 @@
 from typing import List
 
-from jmetal.algorithm.multiobjective import NSGAII, SPEA2, RandomSearch
+from jmetal.algorithm.multiobjective import NSGAII, SPEA2
 from jmetal.algorithm.singleobjective import SimulatedAnnealing, LocalSearch
 
 from reactea.optimization.ea import AbstractEA
@@ -8,6 +8,7 @@ from .algorithms import ReactorGeneticAlgorithm as GeneticAlgorithm
 from .algorithms import ReactorEvolutionStrategy as EvolutionStrategy
 from .algorithms import ReactorNSGAIII as NSGAIII
 from .algorithms import ReactorIBEA as IBEA
+from .algorithms import ReactorRandomSearch as RandomSearch
 from .evaluators import ChemicalEvaluator
 from .generators import ChemicalGenerator
 from .observers import PrintObjectivesStatObserver, VisualizerObserver
@@ -293,12 +294,12 @@ class ChemicalEA(AbstractEA):
                 population_generator=self.initial_population,
                 population_evaluator=self.population_evaluator
             )
-        # TODO: debug randomsearch
         elif self.algorithm_name == "RandomSearch":
             if len(self.initial_population.initial_population) != 1:
                 raise ValueError('For running RandomSearch, only one initial compound must be provided!')
             algorithm = RandomSearch(
                 problem=self.ea_problem,
+                mutation=mutation,
                 termination_criterion=self.termination_criterion
             )
         elif self.algorithm_name == "SPEA2":

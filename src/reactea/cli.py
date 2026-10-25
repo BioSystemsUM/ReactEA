@@ -1,5 +1,6 @@
 import time
 from datetime import datetime
+from pathlib import Path
 
 import click as click
 from rdkit import RDLogger
@@ -8,6 +9,7 @@ from reactea.chem import Compound
 from reactea.constants import ChemConstants
 from reactea.io_streams import Loaders, Writers
 from reactea.optimization.jmetal.ea import ChemicalEA
+from reactea.visualization import load_routes, save_routes
 
 
 def setup_configuration_file(args):
@@ -48,7 +50,7 @@ def reactea_cli(config_file):
     configs = Loaders.get_config_from_yaml(config_file.name)
 
     # shutdown RDKit logs
-    if not configs['verbose']:
+    if not configs.get('verbose', False):
         # Mute RDKit logs
         RDLogger.DisableLog("rdApp.*")
 
@@ -68,7 +70,7 @@ def reactea_cli(config_file):
     # get some EA parameters
     generations = configs["generations"]
     algorithm = configs["algorithm"]
-    visualize = configs["visualize"]
+    visualize = configs.get("visualize", False)
 
     # set up folders
     Writers.set_up_folders(configs['output_dir'])
@@ -97,7 +99,9 @@ def reactea_cli(config_file):
     Writers.save_configs(configs)
     print(f"Run time: {configs['run_time']} seconds!")
 
-    # PlotResults(configs, solution_index=0).plot_results(save_fig=True)
+    # draw the transformation routes
+    if configs.get('save_routes', False):
+        save_routes(load_routes(configs['transformations_path']), Path(configs['output_dir']) / 'routes')
 
 
 if __name__ == "__main__":

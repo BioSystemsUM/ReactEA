@@ -65,6 +65,8 @@ class JmetalProblem(Problem[ChemicalSolution]):
         list_sols = [solut.variables for solut in solutions]
         list_scores = self.problem.evaluate_solutions(list_sols)
         for i, solution in enumerate(solutions):
+            # raw scores (with their original sign), used to save the results
+            solution.attributes['scores'] = list(list_scores[i])
             for j in range(len(list_scores[i])):
                 # JMetalPy only deals with minimization problems
                 if self.obj_directions[j] == self.MAXIMIZE:
@@ -89,6 +91,8 @@ class JmetalProblem(Problem[ChemicalSolution]):
         """
         candidate = solution.variables
         p = self.problem.evaluate_solutions(candidate)
+        # raw scores (with their original sign), used to save the results
+        solution.attributes['scores'] = list(p)
         for i in range(len(p)):
             # JMetalPy only deals with minimization problems
             if self.obj_directions[i] == self.MAXIMIZE:

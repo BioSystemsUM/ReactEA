@@ -139,20 +139,18 @@ class Loaders:
         return ensemble
 
     @staticmethod
-    def load_results_case(index: int, configs: dict):
+    def load_rules_metadata():
         """
-        Loads the results file.
-
-        Parameters
-        ----------
-        index: int
-            index of the case to load
-        configs: dict
-            configurations of the experiment (containing path to results file)
+        Loads the reaction rules' metadata (without the SMARTS).
 
         Returns
         -------
         pandas.DataFrame:
-            dataframe containing the results
+            dataframe with the columns InternalID, RuleID, Reactants and EC_Numbers
         """
-        return pd.read_csv(configs["transformations_path"], header=0, sep=';').iloc[index]
+        path = DATA_FILES / 'reactionrules' / 'reaction_rules_reactea.tsv.bz2'
+        return pd.read_csv(path,
+                           header=0,
+                           sep='\t',
+                           compression='bz2',
+                           usecols=['InternalID', 'RuleID', 'Reactants', 'EC_Numbers'])

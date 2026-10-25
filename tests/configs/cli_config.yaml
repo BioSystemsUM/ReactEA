@@ -12,7 +12,5 @@ multi_objective: True
 batched: True
 generations: 2
 algorithm: "NSGAIII"
-verbose: False
-visualize: False
 
 output_path: "data/outputs/"

@@ -221,7 +221,7 @@ def non_dominated_population(population: List[ChemicalSolution], maximize: bool 
     Returns the non dominated solutions from the population.
     """
     non_dominated = []
-    for i in range(len(population) - 1):
+    for i in range(len(population)):
         individual = population[i]
         j = 0
         dominates = True
