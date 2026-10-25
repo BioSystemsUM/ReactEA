@@ -95,8 +95,10 @@ class Writers:
             configurations of the experiment
         """
         destFile = configs['output_dir'] / 'configs.yaml'
+        # paths are saved as strings so the file can be loaded with yaml.safe_load (in any Python version)
+        configs_to_save = {k: str(v) if isinstance(v, Path) else v for k, v in configs.items()}
         with destFile.open('w') as outfile:
-            yaml.dump(configs, outfile)
+            yaml.dump(configs_to_save, outfile)
 
     @staticmethod
     def update_operators_logs(configs: dict, solution: ChemicalSolution, mutant: str, rule_id: str):
@@ -116,6 +118,8 @@ class Writers:
             reaction rule id
         """
         destFile = configs['output_dir'] / 'ReactionMutationLogs.txt'
-        objectives = [str(round(obj, 3) * -1) for obj in solution.objectives]
+        # objectives are negated for maximization (jmetalpy only minimizes), the raw scores are not
+        scores = solution.attributes.get('scores', [-x for x in solution.objectives])
+        objectives = [str(round(score, 3)) for score in scores]
         with destFile.open('a+') as log:
             log.write(f"{solution.variables.smiles},{mutant},{rule_id},{','.join(objectives)}\n")

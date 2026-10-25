@@ -79,7 +79,8 @@ class VisualizerObserver(Observer):
                 # negative fitness values are converted to positive
                 population = copy.deepcopy(solutions)
                 if self.non_dominated:
-                    population = non_dominated_population(population)
+                    # jmetalpy objectives are always minimized
+                    population = non_dominated_population(population, maximize=False)
                 for i in range(len(population)):
                     obj = [abs(x) for x in population[i].objectives]
                     population[i].objectives = obj

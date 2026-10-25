@@ -96,7 +96,7 @@ class ReactorEvolutionStrategy(EvolutionStrategy):
 
         population_pool.sort(key=lambda s: (overall_constraint_violation_degree(s), s.objectives[0]))
 
-        unique_population = list(cytoolz.unique(population, key=lambda x: x.variables.smiles))
+        unique_population = list(cytoolz.unique(population_pool, key=lambda x: x.variables.smiles))
 
         # avoid duplicates when possible
         if len(unique_population) >= self.mu:

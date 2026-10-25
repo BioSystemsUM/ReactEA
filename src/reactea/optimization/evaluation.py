@@ -155,10 +155,12 @@ class AggregatedSum(ChemicalEvaluationFunction):
         List[float]
             The fitness(es) of the candidate(s).
         """
-        if "Sweetness" in self.method_str():
-            return self.get_fitness_single(candidates)
         if isinstance(candidates, Mol):
             candidates = [candidates]
+        if "Sweetness" in self.method_str():
+            # the sweetness functions predict the whole batch at once, so each function evaluates all candidates
+            evals = [f.get_fitness(candidates) for f in self.fevaluation]
+            return list(np.dot(np.transpose(evals), self.tradeoffs))
         return Parallel(n_jobs=self.n_jobs, backend="loky")(delayed(self.get_fitness_single)(candidate)
                                                             for candidate in candidates)
 
@@ -1004,7 +1006,9 @@ class SAS(ChemicalEvaluationFunction):
             synthetic accessibility score of the molecule
         """
         try:
-            sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
+            sa_score_dir = os.path.join(RDConfig.RDContribDir, 'SA_Score')
+            if sa_score_dir not in sys.path:
+                sys.path.append(sa_score_dir)
             try:
                 import sascorer
             except ImportError:
