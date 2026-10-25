@@ -4,7 +4,6 @@ from typing import Union, List
 
 from rdkit import DataStructs, Chem
 from rdkit.Chem import Mol, rdmolfiles, rdmolops, MolFromSmiles, MolToSmiles
-from rdkit.Chem.Draw import MolToImage
 from rdkit.Chem.rdChemReactions import ChemicalReaction
 
 
@@ -60,64 +59,6 @@ class ChemUtils:
             return list(set([MolToSmiles(s) for s in list(chain.from_iterable(products))]))
         except Exception:
             return ()
-
-    @staticmethod
-    def smiles_to_img(smiles: str, size: tuple = (200, 200), highlightMol: bool = False):
-        """
-        Returns an image of a molecule from a SMILES string.
-
-        Parameters
-        ----------
-        smiles: str
-            SMILES string
-        size: tuple
-            image size
-        highlightMol: bool
-            highlight the molecule
-
-        Returns
-        -------
-        Molecule Image.
-        """
-        mol = MolFromSmiles(smiles)
-        if not highlightMol:
-            return ChemUtils.mol_to_image(mol, size=size)
-        else:
-            highlight_atoms = list(mol.GetSubstructMatch(mol))
-            hit_bonds = []
-            for bond in mol.GetBonds():
-                aid1 = highlight_atoms[bond.GetBeginAtomIdx()]
-                aid2 = highlight_atoms[bond.GetEndAtomIdx()]
-                hit_bonds.append(mol.GetBondBetweenAtoms(aid1, aid2).GetIdx())
-            return ChemUtils.mol_to_image(mol, size=size, highlightAtoms=highlight_atoms, highlightBonds=hit_bonds)
-
-    @staticmethod
-    def mol_to_image(mol: Mol, size: tuple, highlightAtoms: list = None, highlightBonds: list = None):
-        """
-        Returns an image of a molecule.
-
-        Parameters
-        ----------
-        mol: Mol
-            RDKit Mol object
-        size: tuple
-            image size
-        highlightAtoms: list
-            list of atom to highlight
-        highlightBonds: list
-            list of bond to highlight
-
-        Returns
-        -------
-        Molecule Image.
-        """
-        if highlightAtoms:
-            return MolToImage(mol,
-                              size=size,
-                              highlightAtoms=highlightAtoms,
-                              highlightBonds=highlightBonds,
-                              highlightColor=(1, 0.8, 0.79))
-        return MolToImage(mol, size)
 
     @staticmethod
     def valid_product(smiles: str):

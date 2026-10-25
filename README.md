@@ -16,6 +16,7 @@ the [jMetalPy framework](https://github.com/jMetal/jMetalPy).
 - [Development](#development)
 - [Getting Started](#getting-started)
     - [Using ReactEA](#using-reactea)
+    - [Plotting the transformation routes](#plotting-the-transformation-routes)
 <!-- - [About Us](#about-us) -->
 - [Citing ReactEA](#citing-reactea)
 - [License](#licensing)
@@ -173,6 +174,9 @@ algorithm: "NSGAIII"
 
 # Path to output folder
 output_path: ".../output_dir_path/"
+
+# Whether to draw the transformation route of each improved solution (SVG files in the `routes` folder of the output)
+save_routes: True
 ```
 
 Note: ** When generating reaction products (offspring) from the molecules from the previous generation (parents), 
@@ -192,6 +196,28 @@ case_study_rings = minimize_rings_maximize_qed_mo
 run_reactea(configs_path = 'config.yaml', 
             case_study = case_study_rings)
 ```
+
+### Plotting the transformation routes
+
+Each solution's route (seed compound → intermediates → final compound) can be drawn as a reaction scheme.
+Each step's arrow shows the reaction rule's EC numbers, co-reactants and id, the atoms changed by each reaction are
+highlighted, and the objective values are shown below the final compound.
+
+```python
+from reactea.visualization import load_routes, draw_route, save_routes
+
+# routes of the final population (output folder of the run or a FINAL_TRANSFORMATIONS_*.csv file)
+routes = load_routes('output_dir_path/NSGAIII_EXAMPLE_CONFIG/NSGAIII')
+
+drawing = draw_route(routes[0])  # displayed inline in Jupyter notebooks
+drawing.save('route_0.svg')      # vector (for papers); use .png for a raster image
+
+# save all improved routes (one file per solution)
+save_routes(routes, 'routes/')
+```
+
+`draw_route` options include `ncols` (molecules per row), `panel_size`, `font_size`, `align`, `highlight_changes`,
+`show_rule_info` and `show_scores`.
 
 <!--
 ### Using the Command Line Interface
