@@ -1,6 +1,6 @@
 [project]
 name = "reactea"
-version = "2.0.0"
+version = "2.0.1"
 description = "ReactEA: Combining Evolutionary Algorithms with Reaction Rules Towards Focused Molecular Design"
 readme = "README.md"
 license = "GPL-3.0-only"
@@ -31,7 +31,10 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/BioSystemsUM/ReactEA"
+Documentation = "https://reactea.readthedocs.io"
 Repository = "https://github.com/BioSystemsUM/ReactEA"
+Issues = "https://github.com/BioSystemsUM/ReactEA/issues"
+Changelog = "https://reactea.readthedocs.io/en/latest/changelog.html"
 
 [project.scripts]
 reactea = "reactea.cli:reactea_cli"

@@ -1,5 +1,12 @@
 # ReactEA: Combining Evolutionary Algorithms with Reaction Rules Towards Focused Molecular Design
 
+[![PyPI](https://img.shields.io/pypi/v/reactea)](https://pypi.org/project/reactea/)
+[![Python versions](https://img.shields.io/pypi/pyversions/reactea)](https://pypi.org/project/reactea/)
+[![Documentation](https://readthedocs.org/projects/reactea/badge/?version=latest)](https://reactea.readthedocs.io)
+[![License](https://img.shields.io/github/license/BioSystemsUM/ReactEA)](LICENSE)
+
+**Documentation: [reactea.readthedocs.io](https://reactea.readthedocs.io)**
+
 ### Description
 
 ReactEA is a reaction-based single and multi-objective evolutionary approach towards focused molecular design. ReactEA is a 
@@ -76,6 +83,12 @@ uv run flake8 src tests  # lint
 
 To add or upgrade a dependency use `uv add <package>` or `uv lock --upgrade-package <package>`,
 and commit the updated `uv.lock`.
+
+To build the documentation locally:
+
+```bash
+uv run --group docs sphinx-build docs docs/_build/html
+```
 
 ## Getting Started
 
@@ -227,6 +240,9 @@ run_reactea(configs_path = 'config.yaml',
 
 `configs_path` can also be a dictionary with the configurations.
 
+To stop the run with other criteria (e.g. when a solution reaches a score), pass a `termination_criterion`
+(see [Termination criteria](https://reactea.readthedocs.io/en/latest/customization.html#termination-criteria)).
+
 ### Results
 
 The results are saved in `<output_path>/<exp_name>/<algorithm>/`:
@@ -240,6 +256,7 @@ The results are saved in `<output_path>/<exp_name>/<algorithm>/`:
 | `configs.yaml` | configurations used in the run |
 | `routes/` | drawings of the transformation routes (if `save_routes: True`) |
 
+The csv files use `;` as separator.
 Scores are saved as returned by the evaluation functions, both for maximized and minimized objectives.
 
 ### Plotting the transformation routes
@@ -262,7 +279,10 @@ save_routes(routes, 'routes/')
 ```
 
 `draw_route` options include `ncols` (molecules per row), `panel_size`, `font_size`, `align`, `highlight_changes`,
-`show_rule_info` and `show_scores`.
+`show_rule_info` and `show_scores` (see [Results](https://reactea.readthedocs.io/en/latest/results.html)).
+
+See the [documentation](https://reactea.readthedocs.io) for more details: all the configuration options, how to
+implement your own evaluation functions, case studies and termination criteria, and the API reference.
 
 <!--
 ### Using the Command Line Interface

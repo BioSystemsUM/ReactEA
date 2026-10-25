@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.1 (unreleased)
+## 2.0.1 (2026-10-25)
 
 - New `termination_criterion` argument in `run_reactea` and `ChemicalEA` to stop the run with any criterion.
 - New `ReactEATerminationCriterion` base class: a new criterion only implements `stop(scores, maximize)`, with the
@@ -14,7 +14,7 @@
   evaluations instead of generations. `StoppingByEvaluationsOrImprovement` counted the first generation as one
   without improvement.
 - `FINAL_<time>_UNIQUE_SOLUTIONS.csv` now uses `;` as separator, like `FINAL_<time>.csv` (it used `,`).
-- Documentation on Read the Docs.
+- Documentation on [Read the Docs](https://reactea.readthedocs.io).
 
 ## 2.0.0
 

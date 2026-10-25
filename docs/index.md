@@ -17,6 +17,10 @@ ReactEA is:
 - **Single or multi-objective:** GA, ES, SA and LS, or NSGA-II, NSGA-III, SPEA2, IBEA and Random Search.
 - **Explainable:** each solution is reached through enzymatic reaction rules, which can be drawn as reaction schemes.
 
+ReactEA is available on [PyPI](https://pypi.org/project/reactea/) and its source code on
+[GitHub](https://github.com/BioSystemsUM/ReactEA), where you can also
+[report issues](https://github.com/BioSystemsUM/ReactEA/issues).
+
 ```{toctree}
 :maxdepth: 2
 :caption: User guide

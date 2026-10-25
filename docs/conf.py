@@ -30,3 +30,9 @@ autodoc_mock_imports = ['dockstring', 'deepsweet_models', 'ensemble']
 
 html_theme = 'furo'
 html_title = f'ReactEA {release}'
+# "view/edit this page" links to the repository
+html_theme_options = {
+    'source_repository': 'https://github.com/BioSystemsUM/ReactEA/',
+    'source_branch': 'main',
+    'source_directory': 'docs/',
+}

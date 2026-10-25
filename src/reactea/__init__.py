@@ -11,7 +11,7 @@ from reactea.optimization.jmetal.ea import ChemicalEA
 from reactea.visualization import load_routes, save_routes
 from reactea.wrappers import case_study_wrapper, evaluation_functions_wrapper
 
-__version__ = '2.0.0'
+__version__ = '2.0.1'
 
 
 def run_reactea(configs_path: Union[str, dict],
