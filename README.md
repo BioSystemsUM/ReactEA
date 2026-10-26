@@ -2,7 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/reactea)](https://pypi.org/project/reactea/)
 [![Python versions](https://img.shields.io/pypi/pyversions/reactea)](https://pypi.org/project/reactea/)
-[![Documentation](https://readthedocs.org/projects/reactea/badge/?version=latest)](https://reactea.readthedocs.io)
+[![Documentation](https://img.shields.io/readthedocs/reactea)](https://reactea.readthedocs.io)
 [![License](https://img.shields.io/github/license/BioSystemsUM/ReactEA)](LICENSE)
 
 **Documentation: [reactea.readthedocs.io](https://reactea.readthedocs.io)**
